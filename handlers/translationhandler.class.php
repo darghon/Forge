@@ -137,7 +137,7 @@ class TranslationHandler{
 				$values = array();
 				foreach($translations as $a => $b) $values[] = sprintf("\t".'"%s"=>"%s"',$a,$b);
 				$file = fopen($this->location.DIRECTORY_SEPARATOR.$lang.DIRECTORY_SEPARATOR.$category.'.i18n.php','w');
-				$content = file_get_contents(Config::path('fw').DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'{category}.i18n.php.skel');
+				$content = file_get_contents(Config::path('forge').DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'{category}.i18n.php.skel');
 				fwrite($file,sprintf($content,implode(','.PHP_EOL,$values)));
 				fclose($file);
 				chmod($this->location.DIRECTORY_SEPARATOR.$lang.DIRECTORY_SEPARATOR.$category.'.i18n.php',777);

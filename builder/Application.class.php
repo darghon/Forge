@@ -53,7 +53,7 @@ class Application extends \Core\baseGenerator {
 	
 	public function generateDefaultFiles(){
 		print('Creating default files'); flush();
-		$templates = scandir(\Core\Config::path('fw').'/templates');
+		$templates = scandir(\Core\Config::path('forge').'/templates');
 		foreach($templates as $template){
 			$file = explode('_',$template);
 			if($file[0] == 'application'){
@@ -61,8 +61,8 @@ class Application extends \Core\baseGenerator {
 				
 				$new_file = implode('/',$file);
 				$new_file = \Core\Config::path('app').'/'.$this->app_name.'/'.substr($new_file,0,strlen($new_file)-9);
-				$contents = file_get_contents(\Core\Config::path('fw').'/templates/'.$template);
-				chmod(\Core\Config::path('fw').'/templates/'.$template, 0777);
+				$contents = file_get_contents(\Core\Config::path('forge').'/templates/'.$template);
+				chmod(\Core\Config::path('forge').'/templates/'.$template, 0777);
 				file_put_contents($this->replaceTokens($new_file),$this->replaceTokens($contents));
 				print('.'); flush();
 			}

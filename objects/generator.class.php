@@ -59,7 +59,7 @@ class Generator extends Singleton {
      * Initiate all builders found in builder directory
      */
     public function initBuilders(){
-        $builderPath = Config::path('fw').DIRECTORY_SEPARATOR.'builder';
+        $builderPath = Config::path('forge').DIRECTORY_SEPARATOR.'builder';
         $path = opendir($builderPath);
         while (false !== ($filename = readdir($path))){
             if(substr($filename,0,1) != '.'){

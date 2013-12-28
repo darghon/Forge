@@ -41,8 +41,6 @@ class Project extends \Core\baseGenerator{
         $this->_createDirectory(array(
             \Core\Config::path("app"),
             \Core\Config::path("config").'/database',
-            \Core\Config::path("helpers"),
-            \Core\Config::path("i18n"),
             \Core\Config::path("lib"),
             \Core\Config::path("objects").'/business/base',
             \Core\Config::path("objects").'/data/base',

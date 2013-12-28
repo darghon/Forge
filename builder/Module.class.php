@@ -71,14 +71,14 @@ class Module extends \Core\baseGenerator {
 	
 	public function generateDefaultFiles(){
 		print('Creating default files'); flush();
-		$templates = scandir(\Core\Config::path('fw').'/templates');
+		$templates = scandir(\Core\Config::path('forge').'/templates');
 		foreach($templates as $template){
 			$file = explode('_',$template);
 			if($file[0] == 'module'){
 				array_splice($file,0,1); //drop the "module" part of the filename
 				$new_file = implode('/',$file);
 				$new_file = \Core\Config::path('app').'/'.$this->app_name.'/modules/'.$this->mod_name.'/'.substr($new_file,0,strlen($new_file)-9);
-				$contents = file_get_contents(Config::path('fw').'/templates/'.$template);
+				$contents = file_get_contents(Config::path('forge').'/templates/'.$template);
 				if(substr($file[0],0,5) == 'templ'){
 					foreach($this->actions as $action){
 						file_put_contents($this->replaceTokens($new_file,array('action' => $action)),$this->replaceTokens($contents,array('action' => $action)));

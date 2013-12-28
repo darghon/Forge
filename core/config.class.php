@@ -61,7 +61,7 @@ class Config {
 	 */
 	public static function path($name) {
 		if(isset(self::$paths[$name])) return self::$paths[$name];
-        throw new \InvalidArgumentException('Specified path is not defined.');
+        throw new \InvalidArgumentException('Specified path: "'.$name.'" is not defined.');
 	}
 
     /**
@@ -196,8 +196,6 @@ class Config {
             throw new \Exception('No global namespace definition was found.');
         }
         self::parseNamespace('\\',$namespaces['Global'], self::$namespaces);
-
-        var_dump(self::$namespaces);
     }
 
     /**
@@ -233,7 +231,6 @@ class Config {
         $subFolders = array();
         $fullPath = self::path('root').DIRECTORY_SEPARATOR.$path;
         $handle = opendir($fullPath);
-        echo $fullPath.PHP_EOL;
         while(is_dir($fullPath) && false !== ($file = readdir($handle))){
             if(substr($file,0,1) != '.' && is_dir($fullPath.DIRECTORY_SEPARATOR.$file)){
                 $subFolders[] = str_replace(array('\\','/'),DIRECTORY_SEPARATOR,$path.DIRECTORY_SEPARATOR.$file);
