@@ -1,0 +1,16 @@
+# Adding a /* to a path name will also check all files in that folder or it's child folders recursively
+# All paths are relative to the project base
+# NamespaceName:
+#   -path1
+#   -path2/*
+#   SubNamespaceName:
+#     -path3
+Global:
+  -app/shared/objects/business/*
+  -app/shared/lib/*
+  -app/*
+  Core:
+    -ext/forge/*
+    Builder: ext/forge/builder/*
+  Finder: app/shared/objects/finders/*
+  Data: app/shared/objects/data/*

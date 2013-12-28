@@ -1,0 +1,17 @@
+<?php
+
+/**
+ * This is a translation file.
+ * This file can be automatically populated by setting the active_translation = true in the global multilingual settings
+ * Each detected string will be registered as a index of the translation array
+ * The translated value will be the value of the index.
+ * 
+ * This file is generated with the specified category as file name, and contained in the active language folder
+ * By default this will be somewhat like /i18n/en_GB/{category}.i18n.php
+ * 
+ * You are allowed to add entries at will, this document will always be merged instead of overwritten.
+ */
+
+return array(
+%s
+);

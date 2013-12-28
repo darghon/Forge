@@ -1,0 +1,65 @@
+Administrator:
+  Columns:
+    Name:
+      Type: String
+      Length: 100
+      Null: false
+    Password:
+      Type: String
+      Length: 200
+      Null: false
+    Email:
+      Type: String
+      Length: 200
+      Null: false
+    Credentials:
+      Type: String
+
+SessionData:
+  Columns:
+    Access:
+      Type: Integer
+      Length: 10
+    Data:
+      Type: String
+      
+DebugErrorLog:
+  Columns:
+    Application:
+      Type: String
+      Length: 255
+    Module:
+      Type: String
+      Length: 255
+    Action:
+      Type: String
+      Length: 255
+    Url:
+      Type: String
+      Length: 255
+    Session:
+      Type: String
+    ErrorNr:
+      Type: String
+      Length: 255
+    ErrorMess:
+      Type: String
+    ErrorFile:
+      Type: String
+      Length: 255
+    ErrLine:
+      Type: String
+      Length: 255
+      
+DebugTimerLog:
+  Columns:
+    Message:
+      Type: String
+      Length: 255
+    Rank:
+      Type: Integer
+      Length: 1
+      Default: 9
+    Ms:
+      Type: Integer
+      Length: 11

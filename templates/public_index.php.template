@@ -1,0 +1,6 @@
+<?php
+require(realpath(dirname(__FILE__)."/../config/projectConfigurator.class.php"));
+
+//initiate the wanted environment
+ProjectConfigurator::deploy('development');
+?>

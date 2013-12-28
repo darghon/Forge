@@ -1,0 +1,8 @@
+prefix: tbl_
+default_connection: development
+connections:
+  development:
+    user: root
+    pass: ''
+    host: localhost
+    database: db_framework

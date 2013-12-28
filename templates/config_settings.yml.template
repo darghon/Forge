@@ -1,0 +1,52 @@
+# version of the framework
+framework:
+  version: version:1.2.0
+
+# default load setting for project
+default_application: frontend
+default_module: home
+default_action: index
+
+# global header information
+global:
+  title: "New Webproject"
+
+# add js files from the source folder web/js
+  javascript:
+    #-jquery.js
+
+# add css files from the source folder web/css
+  stylesheet:
+    #-reset.css
+
+# add meta data to the header
+  metas:
+    tags: "framework"
+    description: "New webproject"
+    author: "Gerry Van Bael"
+    
+# make sure you set the correct timezone for date functionality
+timezone: "Europe/Belgrade"
+
+# to allow multi lingual support, make sure this is enabled, and that a default and possible languages are set.
+# language support can be defined by country as well, if the country isn't specified, it will try to match with a simular language
+# ex: languagecode "en_US", if not defined, will use the first "en_*" language it can find. If no language is found, the default language will be used.
+multilingual:
+  enabled: false
+  #default: en_GB
+  #available:
+  #  -en_GB
+  #  -nl_NL
+  #  -fr_FR
+  #  -de_DE
+  #translations: i18n
+
+# make sure you turn this on when putting the application online
+cache:
+  enabled: false
+
+# enable debug to be able to output occurred errors
+debug:
+  enabled: true
+  register_error: false
+  register_long_load: false

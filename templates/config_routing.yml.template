@@ -1,0 +1,31 @@
+# This is the routing file. In here you can define the structure of your web urls
+# All routing rules have a standard structure:
+# [rule_identifier]:
+#   url: /[{{attribute:default_value}}]/[*]
+#   param: { [attribute]: [value] }
+#
+# In applications with multiple languages, it is possible to define multiple urls
+# for a single routing rule:
+# [rule_identifier]:
+#   url: 
+#     __: /url_part/[*]
+#	    fr: /french_url_part/[*]
+#     de: /german_url_part/[*]
+#   param: { [attribute]: [value] }  
+#
+# Adding a * at the end of the line, will also match longer urls to this rule
+# When adding multiple urls to a single rule, you can specify the default by adding
+# a __: identifier for the url, alternating rules can be specified by the ISO2 code.
+# ------------------------------------------------------------------------------------------
+
+homepage:
+  url: /
+  param: { application: frontend, module: home, action: index }
+
+frontend:
+  url: /{{module:home}}/{{action:index}}/*
+  param: { application: frontend }
+  
+backend:
+  url: /admin/{{module:home}}/{{action:login}}/*
+  param: { application: backend }

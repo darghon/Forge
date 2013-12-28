@@ -1,0 +1,43 @@
+<?php
+$forgeRoot = realpath(dirname(__FILE__)."/../ext/forge";
+if(!class_exists('ForgeConfigurator')) require($forgeRoot . "/core/forgeConfigurator.class.php"));
+//Todo: Load debug functions as soon as possible.
+
+/**
+ * Project configurator is the global boot class of the framework.
+ * It initiates all the needed includes and deploys forge in the requested environment 
+ */
+class ProjectConfigurator extends ForgeConfigurator{
+	
+	/**
+	 * Initiate the project in the specified envirement.
+	 * The Environment is a direct link to the environment database that will be used for this.
+	 * @param String $envirement 
+	 */
+	public static function deploy($environment = null){
+		//configure standard operations
+		self::configure($environment);
+		
+		//edit loader information here.
+		//Config::loadHelper('helper');
+		
+		//include addons
+		//Config::loadAddon('admin');
+		
+		//continue with global run process
+		parent::deploy();
+	}
+	
+	/**
+	 * Initiate the project in the specified envirement. This function is called through the commandline interface (task.php)
+	 * @param type $environment
+	 * @param type $arguments 
+	 */
+	public static function deployTask($environment = null, $arguments = array()){
+		self::configure($environment);
+		parent::deployTask($environment, $arguments);
+	}
+	
+}
+
+?>

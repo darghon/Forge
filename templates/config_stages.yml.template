@@ -1,0 +1,12 @@
+# Stage yaml contains a summary of all stages a request needs to pass through to be return to the requestor.
+# It is possible to add additional stages to this file, but each stage needs to implement the IStage interface
+# in order to be able to function with the stage handler.
+# Items marked with a "~" are handled by the default handler
+request: ~
+routing: ~
+configuration: ~
+security: ~
+
+# Custom stages are most likely to be entered here.
+
+response: ~

@@ -1,0 +1,12 @@
+<?php
+
+/**
+ * {object} is a generated businesslayer class. Any and all database object interaction should pass through this object.
+ * It is possible to add custom functions to this file, as once it's generated, it will never be overwritten.
+ * This class extends base{object} which extends BusinessLayer
+ */
+class {object} extends base{object}{
+
+}
+
+?>
