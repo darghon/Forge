@@ -9,7 +9,7 @@ class Module extends \Core\baseGenerator {
 
 	public function __construct($args = array()){
 		if(count($args) < 2){
-			throw new \Exception('gen_module expects at least 2 parameters, '.count($args).' were given. Parameters needed: app_name, mod_name , [action], [action] ,...');
+			throw new \Exception('Module generator expects at least 2 parameters, '.count($args).' were given. Parameters needed: app_name, mod_name , [action], [action] ,...');
 		}
 		$tmp = array_splice($args,0,1);
 		$this->app_name = \Core\Tools::slugify($tmp[0]);
@@ -63,9 +63,11 @@ class Module extends \Core\baseGenerator {
 
 	public function generateFolderStructure(){
 		print('Creating folder structure'); flush();
-		print((mkdir(\Core\Config::path("app")."/".$this->app_name."/modules/".$this->mod_name, 0777) ? '.' : 'x')); flush();
-		print((mkdir(\Core\Config::path("app")."/".$this->app_name."/modules/".$this->mod_name."/actions", 0777) ? '.' : 'x')); flush();
-		print((mkdir(\Core\Config::path("app")."/".$this->app_name."/modules/".$this->mod_name."/templates", 0777) ? '.' : 'x')); flush();
+        $this->_createDirectory(array(
+            \Core\Config::path("app")."/".$this->app_name."/modules/".$this->mod_name."/actions",
+            \Core\Config::path("app")."/".$this->app_name."/modules/".$this->mod_name."/templates",
+            \Core\Config::path("app")."/".$this->app_name."/modules/".$this->mod_name."/config"
+        ), '.', 'x');
 		print('DONE'.PHP_EOL); flush();
 	}
 	
@@ -78,7 +80,7 @@ class Module extends \Core\baseGenerator {
 				array_splice($file,0,1); //drop the "module" part of the filename
 				$new_file = implode('/',$file);
 				$new_file = \Core\Config::path('app').'/'.$this->app_name.'/modules/'.$this->mod_name.'/'.substr($new_file,0,strlen($new_file)-9);
-				$contents = file_get_contents(Config::path('forge').'/templates/'.$template);
+				$contents = file_get_contents(\Core\Config::path('forge').'/templates/'.$template);
 				if(substr($file[0],0,5) == 'templ'){
 					foreach($this->actions as $action){
 						file_put_contents($this->replaceTokens($new_file,array('action' => $action)),$this->replaceTokens($contents,array('action' => $action)));
@@ -100,7 +102,7 @@ class Module extends \Core\baseGenerator {
 			$actions .= sprintf("\t/**".PHP_EOL);
 			$actions .= sprintf("\t * Add your action description here.".PHP_EOL);
 			$actions .= sprintf("\t */".PHP_EOL);
-			$actions .= sprintf("\tpublic function %s(){".PHP_EOL,$action);
+			$actions .= sprintf("\tpublic function %sAction(){".PHP_EOL,$action);
 			$actions .= sprintf("\t\t//insert code here.".PHP_EOL);
 			$actions .= sprintf("\t}".PHP_EOL);
 			$actions .= PHP_EOL;

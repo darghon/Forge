@@ -1,5 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head></head>
-  <body></body>
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <?php echo \Core\Application::META_DATA; ?>
+        <?php echo \Core\Application::TITLE; ?>
+        <?php echo \Core\Application::BASE_URL; ?>
+        <?php echo \Core\Application::CSS; ?>
+        <?php echo \Core\Application::JS; ?>
+    </head>
+    <body>
+        <?php echo \Core\Application::loadMain(); ?>
+    </body>
 </html>

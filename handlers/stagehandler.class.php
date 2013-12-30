@@ -41,6 +41,7 @@ class StageHandler {
 			Debug::Notice('Stage', 'Deploying '.$key);
 			$stage->deploy();
 		}
+        return true;
 	}
 	
 	public static function getCurrentStage(){

@@ -25,7 +25,7 @@ abstract class ForgeConfigurator{
         require($fw_dir . "/yaml.class.php");
 
 		//register default paths
-		Config::registerPaths(realpath($fw_dir."/../.."));
+		Config::registerPaths();
 		if($environment !== null) Forge::setEnvironment($environment);
 		
 		//Start Session
@@ -39,6 +39,7 @@ abstract class ForgeConfigurator{
 	
 	public static function deployTask($environment = null, $arguments = array()){
 		//load task
+        unset($environment);
 		$task = isset($arguments[1])?$arguments[1]:null;
 		if($task !== null){
 			if(file_exists(Config::path("lib").'/'.$task.".task.php")){

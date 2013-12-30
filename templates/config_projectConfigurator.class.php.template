@@ -1,6 +1,6 @@
 <?php
-$forgeRoot = realpath(dirname(__FILE__)."/../ext/forge";
-if(!class_exists('ForgeConfigurator')) require($forgeRoot . "/core/forgeConfigurator.class.php"));
+$forgeRoot = realpath(dirname(__FILE__)."/../ext/forge");
+if(!class_exists('ForgeConfigurator')) require($forgeRoot . "/core/forgeConfigurator.class.php");
 //Todo: Load debug functions as soon as possible.
 
 /**

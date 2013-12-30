@@ -78,7 +78,7 @@ class Finder extends \Core\baseGenerator {
 			$this->writeClassContent($file);
 			fclose($file);
 			echo "."; flush();
-			chmod($this->location ."F". $this->name . ".class.php",0777);
+			chmod($this->location . $this->name . ".class.php",0777);
 			echo "."; flush();
 			unset($file);
 		}
@@ -113,26 +113,26 @@ class Finder extends \Core\baseGenerator {
 				fwrite($file, "\t}".PHP_EOL);
 				fwrite($file, PHP_EOL);
 			}
-		}
-		if (strpos($this->name,"_i18n") >= -1){
-			fwrite($file, "\t/**" . PHP_EOL);
-			fwrite($file, "\t * Language loader for " . str_replace('_i18n','',$field["name"]) . PHP_EOL);
-			fwrite($file, "\t * @return " . $field["name"] . " " . PHP_EOL);
-			fwrite($file, "\t */" . PHP_EOL);
-			fwrite($file, "\tpublic function & getTranslationByID(\$id, \$lang){".PHP_EOL);
-			fwrite($file, "\t\t\$def = false;".PHP_EOL);
-			fwrite($file, "\t\t\$this->db->setQuery(\"SELECT * FROM \".\$this->db->getPrefix().\"" . $this->name . " WHERE " . str_replace("_i18n", "", $this->name) . "ID = '\".\$id.\"' And Lang = '\".\$lang.\"';\");".PHP_EOL);
-			fwrite($file, "\t\t\$this->db->execute();".PHP_EOL);
-			fwrite($file, "\t\tif(\$this->db->hasRecords()){".PHP_EOL);
-			fwrite($file, "\t\t\t\$row = \$this->db->getRecord();".PHP_EOL);
-			fwrite($file, "\t\t\treturn \$this->createObject(\$row);".PHP_EOL);
-			fwrite($file, "\t\t}".PHP_EOL);
-			fwrite($file, "\t\telse{".PHP_EOL);
-			fwrite($file, "\t\t\treturn \$def;".PHP_EOL);
-			fwrite($file, "\t\t}".PHP_EOL);
-			fwrite($file, "\t}".PHP_EOL);
-			fwrite($file, PHP_EOL);
-		}
+            if (strpos($this->name,"_i18n") >= -1){
+                fwrite($file, "\t/**" . PHP_EOL);
+                fwrite($file, "\t * Language loader for " . str_replace('_i18n','',$field["name"]) . PHP_EOL);
+                fwrite($file, "\t * @return " . $field["name"] . " " . PHP_EOL);
+                fwrite($file, "\t */" . PHP_EOL);
+                fwrite($file, "\tpublic function & getTranslationByID(\$id, \$lang){".PHP_EOL);
+                fwrite($file, "\t\t\$def = false;".PHP_EOL);
+                fwrite($file, "\t\t\$this->db->setQuery(\"SELECT * FROM \".\$this->db->getPrefix().\"" . $this->name . " WHERE " . str_replace("_i18n", "", $this->name) . "ID = '\".\$id.\"' And Lang = '\".\$lang.\"';\");".PHP_EOL);
+                fwrite($file, "\t\t\$this->db->execute();".PHP_EOL);
+                fwrite($file, "\t\tif(\$this->db->hasRecords()){".PHP_EOL);
+                fwrite($file, "\t\t\t\$row = \$this->db->getRecord();".PHP_EOL);
+                fwrite($file, "\t\t\treturn \$this->createObject(\$row);".PHP_EOL);
+                fwrite($file, "\t\t}".PHP_EOL);
+                fwrite($file, "\t\telse{".PHP_EOL);
+                fwrite($file, "\t\t\treturn \$def;".PHP_EOL);
+                fwrite($file, "\t\t}".PHP_EOL);
+                fwrite($file, "\t}".PHP_EOL);
+                fwrite($file, PHP_EOL);
+            }
+        }
 		fwrite($file, "\tpublic function validate(){".PHP_EOL);
 		fwrite($file, "\t\treturn true;".PHP_EOL);
 		fwrite($file, "\t}".PHP_EOL);
