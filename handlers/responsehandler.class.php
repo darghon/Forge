@@ -59,7 +59,7 @@ class ResponseHandler implements IStage {
 			$this->renderMain();
 			if(!Request::isAjaxCall()){
 				//no ajax call
-				require(Config::path("root")."/application/".$this->configuration->getApp()."/templates/".$this->configuration->getTemplate());
+				require(Config::path("app").DIRECTORY_SEPARATOR.$this->configuration->getApp()."/templates/".$this->configuration->getTemplate());
 				$this->ob_dump_to($this->content_buffer);
 
 				//replace all placeholders with components

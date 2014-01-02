@@ -26,19 +26,21 @@ class Config {
 	 * @param String $path Location of the configuration file (Default main config folder)
 	 * @return Array
 	 */
-	public static function get($name, $path = '/config/') {
+	public static function get($name, $path = null) {
+        $fullPath = (is_null($path) ? Config::path('root'). '/config/' : $path) . strtolower($name) . '.yml';
 		//quickcheck if it's already loaded
-		if (isset(self::$configurations[$path . $name])){
-            return self::$configurations[$path . $name];
+		if (isset(self::$configurations[$fullPath])){
+            return self::$configurations[$fullPath];
         }
 
         //cache config files to read them faster
-		if (!file_exists(self::path("root") . $path . strtolower($name) . '.yml'))
-			return array();
+		if (!file_exists($fullPath)){
+            return array();
+        }
 
 		//if(!isset(self::$configurations[$path.$name])) self::$configurations[$path.$name] = Spyc::YAMLLoad(self::path("root").$path.strtolower($name).'.yml');
-		self::$configurations[$path . $name] = YAML::load(self::path("root") . $path . strtolower($name) . '.yml', true);
-		return self::$configurations[$path . $name];
+		self::$configurations[$fullPath] = YAML::load($fullPath, true);
+		return self::$configurations[$fullPath];
 	}
 
 	/**

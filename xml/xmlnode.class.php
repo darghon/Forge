@@ -8,7 +8,7 @@ namespace Core;
 class XMLNode extends XMLTextNode{
     /**
      * Collection of Childnodes
-     * @var array Childnodes
+     * @var XMLNode[]
      */
     public $children = array();
     /**
@@ -159,7 +159,7 @@ class XMLNode extends XMLTextNode{
 	/**
      * Returns a reference collection of elements with the specified name
 	 * @param String $name
-     * @return array
+     * @return \Core\XMLNode|\Core\XMLNode[]
      */
 	public function & getElementsByTagName($name){
 		$result = array();
@@ -174,6 +174,19 @@ class XMLNode extends XMLTextNode{
 		}
 		return $result;
 	}
+
+    /**
+     * @param string $childName
+     * @return XMLNode[]|XMLNode|null
+     */
+    public function __get($childName){
+        $matches = array();
+        foreach($this->children as &$child){
+            if($child->getName() == $childName) $matches[] = &$child;
+        }
+        if(count($matches) > 1) return $matches;
+        return !empty($matches) ? $matches[0] : null;
+    }
 
     /**
      * Handles the given array to parse the item name and attributes if needed
@@ -196,7 +209,7 @@ class XMLNode extends XMLTextNode{
      * Magic method that returns a string representation of the object
      * @return String
      */
-    public function __toString(){
+    public function writeXml(){
       $string = "<".$this->name;
       foreach($this->attributes as $key => $value){
         $string .= " ".$key."=\"".$value."\"";
@@ -212,6 +225,17 @@ class XMLNode extends XMLTextNode{
         $string .= " />";
       }
       return str_replace("><",">\n<",$string); //format with breaklines for nicer source code
+    }
+
+    public function __toString(){
+        return $this->getText();
+    }
+
+
+    public function getText(){
+        $string = '';
+        foreach($this->children as &$child) $string .= $child->getText();
+        return $string;
     }
 
     /**

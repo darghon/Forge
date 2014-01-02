@@ -25,13 +25,14 @@ abstract class Actions {
 	 * @param String $template Optional non default template to be loaded
 	 */
 	public function forward($action, $template = "def") {
-		if (method_exists($this, $action)) {
+        $actionName = $action.'Action';
+		if (method_exists($this, $actionName)) {
 			if ($template != "def") {
 				$this->changeTemplate($template);
 			} else {
 				$this->changeTemplate($action);
 			}
-			$this->{$action}();
+			$this->{$actionName}();
 		}
 	}
 

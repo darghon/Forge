@@ -41,7 +41,8 @@ abstract class DataLayer {
         foreach($rules as $field => $definition){
             settype($this->$field,$this->_baseType($definition['type']));
             $this->fields[$field] = false; //set field as unchanged
-            if($definition['default'] != null) $this->$field = $definition['default'];
+            if($definition['default'] !== null) $this->$field = $definition['default'];
+            else $this->$field = null; //init at null if default null
         }
     }
     /**
@@ -56,8 +57,8 @@ abstract class DataLayer {
             else $this->$key = $val;
         }
         else{
-            if(isset($rules['length']['min']) && strlen((string)$val) < $rules['length']['min']) throw new \InvalidArgumentException(sprintf('Passed value is to short for %s->%s. Value needs to be at least %s characters long.', get_class($this),$key, $rules['length']['min']));
-            if(isset($rules['length']['max']) && strlen((string)$val) > $rules['length']['max']) throw new \InvalidArgumentException(sprintf('Passed value is to long for %s->%s. Value can not be longer than %s characters.', get_class($this),$key, $rules['length']['max']));
+            if(isset($rules['length']['min']) && strlen((string)$val) < $rules['length']['min']) throw new \InvalidArgumentException(sprintf('Passed value is to short for %s->%s. Value needs to be at least %s characters long. "%s" was passed (%s long).', get_class($this),$key, $rules['length']['min'], (string)$val, strlen($val)));
+            if(isset($rules['length']['max']) && strlen((string)$val) > $rules['length']['max']) throw new \InvalidArgumentException(sprintf('Passed value is to long for %s->%s. Value can not be longer than %s characters. "%s" was passed (%s long).', get_class($this),$key, $rules['length']['max'], (string)$val, strlen($val)));
 
             switch($rules['type']){
                 case ObjectGenerator::FIELD_TYPE_STRING:
@@ -76,6 +77,8 @@ abstract class DataLayer {
                     $this->_validateFloatInput($key, $val);
                     break;
                 case ObjectGenerator::FIELD_TYPE_DATE:
+                    $this->_validateDateInput($key, $val);
+                    break;
                 case ObjectGenerator::FIELD_TYPE_DATETIME:
                     $this->_validateDateTimeInput($key, $val);
                     break;
@@ -266,7 +269,27 @@ abstract class DataLayer {
             else throw new \InvalidArgumentException("Passed date does not exist. Received $val");
         }
         else{
-            throw new \InvalidArgumentException('Expected valid date (Y-m-d H:i:s) for '.get_class($this).'->'.$key.'. Received '.$val.'"');
+            throw new \InvalidArgumentException('Expected valid datetime (Y-m-d H:i:s) for '.get_class($this).'->'.$key.'. Received "'.$val.'"');
+        }
+    }
+
+    /**
+     * Validate the input type of the specified field
+     * @param string $key
+     * @param mixed $val
+     * @throws \InvalidArgumentException
+     */
+    protected function _validateDateInput($key, $val){
+        $d = \DateTime::createFromFormat('Y-m-d', $val);
+        if($d !== false && preg_match( "/[0-9]{4}-[0-9]{2}-[0-9]{2}/",$val) !== false){
+            if($d->format('Y-m-d') == $val){
+                if(!$this->init) $this->fields[$key] = true;
+                $this->$key = $d->format('Y-m-d');
+            }
+            else throw new \InvalidArgumentException("Passed date does not exist. Received $val");
+        }
+        else{
+            throw new \InvalidArgumentException('Expected valid date (Y-m-d) for '.get_class($this).'->'.$key.'. Received "'.$val.'"');
         }
     }
 

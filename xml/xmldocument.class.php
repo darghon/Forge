@@ -106,7 +106,11 @@ class XMLDocument {
 		return $string;
 	}
 
-	public function & getElementsByTagName($name) {
+    /**
+     * @param $name
+     * @return \Core\XMLNode[]
+     */
+    public function & getElementsByTagName($name) {
 		return $this->root->getElementsByTagName($name);
 	}
 

@@ -33,17 +33,18 @@ class ConfigurationHandler implements IStage {
 	public function deploy() {
 		//check if cache is enabled
 		if(!Cache::enabled() || !$this->loadFromCache()){
+            $appLocation = Config::path("app").DIRECTORY_SEPARATOR.$this->app;
 			//load settings for request
 			$settings = Config::get("settings");
-			$app_config = Config::get("view","/application/".$this->app."/config/");
-			$mod_config = Config::get("view","/application/".$this->app."/modules/".$this->mod."/config/");
-			
+			$app_config = Config::get("view",$appLocation."/config/");
+			$mod_config = Config::get("view",$appLocation."/modules/".$this->mod."/config/");
+
 			// Load all settings where they may be registered.
-			if(isset($settings['global']) || array_key_exists('global',$settings)) $this->parseConfig($settings['global']);
-			if(isset($app_config['global']) || array_key_exists('global',$app_config)) $this->parseConfig($app_config['global']);
-			if(isset($app_config[$this->mod]) || array_key_exists($this->mod,$app_config)) $this->parseConfig($app_config[$this->mod]);
-			if(isset($mod_config['global']) || array_key_exists('global',$mod_config)) $this->parseConfig($mod_config['global']);
-			if(isset($mod_config[$this->act]) || array_key_exists($this->act,$mod_config)) $this->parseConfig($mod_config[$this->act]);
+			if(isset($settings['global'])       || array_key_exists('global',$settings)) $this->parseConfig($settings['global']);
+			if(isset($app_config['global'])     || array_key_exists('global',$app_config)) $this->parseConfig($app_config['global']);
+			if(isset($app_config[$this->mod])   || array_key_exists($this->mod,$app_config)) $this->parseConfig($app_config[$this->mod]);
+			if(isset($mod_config['global'])     || array_key_exists('global',$mod_config)) $this->parseConfig($mod_config['global']);
+			if(isset($mod_config[$this->act])   || array_key_exists($this->act,$mod_config)) $this->parseConfig($mod_config[$this->act]);
 			
 			unset($settings, $app_config, $mod_config);
 

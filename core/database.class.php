@@ -16,12 +16,12 @@ class Database {
 		return Forge::getFinder($objectname);
 	}
 
-	public static function Persist($object) {
-		return Forge::getFinder(get_class($object))->persist($object);
+	public static function Persist(\Core\DataLayer $object) {
+		return Forge::getFinder(str_replace('Data\\','Finder\\',get_class($object)))->persist($object);
 	}
 
-	public static function Delete($object) {
-		return Forge::getFinder(get_class($object))->delete($object);
+	public static function Delete(\Core\DataLayer $object) {
+		return Forge::getFinder(str_replace('Data\\','Finder\\',get_class($object)))->delete($object);
 	}
 
 	public static function escape($value) {

@@ -26,10 +26,10 @@ class ObjectFactory {
 				return $ob;
 			}
 		}
-		if (is_a($business,'BusinessLayer')) {
-			$dtype = 'D'.$type;
+		if (is_a($business,'\\Core\\BusinessLayer')) {
+			$dtype = '\\Data\\'.$type;
 			$data = new $dtype();
-			if(is_a($data,'DataLayer')){
+			if(is_a($data,'\\Core\\DataLayer')){
 				$data->init(true);
 				foreach($args as $key => $value) if($data->hasProperty($key)) $data->$key = stripslashes($value);
 				$data->init(false);

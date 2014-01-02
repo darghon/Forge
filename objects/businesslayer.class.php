@@ -13,7 +13,7 @@ abstract class BusinessLayer {
 	 * New objects require a new instance of 
 	 */
 	public function __construct($data = null) {
-		$class = 'Data\\'.$this->getClassName();
+		$class = '\\Data\\'.$this->getClassName();
 		if (get_class($data) == $class) {
 			$this->data = $data;
 		} else {
@@ -95,7 +95,7 @@ abstract class BusinessLayer {
 	public function persist() {
 		if (method_exists($this, 'prePersist')) $this->prePersist();
 		$old_id = $this->getID();
-		//Push this and related objects to database
+        //Push this and related objects to database
 		if ($this->validate()) {
 			if (Database::Persist($this->data)) {
 				if ($old_id == 0) Forge::add($this);
