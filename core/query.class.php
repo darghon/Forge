@@ -213,7 +213,7 @@ class Query{
 	}
 	
 	public function __toString(){
-		return $this->type.' '.implode(', ',$this->fields).' from '.implode(', ',$this->table).(count($this->join) > 0 ? ' '.implode(' ',$this->join) : '').(count($this->criteria) > 0 ? ' where '.implode($this->criteria_link,$this->criteria) : '').';';
+		return $this->type.' '.implode(', ',$this->fields).' from '.implode(', ',$this->table).(count($this->join) > 0 ? ' '.implode(' ',$this->join) : '').(count($this->criteria) > 0 ? ' where '.implode($this->criteria_link,$this->criteria) : '').(count($this->order) > 0 ? ' order by '.implode(', ',$this->order) : '').';';
 	}
 	
 	public function clear(){

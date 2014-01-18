@@ -37,6 +37,17 @@ class Generator extends Singleton {
 	}
 
     /**
+     * Retrieve a list of available builders
+     * @return array
+     */
+    public function getAvailableBuilders(){
+        //retrieve all available builders if not done already
+        if($this->_init) $this->initBuilders();
+
+        return array_keys($this->_builders);
+    }
+
+    /**
      * @param string $type
      * @param string $class
      * @param bool $overwrite

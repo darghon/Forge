@@ -38,7 +38,6 @@ class Persister
     {
         $this->method = "Insert";
         $this->sql = "Insert into ";
-        //get table name from tag (tag: DUser)
         $this->sql .= $this->pref . $this->getTableName();
         $tmpsql = array();
         foreach ($this->fields as $key => $field) {
@@ -50,12 +49,11 @@ class Persister
         $tmpsql = array();
         foreach ($this->fields as $key => $field) {
             if ($key == 'ID') continue;
-            if($this->object->$key == null) $tmpsql [] = "null";
+            if($this->object->$key === null) $tmpsql [] = "null";
             else $tmpsql[] = "'" . Database::escape($this->object->$key) . "'";
         }
         $this->sql .= implode(",", $tmpsql);
         $this->sql .= ")";
-        echo $this->sql."<br />";
     }
 
     protected function getTableName()
@@ -73,7 +71,7 @@ class Persister
         foreach ($this->fields as $key => $field) {
             if (!$field) continue; //If field is false, then do nothing, go to next field
             if ($key == "_recordVersion" || $key == "ID") continue; //always skip record version and ID
-            $tmpsql[] = "`" . $key . "`" . " = " . ($this->object->$key == null ? "null" : "'".Database::escape($this->object->$key) . "'");
+            $tmpsql[] = "`" . $key . "`" . " = " . ($this->object->$key === null ? "null" : "'".Database::escape($this->object->$key) . "'");
         }
         if (count($tmpsql) > 0) {
             $tmpsql[] = "_recordVersion='" . (int)($this->object->_recordVersion + 1) . "'";
@@ -82,7 +80,6 @@ class Persister
         } else {
             $this->sql = ""; //no statement if no fields where updated
         }
-        echo $this->sql."<br />";
     }
 
     public function getSmallSql(&$object)

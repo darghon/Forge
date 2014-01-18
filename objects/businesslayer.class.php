@@ -181,6 +181,7 @@ abstract class BusinessLayer {
         } else {
             $return = &Database::Find($caller);
         }
+
         return $return;
     }
 

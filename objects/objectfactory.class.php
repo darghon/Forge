@@ -31,7 +31,7 @@ class ObjectFactory {
 			$data = new $dtype();
 			if(is_a($data,'\\Core\\DataLayer')){
 				$data->init(true);
-				foreach($args as $key => $value) if($data->hasProperty($key)) $data->$key = stripslashes($value);
+				foreach($args as $key => $value) if($data->hasProperty($key)) $data->$key = !is_null($value) ? stripslashes($value) : null;
 				$data->init(false);
 				$data->state(DataLayer::STATE_LOADED);
 			}
