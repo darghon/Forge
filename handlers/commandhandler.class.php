@@ -16,13 +16,19 @@ class CommandHandler {
         '?' => '_showCommands',
         'exit' => true,
         'quit' => true,
+        'task' => '_runTask',
         'build' => '_build'
     );
 	
 	public function __construct($args) {
 		//check if framework is loaded
 		if(!class_exists('Forge')) self::bootForge();
-
+        if(count($args) > 1){
+            array_shift($args); //drop first element
+            $command = array_shift($args);
+            $this->_runCommand($command, $args);
+            exit;
+        }
 	}
 	
 	public function run(){
@@ -86,50 +92,33 @@ class CommandHandler {
         }
     }
 
+    protected function _runTask($arguments){
+        //load task
+        unset($environment);
+        $task = array_shift($arguments);
+        if($task !== null){
+            $path = sprintf('%s/%s.task.php',Config::path("lib"), $task );
+            if(file_exists($path)){
+                include $path;
+            }
+            else{
+                echo "Requested task does not exist.".PHP_EOL;
+            }
+        }
+        print 'DONE'.PHP_EOL;
+        print PHP_EOL;
+    }
+
     protected function _showCommands(){
         print('Available commands:'.PHP_EOL);
         print(PHP_EOL);
         print('  ? (show this list)'.PHP_EOL);
         print('  build <type> <arguments> (Run a specific builder, type build ? for a list of available builders)'.PHP_EOL);
+        print('  task <scriptname> <arguments> (Run a specific task, tasks are defined in the shared/lib folder and have a ".task.php" extention)'.PHP_EOL);
         print('  exit (quit the prompt)'.PHP_EOL);
         print('  quit (same as exit)'.PHP_EOL);
         print(PHP_EOL);
     }
-
-//	private function showHelp(){
-//		print('********************'.PHP_EOL);
-//		print('*       HELP       *'.PHP_EOL);
-//		print('********************'.PHP_EOL);
-//		print(PHP_EOL);
-//		print('Available Commands: '.PHP_EOL);
-//		print('-------------------'.PHP_EOL);
-//		print(PHP_EOL);
-//		print('build:project'.PHP_EOL);
-//		print('  # This command creates the basic framework structure.'.PHP_EOL.
-//			  '  # Execute this command first when starting a new project'.PHP_EOL);
-//		print(PHP_EOL);
-//		print('build:application $app_name'.PHP_EOL);
-//		print('  # This command creates a new application.'.PHP_EOL.
-//			  '  # app_name is mandatory.'.PHP_EOL);
-//		print(PHP_EOL);
-//		$this->showMore();
-//		print(PHP_EOL);
-//		print('build:module $app_name $module_name [optional:$action_name]'.PHP_EOL);
-//		print('  # This command creates a new module in the selected application.'.PHP_EOL.
-//			  '  # $app_name must be an existing application, or run build:application first'.PHP_EOL.
-//			  '  # $module_name is mandatory, if it already exists, this will fail'.PHP_EOL.
-//			  '  # all parameters following the module name will be generated as new actions.'.PHP_EOL);
-//		print(PHP_EOL);
-//	}
-	
-	/**
-	 * Show -press any key to continue- and wait for user enter
-	 */
-	private function showMore(){
-		print(" - press any key to continue - ");
-		$handle = fopen ("php://stdin","r");
-		$line = fgets($handle);
-	}
 	
 	public function __destroy() {
 		foreach ($this as $key => $var)

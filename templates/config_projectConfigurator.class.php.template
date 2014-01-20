@@ -7,7 +7,7 @@ if(!class_exists('ForgeConfigurator')) require($forgeRoot . "/core/forgeConfigur
  * Project configurator is the global boot class of the framework.
  * It initiates all the needed includes and deploys forge in the requested environment 
  */
-class ProjectConfigurator extends ForgeConfigurator{
+class ProjectConfigurator extends \Core\ForgeConfigurator{
 	
 	/**
 	 * Initiate the project in the specified envirement.
