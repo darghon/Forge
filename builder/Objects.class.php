@@ -1,5 +1,5 @@
 <?php
-namespace Core\Builder;
+namespace Forge\Builder;
 
 /**
  * Generator that builds the folder structure of a new application.
@@ -10,7 +10,7 @@ namespace Core\Builder;
  *
  * @author Darghon
  */
-class Objects extends \Core\ObjectGenerator {
+class Objects extends \Forge\ObjectGenerator {
 
 	/**
 	 * Public generate action. This method performs all actions required to build the wanted files
@@ -23,9 +23,9 @@ class Objects extends \Core\ObjectGenerator {
 			echo "Building ".$table_name; flush();
 
 			list($fields, $links, $translation, $extends, $implements) = $this->processTable($table_name, $table);
-            \Core\Generator::getInstance()->build('businesslayer', array($table_name, $fields, $links, $translation, $extends['Business'], $implements['Business']));
-            \Core\Generator::getInstance()->build('datalayer',array($table_name,$fields,$translation, $extends['Data'], $implements['Data']));
-            \Core\Generator::getInstance()->build('finder',array($table_name,$fields,$translation, $extends['Finder'], $implements['Finder']));
+            \Forge\Generator::getInstance()->build('businesslayer', array($table_name, $fields, $links, $translation, $extends['Business'], $implements['Business']));
+            \Forge\Generator::getInstance()->build('datalayer',array($table_name,$fields,$translation, $extends['Data'], $implements['Data']));
+            \Forge\Generator::getInstance()->build('finder',array($table_name,$fields,$translation, $extends['Finder'], $implements['Finder']));
 
 			echo " DONE!".PHP_EOL; flush();
 		}

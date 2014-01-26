@@ -1,8 +1,8 @@
 <?php
-namespace Core;
+namespace Forge;
 /**
  * Class Generator
- * @package Core
+ * @package Forge
  */
 class Generator extends Singleton {
 	
@@ -74,7 +74,7 @@ class Generator extends Singleton {
         $path = opendir($builderPath);
         while (false !== ($filename = readdir($path))){
             if(substr($filename,0,1) != '.'){
-                $this->registerBuilder(strtolower(substr($filename,0,-10)),'\\Core\\Builder\\'.substr($filename, 0, -10), true);
+                $this->registerBuilder(strtolower(substr($filename,0,-10)),'\\Forge\\Builder\\'.substr($filename, 0, -10), true);
             }
         }
         $this->_init = false;

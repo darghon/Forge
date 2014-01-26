@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 //This class will receive a object, and will transform it into a sql statement to insert or delete
 class Persister
 {

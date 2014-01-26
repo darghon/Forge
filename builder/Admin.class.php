@@ -1,7 +1,7 @@
 <?php
-namespace Core\Builder;
+namespace Forge\Builder;
 
-class Admin extends \Core\baseGenerator {
+class Admin extends \Forge\baseGenerator {
 
   private $name = null;
   private $fields = null;
@@ -10,7 +10,7 @@ class Admin extends \Core\baseGenerator {
   public function __construct($name = null,$fields = null) {
     $this->name = $name;
     $this->fields = $fields;
-    $this->location = \Core\Config::path("shared")."/objects/admin";
+    $this->location = \Forge\Config::path("shared")."/objects/admin";
   }
 
   public function setName($name) {
@@ -33,7 +33,7 @@ class Admin extends \Core\baseGenerator {
   //admin module is not generated with a base and normal
   //it's a fully made module, and could be copied to applications if needed
     if(file_exists($this->location.'/'.$this->name)) {
-      \Core\Tools::deleteFolder($this->location.'/'.$this->name);
+      \Forge\Tools::deleteFolder($this->location.'/'.$this->name);
     }
     //folder does not exists, so ok to proceed
     //create module folder

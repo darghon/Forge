@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * Session Database Handler is a wrapper that handles an alternative method of storing session data.

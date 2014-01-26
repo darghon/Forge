@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * Tools are the internal framework toolset.

@@ -1,7 +1,7 @@
 <?php
-namespace Core\Builder;
+namespace Forge\Builder;
 
-class BusinessLayerTest extends \Core\baseGenerator {
+class BusinessLayerTest extends \Forge\baseGenerator {
 
 	protected $name = null;
 	protected $fields = null;
@@ -13,7 +13,7 @@ class BusinessLayerTest extends \Core\baseGenerator {
 
     public function __construct($args = array()) {
 		list($this->name, $this->fields, $this->translate, $this->extends, $this->implements) = $args + array(null, array(), array(), null, null);
-		$this->location = \Core\Config::path('tests') . '/unit/Objects/Business/Base/';
+		$this->location = \Forge\Config::path('tests') . '/unit/Objects/Business/Base/';
 		if (is_array($this->translate) && !empty($this->translate)) $this->multi_lang = true;
         $this->extends = 'PHPUnit_Framework_TestCase';
 	}
@@ -74,30 +74,30 @@ class BusinessLayerTest extends \Core\baseGenerator {
         fwrite($file,"class base".$this->name."Test extends ".$this->extends."{" . PHP_EOL);
         fwrite($file,"" . PHP_EOL);
         fwrite($file,"\t/** @var ".$this->name." */" . PHP_EOL);
-        fwrite($file,"\tprotected \$_".\Core\Tools::strtocamelcase($this->name)." = null;" . PHP_EOL);
+        fwrite($file,"\tprotected \$_".\Forge\Tools::strtocamelcase($this->name)." = null;" . PHP_EOL);
         fwrite($file,"" . PHP_EOL);
         fwrite($file,"\tpublic function setUp(){".PHP_EOL);
-        fwrite($file,"\t\t\$this->_".\Core\Tools::strtocamelcase($this->name)." = new ".$this->name."();".PHP_EOL);
+        fwrite($file,"\t\t\$this->_".\Forge\Tools::strtocamelcase($this->name)." = new ".$this->name."();".PHP_EOL);
         fwrite($file,"\t}".PHP_EOL);
         fwrite($file,"" . PHP_EOL);
         fwrite($file,"\t/** Testing happy flow of getters & setters */" . PHP_EOL);
         fwrite($file,"" . PHP_EOL);
         foreach($this->fields as $field) {
-            $functionName = \Core\Tools::strtocamelcase($field["name"], true);
+            $functionName = \Forge\Tools::strtocamelcase($field["name"], true);
             $value = $this->getValidValue($field);
             fwrite($file,"\t/**".PHP_EOL);
             fwrite($file,"\t * Testing ".$functionName.PHP_EOL);
             fwrite($file,"\t */".PHP_EOL);
             fwrite($file,"\tpublic function test".$this->name."_ValidSetAndGet".$functionName."(){".PHP_EOL);
-            fwrite($file,"\t\t\$this->_".\Core\Tools::strtocamelcase($this->name)."->set".$functionName."(".$value.");".PHP_EOL);
-            fwrite($file,"\t\t\$this->assertEquals(".$value.",\$this->_".\Core\Tools::strtocamelcase($this->name)."->get".$functionName."());".PHP_EOL);
+            fwrite($file,"\t\t\$this->_".\Forge\Tools::strtocamelcase($this->name)."->set".$functionName."(".$value.");".PHP_EOL);
+            fwrite($file,"\t\t\$this->assertEquals(".$value.",\$this->_".\Forge\Tools::strtocamelcase($this->name)."->get".$functionName."());".PHP_EOL);
             fwrite($file,"\t}".PHP_EOL);
             fwrite($file,"" . PHP_EOL);
         }
         fwrite($file,"\t/** Testing unhappy flow of getters & setters */" . PHP_EOL);
         fwrite($file,"" . PHP_EOL);
         foreach($this->fields as $field) {
-            $functionName = \Core\Tools::strtocamelcase($field["name"], true);
+            $functionName = \Forge\Tools::strtocamelcase($field["name"], true);
             $value = $this->getInvalidValue($field);
             if($field["null"] == true && $field["length"] <= 0) continue;
             fwrite($file,"\t/**".PHP_EOL);
@@ -105,8 +105,8 @@ class BusinessLayerTest extends \Core\baseGenerator {
             fwrite($file,"\t * @expectedException \\InvalidArgumentException".PHP_EOL);
             fwrite($file,"\t */".PHP_EOL);
             fwrite($file,"\tpublic function test".$this->name."_InvalidSetAndGet".$functionName."(){".PHP_EOL);
-            fwrite($file,"\t\t\$this->_".\Core\Tools::strtocamelcase($this->name)."->set".$functionName."(".$value.");".PHP_EOL);
-            fwrite($file,"\t\t\$this->assertEquals(".$value.",\$this->_".\Core\Tools::strtocamelcase($this->name)."->get".$functionName."());".PHP_EOL);
+            fwrite($file,"\t\t\$this->_".\Forge\Tools::strtocamelcase($this->name)."->set".$functionName."(".$value.");".PHP_EOL);
+            fwrite($file,"\t\t\$this->assertEquals(".$value.",\$this->_".\Forge\Tools::strtocamelcase($this->name)."->get".$functionName."());".PHP_EOL);
             fwrite($file,"\t}".PHP_EOL);
             fwrite($file,"" . PHP_EOL);
         }
@@ -137,25 +137,25 @@ class BusinessLayerTest extends \Core\baseGenerator {
         $value = null;
         //validate type
         switch($fieldDefinition['type']){
-            case \Core\ObjectGenerator::FIELD_TYPE_STRING:
+            case \Forge\ObjectGenerator::FIELD_TYPE_STRING:
                 $value = '"A"';
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_INTEGER:
+            case \Forge\ObjectGenerator::FIELD_TYPE_INTEGER:
                 $value = '1';
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_FLOAT:
+            case \Forge\ObjectGenerator::FIELD_TYPE_FLOAT:
                 $value = '1.1';
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_BOOLEAN:
+            case \Forge\ObjectGenerator::FIELD_TYPE_BOOLEAN:
                 $value = (mt_rand(0,1) ? 'false' : 'true');
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_DATETIME:
+            case \Forge\ObjectGenerator::FIELD_TYPE_DATETIME:
                 $value = date('"Y-m-d H:i:s"');
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_DATE:
+            case \Forge\ObjectGenerator::FIELD_TYPE_DATE:
                 $value = date('"Y-m-d"');
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_LIST:
+            case \Forge\ObjectGenerator::FIELD_TYPE_LIST:
                 $value = "array('A','b','c' => 'd')";
                 break;
         }
@@ -166,25 +166,25 @@ class BusinessLayerTest extends \Core\baseGenerator {
         $value = null;
         //validate type
         switch($fieldDefinition['type']){
-            case \Core\ObjectGenerator::FIELD_TYPE_STRING:
+            case \Forge\ObjectGenerator::FIELD_TYPE_STRING:
                 $value = $fieldDefinition["length"] > 0 ? '"'.str_repeat('A',$fieldDefinition["length"]+1).'"' : 'null';
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_INTEGER:
+            case \Forge\ObjectGenerator::FIELD_TYPE_INTEGER:
                 $value = '"ABC"';
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_FLOAT:
+            case \Forge\ObjectGenerator::FIELD_TYPE_FLOAT:
                 $value = '"ABC"';
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_BOOLEAN:
+            case \Forge\ObjectGenerator::FIELD_TYPE_BOOLEAN:
                 $value = '"ABC"';
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_DATETIME:
+            case \Forge\ObjectGenerator::FIELD_TYPE_DATETIME:
                 $value = '"INVALID DATE"';
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_DATE:
+            case \Forge\ObjectGenerator::FIELD_TYPE_DATE:
                 $value = '"INVALID DATE"';
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_LIST:
+            case \Forge\ObjectGenerator::FIELD_TYPE_LIST:
                 $value = '"NOT A LIST"';
                 break;
         }

@@ -1,7 +1,7 @@
 <?php
-namespace Core\Builder;
+namespace Forge\Builder;
 
-class Finder extends \Core\baseGenerator {
+class Finder extends \Forge\baseGenerator {
 
 	protected $name = null;
 	protected $fields = null;
@@ -13,15 +13,15 @@ class Finder extends \Core\baseGenerator {
 
 	public function __construct($args = array()) {
 		list($this->name, $this->fields, $this->translate, $this->extends, $this->implements) = $args + array(null, array(), array(), null, null);
-		$this->location = \Core\Config::path('objects') . '/finders/';
+		$this->location = \Forge\Config::path('objects') . '/finders/';
 		if (is_array($this->translate) && !empty($this->translate))
 			$this->multi_lang = true;
-		if($this->extends == null || $this->extends == '~') $this->extends = '\Core\Finder';
+		if($this->extends == null || $this->extends == '~') $this->extends = '\Forge\Finder';
 		else{
 			if(!class_exists($this->extends)) trigger_error('Trying to extend a class in '.$this->name.' that does not exist('.$this->extends.').');
 			else{
 				$test = $this->extends;
-				if(!$test::is_a('Core\\Finder')) trigger_error('Trying to extend a class in '.$this->name.' that does not extend Finder('.$this->extends.').');
+				if(!$test::is_a('Forge\\Finder')) trigger_error('Trying to extend a class in '.$this->name.' that does not extend Finder('.$this->extends.').');
 				unset($test);
 			}
 		}
@@ -85,7 +85,7 @@ class Finder extends \Core\baseGenerator {
 
 		if (is_array($this->translate) && !empty($this->translate)) {
 			//register the translation handlers
-            \Core\Generator::getInstance()->build('finder',array($this->name.'_i18n',$this->translate, array()));
+            \Forge\Generator::getInstance()->build('finder',array($this->name.'_i18n',$this->translate, array()));
 		}
 	}
 

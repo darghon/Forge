@@ -1,7 +1,7 @@
 <?php
-namespace Core\Builder;
+namespace Forge\Builder;
 
-class DataLayer extends \Core\baseGenerator {
+class DataLayer extends \Forge\baseGenerator {
 
 	protected $name = null;
 	protected $fields = null;
@@ -13,15 +13,15 @@ class DataLayer extends \Core\baseGenerator {
 
     public function __construct($args = array()) {
 		list($this->name, $this->fields, $this->translate, $this->extends, $this->implements) = $args + array(null, array(), array(), null, null);
-		$this->location = \Core\Config::path('objects') . '/data/';
+		$this->location = \Forge\Config::path('objects') . '/data/';
 		if (is_array($this->translate) && !empty($this->translate))
 			$this->multi_lang = true;
-		if($this->extends == null || $this->extends == '~') $this->extends = '\Core\DataLayer';
+		if($this->extends == null || $this->extends == '~') $this->extends = '\Forge\DataLayer';
 		else{
 			if(!class_exists($this->extends)) trigger_error('Trying to extend a class in '.$this->name.' that does not exist('.$this->extends.').');
 			else{
 				$test = $this->extends;
-				if(!$test::is_a('Core\\DataLayer')) trigger_error('Trying to extend a class in '.$this->name.' that does not extend DataLayer('.$this->extends.').');
+				if(!$test::is_a('Forge\\DataLayer')) trigger_error('Trying to extend a class in '.$this->name.' that does not extend DataLayer('.$this->extends.').');
 				unset($test);
 			}
 		}
@@ -90,7 +90,7 @@ class DataLayer extends \Core\baseGenerator {
 
 		if (is_array($this->translate) && !empty($this->translate)) {
 			//register the translation handlers
-            \Core\Generator::getInstance()->build('datalayer',array($this->name.'_i18n',$this->translate, array()));
+            \Forge\Generator::getInstance()->build('datalayer',array($this->name.'_i18n',$this->translate, array()));
 		}
 
     }
@@ -117,7 +117,7 @@ class DataLayer extends \Core\baseGenerator {
             //Validate length
             if($field["length"] > 0) {
                 fwrite($file,"\t\t\t\t'length' => array('min' => 0, 'max' => ");
-                if($field["type"] == \Core\ObjectGenerator::FIELD_TYPE_FLOAT) {
+                if($field["type"] == \Forge\ObjectGenerator::FIELD_TYPE_FLOAT) {
                     fwrite($file,(array_sum(explode(".",$field["length"]))+1));
                 }
                 else {

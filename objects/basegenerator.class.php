@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * A baseGenerator class contains the most important global methods that are needed to convert the specified 

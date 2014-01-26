@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * XMLDocument is an xml parser that creates an element tree of a passed xml document
@@ -108,7 +108,7 @@ class XMLDocument {
 
     /**
      * @param $name
-     * @return \Core\XMLNode[]
+     * @return \Forge\XMLNode[]
      */
     public function & getElementsByTagName($name) {
 		return $this->root->getElementsByTagName($name);

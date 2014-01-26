@@ -1,7 +1,7 @@
 <?php
-namespace Core\Builder;
+namespace Forge\Builder;
 
-class DatabaseTable extends \Core\baseGenerator{
+class DatabaseTable extends \Forge\baseGenerator{
 
 	protected $name = null;
 	protected $fields = null;
@@ -17,7 +17,7 @@ class DatabaseTable extends \Core\baseGenerator{
 		if (is_array($this->translate) && !empty($this->translate))
 			$this->multi_lang = true;
 		
-		if(\Core\Forge::Connection() == null){
+		if(\Forge\Forge::Connection() == null){
 			trigger_error('No database connection has been specified.');
 		} 
 	}
@@ -53,7 +53,7 @@ class DatabaseTable extends \Core\baseGenerator{
 
 	public function generate() {
 		
-		$db = &\Core\Database::getDB();
+		$db = &\Forge\Database::getDB();
 		
 		if($this->overwrite === true){
 			$db->setQuery(sprintf('DROP TABLE IF EXISTS %s;',$db->getPrefix().$this->name));
@@ -80,7 +80,7 @@ class DatabaseTable extends \Core\baseGenerator{
 		
 		if (is_array($this->translate) && !empty($this->translate)) {
 			//register the translation handlers
-            \Core\Generator::getInstance()->build('databasetable',array($this->name.'_i18n',$this->translate, array(), array(),$this->overwrite));
+            \Forge\Generator::getInstance()->build('databasetable',array($this->name.'_i18n',$this->translate, array(), array(),$this->overwrite));
 		}
 	}
 	
@@ -113,16 +113,15 @@ class DatabaseTable extends \Core\baseGenerator{
 			case 'boolean':
 				$sql .= " TINYINT(1)";
 				break;
+            //Changing all date representation to the UTC standard (unix_timestamp stored as int)
 			case 'date':
-				$sql .= " DATE";
-				break;
 			case 'time':
-				$sql .= " TIME";
-				break;
 			case 'datetime':
-				$sql .= " DATETIME";
+				$sql .= " INT(11)";
 				break;
 			case 'double':
+			case 'float':
+			case 'decimal':
 				$nums = explode(".",$field["length"]);
 				$sql .= " DECIMAL(".(array_sum($nums) + 1).",".$nums[count($nums)-1].")";
 				break;

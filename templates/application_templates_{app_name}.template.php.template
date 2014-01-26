@@ -1,13 +1,13 @@
 <!DOCTYPE HTML>
 <html>
     <head>
-        <?php echo \Core\Application::META_DATA; ?>
-        <?php echo \Core\Application::TITLE; ?>
-        <?php echo \Core\Application::BASE_URL; ?>
-        <?php echo \Core\Application::CSS; ?>
-        <?php echo \Core\Application::JS; ?>
+        <?php echo \Forge\Application::META_DATA; ?>
+        <?php echo \Forge\Application::TITLE; ?>
+        <?php echo \Forge\Application::BASE_URL; ?>
+        <?php echo \Forge\Application::CSS; ?>
+        <?php echo \Forge\Application::JS; ?>
     </head>
     <body>
-        <?php echo \Core\Application::loadMain(); ?>
+        <?php echo \Forge\Application::loadMain(); ?>
     </body>
 </html>

@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * Forge class will contain a single entry for every object that is created while the page is loading.
@@ -375,4 +375,4 @@ class Forge{
 	}
 	
 }
-spl_autoload_register("Core\\Forge::loadOnDemand");
+spl_autoload_register("Forge\\Forge::loadOnDemand");

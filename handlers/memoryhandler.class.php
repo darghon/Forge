@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * MemoryHandler is a wrapper that can handle 3 different modes of object caching.
@@ -159,7 +159,7 @@ class MemoryHandler{
 	 * @return Object $class
 	 */
 	private function & retrieve_registry($class, $id = null){
-		if($class::is_a('Core\Finder')){
+		if($class::is_a('Forge\Finder')){
 			if(!isset($this->findercollection[$class]) || !array_key_exists($class,$this->findercollection)){
 				$finder = new $class;
 				$this->findercollection[$class] =& $finder;

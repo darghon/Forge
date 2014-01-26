@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 class Timer{
   private $start_time = null;

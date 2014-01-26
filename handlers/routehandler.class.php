@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 class RouteHandler implements IStage {
 

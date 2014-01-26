@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 interface ITranslator{
 	

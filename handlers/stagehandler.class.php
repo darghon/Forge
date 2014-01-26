@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 /**
  * Description of stagehandler
  *
@@ -12,11 +12,11 @@ class StageHandler {
 	protected $stages = array();
 	
 	protected $defaults = array(
-		'request' => '\Core\RequestHandler',
-		'routing' => '\Core\RouteHandler',
-		'configuration' => '\Core\ConfigurationHandler',
-		'security' => '\Core\SecurityHandler',
-		'response' => '\Core\ResponseHandler'
+		'request' => '\Forge\RequestHandler',
+		'routing' => '\Forge\RouteHandler',
+		'configuration' => '\Forge\ConfigurationHandler',
+		'security' => '\Forge\SecurityHandler',
+		'response' => '\Forge\ResponseHandler'
 	);
 	
 	public function __construct($config) {

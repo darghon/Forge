@@ -1,7 +1,7 @@
 <?php
-namespace Core\Builder;
+namespace Forge\Builder;
 
-class DataLayerTest extends \Core\baseGenerator {
+class DataLayerTest extends \Forge\baseGenerator {
 
 	protected $name = null;
 	protected $fields = null;
@@ -13,7 +13,7 @@ class DataLayerTest extends \Core\baseGenerator {
 
     public function __construct($args = array()) {
 		list($this->name, $this->fields, $this->translate, $this->extends, $this->implements) = $args + array(null, array(), array(), null, null);
-		$this->location = \Core\Config::path('tests') . '/unit/Objects/Data/Base/';
+		$this->location = \Forge\Config::path('tests') . '/unit/Objects/Data/Base/';
 		if (is_array($this->translate) && !empty($this->translate)) $this->multi_lang = true;
 		$this->extends = '\DataLayerBaseTest';
 
@@ -157,7 +157,7 @@ class DataLayerTest extends \Core\baseGenerator {
         }
         //validate type
         switch($fieldDefinition['type']){
-            case \Core\ObjectGenerator::FIELD_TYPE_STRING:
+            case \Forge\ObjectGenerator::FIELD_TYPE_STRING:
                 if($fieldDefinition['length'] > 0){
                     $invalidList[] = array(
                         'type' => 'String',
@@ -166,7 +166,7 @@ class DataLayerTest extends \Core\baseGenerator {
                     );
                 }
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_INTEGER:
+            case \Forge\ObjectGenerator::FIELD_TYPE_INTEGER:
                 $invalidList[] = array('type' => 'Float', 'value' => "1.10", 'comment' => 'No floats for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'String', 'value' => "'A'", 'comment' => 'No non-numerical strings for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'Boolean', 'value' => "true", 'comment' => 'No boolean for '.$fieldDefinition["name"]);
@@ -180,7 +180,7 @@ class DataLayerTest extends \Core\baseGenerator {
                     );
                 }
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_FLOAT:
+            case \Forge\ObjectGenerator::FIELD_TYPE_FLOAT:
                 $invalidList[] = array('type' => 'String', 'value' => "'A'", 'comment' => 'No non-numerical strings for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'Boolean', 'value' => "true", 'comment' => 'No boolean for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'Boolean', 'value' => "false", 'comment' => 'No boolean for '.$fieldDefinition["name"]);
@@ -194,13 +194,13 @@ class DataLayerTest extends \Core\baseGenerator {
                     );
                 }
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_BOOLEAN:
+            case \Forge\ObjectGenerator::FIELD_TYPE_BOOLEAN:
                 $invalidList[] = array('type' => 'Integer', 'value' => "2", 'comment' => 'No integers other than 0 or 1 for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'Float', 'value' => "1.10", 'comment' => 'No floats for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'String', 'value' => "'A'", 'comment' => 'No non-numerical strings for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'String', 'value' => "''", 'comment' => 'No blank string for '.$fieldDefinition["name"]);
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_DATETIME:
+            case \Forge\ObjectGenerator::FIELD_TYPE_DATETIME:
                 $invalidList[] = array('type' => 'Float', 'value' => "1.10", 'comment' => 'No floats for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'String', 'value' => "'A'", 'comment' => 'No non-numerical strings for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'Boolean', 'value' => "true", 'comment' => 'No boolean for '.$fieldDefinition["name"]);
@@ -210,7 +210,7 @@ class DataLayerTest extends \Core\baseGenerator {
                 $invalidList[] = array('type' => 'String', 'value' => "'2013-02-15 50:05:05'", 'comment' => 'No invalid time for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'String', 'value' => "'2013-01-01'", 'comment' => 'No date only for '.$fieldDefinition["name"]);
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_DATE:
+            case \Forge\ObjectGenerator::FIELD_TYPE_DATE:
                 $invalidList[] = array('type' => 'Float', 'value' => "1.10", 'comment' => 'No floats for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'String', 'value' => "'A'", 'comment' => 'No non-numerical strings for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'Boolean', 'value' => "true", 'comment' => 'No boolean for '.$fieldDefinition["name"]);
@@ -218,7 +218,7 @@ class DataLayerTest extends \Core\baseGenerator {
                 $invalidList[] = array('type' => 'String', 'value' => "''", 'comment' => 'No blank string for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'String', 'value' => "'2013-02-30'", 'comment' => 'No invalid date for '.$fieldDefinition["name"]);
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_LIST:
+            case \Forge\ObjectGenerator::FIELD_TYPE_LIST:
                 $invalidList[] = array('type' => 'Float', 'value' => "1.10", 'comment' => 'No floats for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'String', 'value' => "'A'", 'comment' => 'No non-numerical strings for '.$fieldDefinition["name"]);
                 $invalidList[] = array('type' => 'Boolean', 'value' => "true", 'comment' => 'No boolean for '.$fieldDefinition["name"]);
@@ -234,34 +234,34 @@ class DataLayerTest extends \Core\baseGenerator {
         $validList = array();
 
         switch($fieldDefinition['type']){
-            case \Core\ObjectGenerator::FIELD_TYPE_STRING:
+            case \Forge\ObjectGenerator::FIELD_TYPE_STRING:
                 $validList[] = array('type' => 'String', 'value' => "'A'", 'comment' => 'Strings allowed for '.$fieldDefinition["name"]);
                 $validList[] = array('type' => 'Float', 'value' => "1.10", 'comment' => 'Floats allowed for '.$fieldDefinition["name"]);
                 $validList[] = array('type' => 'Boolean', 'value' => "true", 'comment' => 'Boolean allowed for '.$fieldDefinition["name"]);
                 $validList[] = array('type' => 'String', 'value' => "''", 'comment' => 'Blank string allowed for '.$fieldDefinition["name"]);
                 $validList[] = array('type' => 'Integer', 'value' => "1", 'comment' => 'Integer allowed for '.$fieldDefinition["name"]);
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_INTEGER:
+            case \Forge\ObjectGenerator::FIELD_TYPE_INTEGER:
                 $validList[] = array('type' => 'Integer', 'value' => "1", 'comment' => 'Integer allowed for '.$fieldDefinition["name"]);
                 $validList[] = array('type' => 'Float', 'value' => "1.00", 'comment' => 'Floats allowed for '.$fieldDefinition["name"].' if castable to integer');
                 $validList[] = array('type' => 'String', 'value' => "'1'", 'comment' => 'Numerical strings allowed for '.$fieldDefinition["name"]);
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_FLOAT:
+            case \Forge\ObjectGenerator::FIELD_TYPE_FLOAT:
                 $validList[] = array('type' => 'Float', 'value' => "1.00", 'comment' => 'Floats allowed for '.$fieldDefinition["name"].'');
                 $validList[] = array('type' => 'Integer', 'value' => "1", 'comment' => 'Integer allowed for '.$fieldDefinition["name"]);
                 $validList[] = array('type' => 'String', 'value' => "'1.10'", 'comment' => 'Numerical strings allowed for '.$fieldDefinition["name"]);
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_BOOLEAN:
+            case \Forge\ObjectGenerator::FIELD_TYPE_BOOLEAN:
                 $validList[] = array('type' => 'Boolean', 'value' => "true", 'comment' => 'Boolean allowed for '.$fieldDefinition["name"]);
                 $validList[] = array('type' => 'Integer', 'value' => "1", 'comment' => 'Integer (0 or 1) allowed for '.$fieldDefinition["name"]);
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_DATETIME:
+            case \Forge\ObjectGenerator::FIELD_TYPE_DATETIME:
                 $validList[] = array('type' => 'String', 'value' => "'2013-01-01 05:05:05'", 'comment' => 'Datetime allowed for '.$fieldDefinition["name"]);
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_DATE:
+            case \Forge\ObjectGenerator::FIELD_TYPE_DATE:
                 $validList[] = array('type' => 'String', 'value' => "'2013-01-01'", 'comment' => 'Date only allowed for '.$fieldDefinition["name"]);
                 break;
-            case \Core\ObjectGenerator::FIELD_TYPE_LIST:
+            case \Forge\ObjectGenerator::FIELD_TYPE_LIST:
                 $invalidList[] = array('type' => 'String', 'value' => "serialize(array())", 'comment' => 'Serialized arrays allowed for '.$fieldDefinition["name"]);
                 break;
         }

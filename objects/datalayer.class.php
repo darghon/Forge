@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 abstract class DataLayer {
     /**
      * @var bool $data_initialiased
@@ -77,8 +77,6 @@ abstract class DataLayer {
                     $this->_validateFloatInput($key, $val);
                     break;
                 case ObjectGenerator::FIELD_TYPE_DATE:
-                    $this->_validateDateInput($key, $val);
-                    break;
                 case ObjectGenerator::FIELD_TYPE_DATETIME:
                     $this->_validateDateTimeInput($key, $val);
                     break;
@@ -87,7 +85,14 @@ abstract class DataLayer {
         return true;
 	}
 
+    /**
+     * Magic Get function which transforms any database datetimes to correct objects
+     * @param string $attributename
+     * @return mixed
+     */
     public function __get($key){
+        $rules = $this->_retrieveRulesFor($key);
+        if(in_array($rules['type'],array(ObjectGenerator::FIELD_TYPE_DATE,ObjectGenerator::FIELD_TYPE_DATETIME))) return DateTime::setTimestamp($this->$key);
 		return $this->$key;
 	}
 
@@ -260,36 +265,12 @@ abstract class DataLayer {
      * @throws \InvalidArgumentException
      */
     protected function _validateDateTimeInput($key, $val){
-        $d = \DateTime::createFromFormat('Y-m-d H:i:s', $val);
-        if($d !== false && preg_match( "/[0-9]{4}-[0-9]{2}-[0-9]{2}(\s[0-9]{2}(:[0-9]{2}(:[0-9]{2})?)?)?/",$val) !== false){
-            if($d->format('Y-m-d H:i:s') == $val){
-                if(!$this->init) $this->fields[$key] = true;
-                $this->$key = $d->format('Y-m-d H:i:s');
-            }
-            else throw new \InvalidArgumentException("Passed date does not exist. Received $val");
+        if($val instanceOf \DateTime){
+            if(!$this->init) $this->fields[$key] = true;
+            $this->$key = $val;
         }
         else{
-            throw new \InvalidArgumentException('Expected valid datetime (Y-m-d H:i:s) for '.get_class($this).'->'.$key.'. Received "'.$val.'"');
-        }
-    }
-
-    /**
-     * Validate the input type of the specified field
-     * @param string $key
-     * @param mixed $val
-     * @throws \InvalidArgumentException
-     */
-    protected function _validateDateInput($key, $val){
-        $d = \DateTime::createFromFormat('Y-m-d', $val);
-        if($d !== false && preg_match( "/[0-9]{4}-[0-9]{2}-[0-9]{2}/",$val) !== false){
-            if($d->format('Y-m-d') == $val){
-                if(!$this->init) $this->fields[$key] = true;
-                $this->$key = $d->format('Y-m-d');
-            }
-            else throw new \InvalidArgumentException("Passed date does not exist. Received $val");
-        }
-        else{
-            throw new \InvalidArgumentException('Expected valid date (Y-m-d) for '.get_class($this).'->'.$key.'. Received "'.$val.'"');
+            throw new \InvalidArgumentException('Expected valid datetime object for '.get_class($this).'->'.$key.'. Received "'.$val.'"');
         }
     }
 
@@ -300,10 +281,11 @@ abstract class DataLayer {
      */
     protected function _baseType($type){
         switch($type){
-            case ObjectGenerator::FIELD_TYPE_DATE:
-            case ObjectGenerator::FIELD_TYPE_DATETIME:
             case ObjectGenerator::FIELD_TYPE_LIST:
                 return 'string';
+            case ObjectGenerator::FIELD_TYPE_DATE:
+            case ObjectGenerator::FIELD_TYPE_DATETIME:
+                return 'int';
             default:
                 return $type;
         }

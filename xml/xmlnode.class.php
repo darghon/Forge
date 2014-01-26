@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 /**
  * XMLNode is a representation of an xml element with possible attributes and/or children
  *
@@ -159,7 +159,7 @@ class XMLNode extends XMLTextNode{
 	/**
      * Returns a reference collection of elements with the specified name
 	 * @param String $name
-     * @return \Core\XMLNode|\Core\XMLNode[]
+     * @return \Forge\XMLNode|\Forge\XMLNode[]
      */
 	public function & getElementsByTagName($name){
 		$result = array();

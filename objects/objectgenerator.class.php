@@ -1,11 +1,11 @@
 <?php
-namespace Core;
+namespace Forge;
 
 abstract class ObjectGenerator extends baseGenerator{
 
     const FIELD_TYPE_STRING = 'string';
     const FIELD_TYPE_INTEGER = 'integer';
-    const FIELD_TYPE_FLOAT = 'float';
+    const FIELD_TYPE_FLOAT = 'double';
     const FIELD_TYPE_BOOLEAN = 'boolean';
     const FIELD_TYPE_DATE = 'date';
     const FIELD_TYPE_DATETIME = 'datetime';
@@ -181,6 +181,7 @@ abstract class ObjectGenerator extends baseGenerator{
             case self::FIELD_TYPE_STRING:
             case self::FIELD_TYPE_INTEGER:
             case self::FIELD_TYPE_BOOLEAN:
+            case self::FIELD_TYPE_FLOAT:
             case self::FIELD_TYPE_DATE:
             case self::FIELD_TYPE_DATETIME:
             case self::FIELD_TYPE_LIST:

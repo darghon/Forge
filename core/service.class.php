@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 abstract class Service extends Actions{
 	

@@ -1,5 +1,5 @@
 <?php
-namespace Core\Builder;
+namespace Forge\Builder;
 
 /**
  * Generator that builds the folder structure of a new application.
@@ -10,14 +10,14 @@ namespace Core\Builder;
  *
  * @author Darghon
  */
-class Database extends \Core\ObjectGenerator {
+class Database extends \Forge\ObjectGenerator {
 	
 	protected $environment = null;
 	protected $overwrite = false;
 	
 	public function __construct($args = array()){
 		list($this->environment, $this->overwrite) = $args + array(null,false);
-		if($this->environment !== null) \Core\Forge::setEnvironment ($this->environment);
+		if($this->environment !== null) \Forge\Forge::setEnvironment ($this->environment);
 		if(strtolower($this->overwrite) === 'true'){ $this->overwrite = true; }
 		if(strtolower($this->overwrite) === 'false'){ $this->overwrite = false; }
 	}
@@ -33,11 +33,11 @@ class Database extends \Core\ObjectGenerator {
 			echo "Building ".$table_name; flush();
 			
 			list($fields, $links, $translation) = $this->processTable($table_name, $table);
-			\Core\Generator::getInstance()->build('databasetable', array($table_name, $fields, $links, $translation, $this->overwrite));
+			\Forge\Generator::getInstance()->build('databasetable', array($table_name, $fields, $links, $translation, $this->overwrite));
 			echo " DONE!".PHP_EOL; flush();
 		}
 		echo "Creating indexes "; flush();
-		\Core\Database::getDB()->processQueue('.');
+		\Forge\Database::getDB()->processQueue('.');
 		echo " DONE!".PHP_EOL; flush();
 	}
 }

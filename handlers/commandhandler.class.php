@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 /**
  * Description of commandhandler
  *
@@ -79,7 +79,7 @@ class CommandHandler {
     }
 
     protected function _build($arguments) {
-        $builder = new \Core\Generator();
+        $builder = new \Forge\Generator();
         $type = array_shift($arguments);
         if($type == '?') {
             $list = $builder->getAvailableBuilders();

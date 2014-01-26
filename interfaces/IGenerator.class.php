@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 /**
  * Any class that implements this interface can be registered to the generator as a builder.
  * @author Darghon

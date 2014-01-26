@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * Class that handles all incoming parameters, and offers a easy to use interface for them.

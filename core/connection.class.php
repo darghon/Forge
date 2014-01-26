@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * This class creates a connection to the database, by a loaded configuration file,

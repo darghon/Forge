@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * Public interface that needs to be implemented in custom stage handlers.

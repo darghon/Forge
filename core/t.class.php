@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * Class T is a shorthand for Translate.
@@ -62,4 +62,9 @@ class T {
 		$xml = new XMLDocument(Config::path('i18n') . '/' . self::$language . '/javascript.xml');
 	}
 
+}
+
+/* TODO: Make multilingual support (unicode!!!) */
+function __($string){
+    return $string;
 }

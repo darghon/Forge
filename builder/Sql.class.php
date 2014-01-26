@@ -1,7 +1,7 @@
 <?php
-namespace Core\Builder;
+namespace Forge\Builder;
 
-class Sql extends \Core\baseGenerator {
+class Sql extends \Forge\baseGenerator {
 
 	private $name = null;
 	private $fields = null;
@@ -46,7 +46,7 @@ class Sql extends \Core\baseGenerator {
 	public function generate() {
 		$this->sql = "";
 		$this->sql .= "/* Construction statement for ".$this->name." table. */\n";
-		$this->sql .= "CREATE TABLE ".\Core\Database::getDB()->getPrefix().$this->name."(\n";
+		$this->sql .= "CREATE TABLE ".\Forge\Database::getDB()->getPrefix().$this->name."(\n";
 		foreach($this->fields as $field) {
 			$this->sql .= $this->parseField($field).",\n";
 		}
@@ -54,7 +54,7 @@ class Sql extends \Core\baseGenerator {
 		$this->sql .= "ENGINE = INNODB;\n\n";
 		
 		foreach($this->links as $link){
-			$this->index[] = sprintf('CREATE INDEX %s ON %s (%s);','idx_'.$this->name.'_fk_'.$link['name'],\Core\Database::getDB()->getPrefix().$this->name,$link['local']);
+			$this->index[] = sprintf('CREATE INDEX %s ON %s (%s);','idx_'.$this->name.'_fk_'.$link['name'],\Forge\Database::getDB()->getPrefix().$this->name,$link['local']);
 		}
 	}
 	

@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 /**
  * Any class that implements this interface can be registered as a security user class.
  * This class will be used to authenticate and check credentials of the logged in user.

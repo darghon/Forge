@@ -1,7 +1,7 @@
 <?php
-namespace Core\Builder;
+namespace Forge\Builder;
 
-class BusinessLayer extends \Core\baseGenerator {
+class BusinessLayer extends \Forge\baseGenerator {
 
 	protected $name = null;
 	protected $fields = null;
@@ -14,15 +14,15 @@ class BusinessLayer extends \Core\baseGenerator {
 
 	public function __construct($args = array()) {
 		list($this->name, $this->fields, $this->links, $this->translate, $this->extends, $this->implements) = $args + array(null, array(), array(), array(), null, null);
-		$this->location = \Core\Config::path('objects') . '/business/';
+		$this->location = \Forge\Config::path('objects') . '/business/';
 		if (is_array($this->translate) && !empty($this->translate))
 			$this->multi_lang = true;
-        if($this->extends == null || $this->extends == '~') $this->extends = '\Core\BusinessLayer';
+        if($this->extends == null || $this->extends == '~') $this->extends = '\Forge\BusinessLayer';
         else{
             if(!class_exists($this->extends)) throw new \InvalidArgumentException('Trying to extend a class in '.$this->name.' that does not exist('.$this->extends.').');
             else{
                 $test = $this->extends;
-                if(!$test::is_a('Core\\BusinessLayer')) throw new \InvalidArgumentException('Trying to extend a class in '.$this->name.' that does not extend BusinessLayer('.$this->extends.').');
+                if(!$test::is_a('Forge\\BusinessLayer')) throw new \InvalidArgumentException('Trying to extend a class in '.$this->name.' that does not extend BusinessLayer('.$this->extends.').');
                 unset($test);
             }
         }
@@ -98,7 +98,7 @@ class BusinessLayer extends \Core\baseGenerator {
 
 		if (is_array($this->translate) && !empty($this->translate)) {
 			//register the translation handlers
-            \Core\Generator::getInstance()->build('businesslayer',array($this->name.'_i18n',$this->translate, $this->linkThis(), array()));
+            \Forge\Generator::getInstance()->build('businesslayer',array($this->name.'_i18n',$this->translate, $this->linkThis(), array()));
 		}
 	}
 	
@@ -118,7 +118,7 @@ class BusinessLayer extends \Core\baseGenerator {
 		fwrite($file, "" . PHP_EOL);
 
 		foreach ($this->fields as $field) {
-            $functionName = \Core\Tools::strtocamelcase($field["name"], true);
+            $functionName = \Forge\Tools::strtocamelcase($field["name"], true);
             switch($field['type']){
                 case 'list':
                     fwrite($file, "\t/**" . PHP_EOL);

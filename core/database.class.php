@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * This class interacts between the finders and the Forge
@@ -16,11 +16,11 @@ class Database {
 		return Forge::getFinder($objectname);
 	}
 
-	public static function Persist(\Core\DataLayer $object) {
+	public static function Persist(\Forge\DataLayer $object) {
 		return Forge::getFinder(str_replace('Data\\','Finder\\',get_class($object)))->persist($object);
 	}
 
-	public static function Delete(\Core\DataLayer $object) {
+	public static function Delete(\Forge\DataLayer $object) {
 		return Forge::getFinder(str_replace('Data\\','Finder\\',get_class($object)))->delete($object);
 	}
 

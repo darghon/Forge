@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 class DatabaseHandler {
     protected $query = null;
     protected $prefix = null;

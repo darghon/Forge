@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 class QueryTable{
     private $table = null;

@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * Response Handler builds the the page, (caches it) and returns the page to the requestor.

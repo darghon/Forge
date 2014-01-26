@@ -1,5 +1,5 @@
 <?php
-namespace Core\Builder;
+namespace Forge\Builder;
 
 /**
  * Generator that builds the folder structure of a new application.
@@ -10,7 +10,7 @@ namespace Core\Builder;
  *
  * @author Gerry Van Bael
  */
-class Application extends \Core\baseGenerator {
+class Application extends \Forge\baseGenerator {
 
 	protected $app_name = null;
 	/**
@@ -22,7 +22,7 @@ class Application extends \Core\baseGenerator {
 		if(!isset($args[0]) || $args[0] == ''){
 			throw new \Exception('No application name was passed.');
 		}
-		$this->app_name = \Core\Tools::slugify($args[0]);
+		$this->app_name = \Forge\Tools::slugify($args[0]);
 	}
 
 	/**
@@ -30,7 +30,7 @@ class Application extends \Core\baseGenerator {
 	 * @return boolean $result; 
 	 */
 	public function generate(){
-		if(!file_exists(\Core\Config::path("app")."/".$this->app_name)){
+		if(!file_exists(\Forge\Config::path("app")."/".$this->app_name)){
 			//folder does not exists, so ok to proceed
 			$this->generateFolderStructure();
 			$this->generateDefaultFiles();
@@ -44,25 +44,25 @@ class Application extends \Core\baseGenerator {
 	
 	public function generateFolderStructure(){
 		print('Creating folder structure'); flush();
-		print((mkdir(\Core\Config::path("app").'/'.$this->app_name, 0777) ? '.' : 'x')); flush();
-		print((mkdir(\Core\Config::path("app").'/'.$this->app_name.'/config', 0777) ? '.' : 'x')); flush();
-		print((mkdir(\Core\Config::path("app").'/'.$this->app_name.'/modules', 0777) ? '.' : 'x')); flush();
-		print((mkdir(\Core\Config::path("app").'/'.$this->app_name.'/templates', 0777) ? '.' : 'x')); flush();
+		print((mkdir(\Forge\Config::path("app").'/'.$this->app_name, 0777) ? '.' : 'x')); flush();
+		print((mkdir(\Forge\Config::path("app").'/'.$this->app_name.'/config', 0777) ? '.' : 'x')); flush();
+		print((mkdir(\Forge\Config::path("app").'/'.$this->app_name.'/modules', 0777) ? '.' : 'x')); flush();
+		print((mkdir(\Forge\Config::path("app").'/'.$this->app_name.'/templates', 0777) ? '.' : 'x')); flush();
 		print('DONE'.PHP_EOL); flush();
 	}
 	
 	public function generateDefaultFiles(){
 		print('Creating default files'); flush();
-		$templates = scandir(\Core\Config::path('forge').'/templates');
+		$templates = scandir(\Forge\Config::path('forge').'/templates');
 		foreach($templates as $template){
 			$file = explode('_',$template);
 			if($file[0] == 'application'){
 				array_splice($file,0,1); //drop the "application" part of the filename
 				
 				$new_file = implode('/',$file);
-				$new_file = \Core\Config::path('app').'/'.$this->app_name.'/'.substr($new_file,0,strlen($new_file)-9);
-				$contents = file_get_contents(\Core\Config::path('forge').'/templates/'.$template);
-				chmod(\Core\Config::path('forge').'/templates/'.$template, 0777);
+				$new_file = \Forge\Config::path('app').'/'.$this->app_name.'/'.substr($new_file,0,strlen($new_file)-9);
+				$contents = file_get_contents(\Forge\Config::path('forge').'/templates/'.$template);
+				chmod(\Forge\Config::path('forge').'/templates/'.$template, 0777);
 				file_put_contents($this->replaceTokens($new_file),$this->replaceTokens($contents));
 				print('.'); flush();
 			}

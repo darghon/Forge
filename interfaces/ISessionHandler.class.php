@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 /**
  * Any class that implements this interface can be registered as a session handler
  * @author Darghon

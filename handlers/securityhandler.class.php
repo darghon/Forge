@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * Security Handler checks if the requested action is allowed for the current system actor.

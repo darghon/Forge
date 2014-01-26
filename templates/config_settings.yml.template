@@ -25,8 +25,8 @@ global:
     description: "New webproject"
     author: "Gerry Van Bael"
     
-# make sure you set the correct timezone for date functionality
-timezone: "Europe/Belgrade"
+# Set timezone for all date/times, by default this is UTC, you can then use user settings to convert from this date to the actual timezone
+timezone: "UTC"
 
 # to allow multi lingual support, make sure this is enabled, and that a default and possible languages are set.
 # language support can be defined by country as well, if the country isn't specified, it will try to match with a simular language

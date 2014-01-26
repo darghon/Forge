@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * ObjectFactory is an implementation of the Factory Design Pattern.
@@ -26,10 +26,10 @@ class ObjectFactory {
 				return $ob;
 			}
 		}
-		if (is_a($business,'\\Core\\BusinessLayer')) {
+		if (is_a($business,'\\Forge\\BusinessLayer')) {
 			$dtype = '\\Data\\'.$type;
 			$data = new $dtype();
-			if(is_a($data,'\\Core\\DataLayer')){
+			if(is_a($data,'\\Forge\\DataLayer')){
 				$data->init(true);
 				foreach($args as $key => $value) if($data->hasProperty($key)) $data->$key = !is_null($value) ? stripslashes($value) : null;
 				$data->init(false);

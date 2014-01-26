@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 abstract class Finder {
 
 	/**
@@ -59,7 +59,14 @@ abstract class Finder {
 	private function _delete(DataLayer &$obj) {
         //make sure the data object is passed to the correct database finder
         if (get_class($obj) == 'Data\\' .  $this->_getClassName()) {
-            $this->db->setQuery(sprintf('UPDATE %s SET _deletedAt = NOW() WHERE ID = "%s" AND _recordVersion <= "%s";', $this->getTableName(), $obj->ID, $obj->_recordVersion));
+            $this->db->setQuery(
+                sprintf('UPDATE %s SET _deletedAt = %s WHERE ID = "%s" AND _recordVersion <= "%s";',
+                        $this->getTableName(),
+                        time(),
+                        $obj->ID,
+                        $obj->_recordVersion
+                )
+            );
             $this->db->execute();
         } else {
             return false;

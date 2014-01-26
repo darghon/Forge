@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 class Config {
 	/**
@@ -139,8 +139,8 @@ class Config {
 		if (isset($settings['timezone']) || array_key_exists('timezone', $settings))
 			date_default_timezone_set($settings['timezone']);
 		else {
-			Debug::Notice('Timezone', 'No timezone has been specified in the settings file, default Europe/Belgrade (GMT +1) is used.');
-			date_default_timezone_set('Europe/Belgrade');
+			Debug::Notice('Timezone', 'No timezone has been specified in the settings file, default UTC (GMT 0) is used.');
+			date_default_timezone_set('UTC');
 		}
 		//Adjust Cache
 		if ((isset($settings['cache']) || array_key_exists('cache', $settings)) && (isset($settings['cache']['enable']) || array_key_exists('enable', $settings['cache']))) {
@@ -192,7 +192,7 @@ class Config {
         $namespaces = self::get('Namespaces');
         if(empty($namespaces)){
             //Default Namespaces
-            $namespaces = array('Global' => array('Core' => array('ext/forge/*', 'Builder' => 'ext/forge/builder')) );
+            $namespaces = array('Global' => array('Forge' => array('ext/forge/*', 'Builder' => 'ext/forge/builder')) );
         }
         if(!isset($namespaces['Global'])){
             throw new \Exception('No global namespace definition was found.');

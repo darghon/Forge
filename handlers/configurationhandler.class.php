@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * Configurationhandler is an instance that handles most of the requested action configuration

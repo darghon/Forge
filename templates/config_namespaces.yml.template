@@ -9,7 +9,7 @@ Global:
   -app/shared/objects/business/*
   -app/shared/lib/*
   -app/*
-  Core:
+  Forge:
     -ext/forge/*
     Builder: ext/forge/builder/*
   Finder: app/shared/objects/finders/*

@@ -1,7 +1,7 @@
 <?php
-namespace Core\Builder;
+namespace Forge\Builder;
 
-class Module extends \Core\baseGenerator {
+class Module extends \Forge\baseGenerator {
 
 	protected $app_name = null;
 	protected $mod_name = null;
@@ -12,9 +12,9 @@ class Module extends \Core\baseGenerator {
 			throw new \Exception('Module generator expects at least 2 parameters, '.count($args).' were given. Parameters needed: app_name, mod_name , [action], [action] ,...');
 		}
 		$tmp = array_splice($args,0,1);
-		$this->app_name = \Core\Tools::slugify($tmp[0]);
+		$this->app_name = \Forge\Tools::slugify($tmp[0]);
 		$tmp = array_splice($args,0,1);
-		$this->mod_name = \Core\Tools::slugify($tmp[0]);
+		$this->mod_name = \Forge\Tools::slugify($tmp[0]);
 		$this->actions = $args;
 		$this->actions[] = 'index';
 		$this->actions = array_unique($this->actions); //make sure each action is only registered once
@@ -49,7 +49,7 @@ class Module extends \Core\baseGenerator {
 	 * @return boolean $result; 
 	 */
 	public function generate(){
-		if(!file_exists(\Core\Config::path("app")."/".$this->app_name."/".$this->mod_name)){
+		if(!file_exists(\Forge\Config::path("app")."/".$this->app_name."/".$this->mod_name)){
 			//folder does not exists, so ok to proceed
 			$this->generateFolderStructure();
 			$this->generateDefaultFiles();
@@ -64,23 +64,23 @@ class Module extends \Core\baseGenerator {
 	public function generateFolderStructure(){
 		print('Creating folder structure'); flush();
         $this->_createDirectory(array(
-            \Core\Config::path("app")."/".$this->app_name."/modules/".$this->mod_name."/actions",
-            \Core\Config::path("app")."/".$this->app_name."/modules/".$this->mod_name."/templates",
-            \Core\Config::path("app")."/".$this->app_name."/modules/".$this->mod_name."/config"
+            \Forge\Config::path("app")."/".$this->app_name."/modules/".$this->mod_name."/actions",
+            \Forge\Config::path("app")."/".$this->app_name."/modules/".$this->mod_name."/templates",
+            \Forge\Config::path("app")."/".$this->app_name."/modules/".$this->mod_name."/config"
         ), '.', 'x');
 		print('DONE'.PHP_EOL); flush();
 	}
 	
 	public function generateDefaultFiles(){
 		print('Creating default files'); flush();
-		$templates = scandir(\Core\Config::path('forge').'/templates');
+		$templates = scandir(\Forge\Config::path('forge').'/templates');
 		foreach($templates as $template){
 			$file = explode('_',$template);
 			if($file[0] == 'module'){
 				array_splice($file,0,1); //drop the "module" part of the filename
 				$new_file = implode('/',$file);
-				$new_file = \Core\Config::path('app').'/'.$this->app_name.'/modules/'.$this->mod_name.'/'.substr($new_file,0,strlen($new_file)-9);
-				$contents = file_get_contents(\Core\Config::path('forge').'/templates/'.$template);
+				$new_file = \Forge\Config::path('app').'/'.$this->app_name.'/modules/'.$this->mod_name.'/'.substr($new_file,0,strlen($new_file)-9);
+				$contents = file_get_contents(\Forge\Config::path('forge').'/templates/'.$template);
 				if(substr($file[0],0,5) == 'templ'){
 					foreach($this->actions as $action){
 						file_put_contents($this->replaceTokens($new_file,array('action' => $action)),$this->replaceTokens($contents,array('action' => $action)));

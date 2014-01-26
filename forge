@@ -6,7 +6,7 @@
  */
 require(realpath(dirname(__FILE__)."/handlers/commandhandler.class.php"));
 
-$command = new Core\CommandHandler($argv);
+$command = new Forge\CommandHandler($argv);
 
 $command->run();
 

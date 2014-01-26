@@ -1,5 +1,5 @@
 <?php
-namespace Core\Builder;
+namespace Forge\Builder;
 
 /**
  * Generator that builds the folder structure of a new application.
@@ -10,7 +10,7 @@ namespace Core\Builder;
  *
  * @author Darghon
  */
-class UnitTests extends \Core\ObjectGenerator {
+class UnitTests extends \Forge\ObjectGenerator {
 
 	/**
 	 * Public generate action. This method performs all actions required to build the wanted files
@@ -23,8 +23,8 @@ class UnitTests extends \Core\ObjectGenerator {
 			echo "Building ".$table_name; flush();
 
 			list($fields, $links, $translation, $extends, $implements) = $this->processTable($table_name, $table);
-            \Core\Generator::getInstance()->build('datalayertest',array($table_name,$fields,$translation, $extends['Data'], $implements['Data']));
-            \Core\Generator::getInstance()->build('businesslayertest',array($table_name,$fields,$translation, $extends['Business'], $implements['Business']));
+            \Forge\Generator::getInstance()->build('datalayertest',array($table_name,$fields,$translation, $extends['Data'], $implements['Data']));
+            \Forge\Generator::getInstance()->build('businesslayertest',array($table_name,$fields,$translation, $extends['Business'], $implements['Business']));
 
 			echo " DONE!".PHP_EOL; flush();
 		}

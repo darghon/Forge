@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 /**
  * XMLTextNode is a representation of a basic string
  *

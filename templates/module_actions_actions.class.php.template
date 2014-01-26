@@ -4,7 +4,7 @@
  * The {mod_name} action controller. Each action that is defined in 
  * this file will be accessable by the default routing rule /:module/:action
  */
-class {mod_name}Actions extends \Core\Actions{
+class {mod_name}Actions extends \Forge\Actions{
 {actions}
 }
 

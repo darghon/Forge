@@ -1,5 +1,5 @@
 <?php
-namespace Core;
+namespace Forge;
 
 /**
  * jsmin.php - PHP implementation of Douglas Crockford's JSMin.
