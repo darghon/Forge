@@ -1,6 +1,7 @@
 <?php
 namespace Forge;
 
+
 abstract class Actions {
 
 	/**
@@ -8,6 +9,14 @@ abstract class Actions {
 	 * @var String 
 	 */
 	protected $static_template = "";
+
+    /**
+     * @param string $string
+     * @return string $translatedString
+     */
+    public function __($string){
+        return Forge::Translate()->translate($string);
+    }
 	
 	/**
 	 * Redirect he application to the specified location

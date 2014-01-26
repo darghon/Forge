@@ -63,8 +63,3 @@ class T {
 	}
 
 }
-
-/* TODO: Make multilingual support (unicode!!!) */
-function __($string){
-    return $string;
-}

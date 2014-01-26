@@ -164,11 +164,11 @@ class Config {
 	}
 
     public static function loadAddon($addon) {
-		if (is_array($helper)) {
-			foreach ($helper as $help)
+		if (is_array($addon)) {
+			foreach ($addon as $help)
 				require(self::path("helpers") . '/' . $help . ".class.php");
 		} else {
-			require(self::path("helpers") . '/' . $helper . ".class.php");
+			require(self::path("helpers") . '/' . $addon . ".class.php");
 		}
 	}
 
