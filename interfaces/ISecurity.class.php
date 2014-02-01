@@ -10,6 +10,8 @@ interface ISecurity {
 	
 	CONST USER_GUEST = 0;
 	CONST USER_SECURE = 1;
+
+
 	
 	/**
 	 * Public function to check if the active user has specific credentials

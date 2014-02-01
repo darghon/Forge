@@ -249,8 +249,8 @@ class Config {
 		Debug::start();
 
 		if ((isset($settings['register_error']) || array_key_exists('register_error', $settings)) && $settings['register_error'] == true) {
-			set_error_handler("Debug::registerError");
-			register_shutdown_function("Debug::registerCrash");
+			//set_error_handler("Debug::registerError");
+			//register_shutdown_function("Debug::registerCrash");
 		}
 	}
 

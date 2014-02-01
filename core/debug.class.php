@@ -106,7 +106,9 @@ class Debug {
 		}
 
 		Debug::add('Registered Error =>', sprintf("<b>%s</b>: %s in <b>%s</b> on line <b>%d</b><br /><br />\n", $errors, $errstr, $errfile, $errline));
+        ob_end_clean();
 		printf("<b>%s</b>: %s in <b>%s</b> on line <b>%d</b><br /><br />\n", $errors, $errstr, $errfile, $errline);
+        ob_flush();
 		//make sure we're not logging the same error 2x
 		if (method_exists(DebugErrorLog::Find(), 'byMessage')) {
 			$errlog = &DebugErrorLog::Find()->byMessage($errstr);
@@ -148,34 +150,36 @@ class Debug {
 			}
 		}
 
-		if ($isError) {
-			//make sure we're not logging the same error 2x
-			//make sure we're not logging the same error 2x
-			if (method_exists(DebugErrorLog::Find(), 'byMessage')) {
-				$errlog = &DebugErrorLog::Find()->byMessage($errstr);
-			} else {
-				Debug::Notice('Notice', 'No "byMessage" finder has been specified for DebugErrorLog. A new record for each error will be made.');
-			}
-			if (!$errlog instanceOf DebugErrorLog || $errlog->getErrorFile() != $errfile || $errlog->getErrLine() != $errline) {
-				$errlog = new DebugErrorLog();
-			}
-			if (class_exists('StageHandler') && StageHandler::getCurrentStage() >= 2) { //make sure Route is loaded before retrieving it's values
-				$errlog->setApplication(Route::curr_app());
-				$errlog->setModule(Route::curr_mod());
-				$errlog->setAction(Route::curr_act());
-				$errlog->setUrl(Route::curr_url());
-			} else {
-				$errlog->setUrl($_SERVER["REQUEST_URI"]);
-			}
-			$errlog->setSession(Session::serialize());
-			$errlog->setErrorNr($error['type']);
-			$errlog->setErrorMess($error['message']);
-			$errlog->setErrorFile(addslashes($error['file']));
-			$errlog->setErrLine($error['line']);
-			$errlog->persist();
-		}
-		Debug::add('Registered Error =>', sprintf("<b>%s</b>: %s in <b>%s</b> on line <b>%d</b><br /><br />\n", $error['type'], $error['message'], $error['file'], $error['line']));
-		printf("<b>%s</b>: %s in <b>%s</b> on line <b>%d</b><br /><br />\n", $error['type'], $error['message'], $error['file'], $error['line']);
+        if ($isError) {
+            ob_end_clean();
+            printf("<b>%s</b>: %s in <b>%s</b> on line <b>%d</b><br /><br />\n", $error['type'], $error['message'], $error['file'], $error['line']);
+            ob_flush();
+            //make sure we're not logging the same error 2x
+            //make sure we're not logging the same error 2x
+            if (method_exists(DebugErrorLog::Find(), 'byMessage')) {
+                $errlog = &DebugErrorLog::Find()->byMessage($error['message']);
+            } else {
+                Debug::Notice('Notice', 'No "byMessage" finder has been specified for DebugErrorLog. A new record for each error will be made.');
+            }
+            if (!$errlog instanceOf DebugErrorLog || $errlog->getErrorFile() != $error['file'] || $errlog->getErrLine() != $error['line']) {
+                $errlog = new DebugErrorLog();
+            }
+            if (class_exists('StageHandler') && StageHandler::getCurrentStage() >= 2) { //make sure Route is loaded before retrieving it's values
+                $errlog->setApplication(Route::curr_app());
+                $errlog->setModule(Route::curr_mod());
+                $errlog->setAction(Route::curr_act());
+                $errlog->setUrl(Route::curr_url());
+            } else {
+                $errlog->setUrl($_SERVER["REQUEST_URI"]);
+            }
+            $errlog->setSession(Session::serialize());
+            $errlog->setErrorNr($error['type']);
+            $errlog->setErrorMess($error['message']);
+            $errlog->setErrorFile(addslashes($error['file']));
+            $errlog->setErrLine($error['line']);
+            $errlog->persist();
+        }
+        Debug::add('Registered Error =>', sprintf("<b>%s</b>: %s in <b>%s</b> on line <b>%d</b><br /><br />\n", $error['type'], $error['message'], $error['file'], $error['line']));
 	}
 
 	public static function registerLongLoad($load = 0.5) {

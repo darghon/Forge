@@ -165,7 +165,8 @@ abstract class BusinessLayer {
      * @return String $className
      */
     protected function getClassName(){
-        return array_pop(explode('\\',get_class($this)));
+        $className = explode('\\',get_class($this));
+        return array_pop($className);
     }
 
 	/**
@@ -175,7 +176,8 @@ abstract class BusinessLayer {
 	 */
 	public static function & Find($id = null) {
         $caller = function_exists('get_called_class') ? get_called_class() : Tools::getCaller();
-        $caller = 'Finder\\'.array_pop(explode('\\',$caller));
+        $caller = '\\Finder\\'.$caller;
+
         if ($id !== null) {
             $return = &Database::Find($caller)->byID($id);
         } else {

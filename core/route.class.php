@@ -3,10 +3,6 @@ namespace Forge;
 
 class Route {
 
-	public static function init() {
-		return Forge::Route()->processURI();
-	}
-
 	public static function curr_app() {
 		return Forge::Route()->getApplication();
 	}

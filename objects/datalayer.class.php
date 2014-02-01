@@ -92,7 +92,11 @@ abstract class DataLayer {
      */
     public function __get($key){
         $rules = $this->_retrieveRulesFor($key);
-        if(in_array($rules['type'],array(ObjectGenerator::FIELD_TYPE_DATE,ObjectGenerator::FIELD_TYPE_DATETIME))) return DateTime::setTimestamp($this->$key);
+
+        if(!is_object($this->$key) && in_array($rules['type'],array(ObjectGenerator::FIELD_TYPE_DATE,ObjectGenerator::FIELD_TYPE_DATETIME))) {
+            $dt = new \DateTime();
+            return $dt->setTimestamp($this->$key);
+        }
 		return $this->$key;
 	}
 

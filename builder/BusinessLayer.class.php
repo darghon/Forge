@@ -133,8 +133,9 @@ class BusinessLayer extends \Forge\baseGenerator {
                     fwrite($file, "\t/**" . PHP_EOL);
                     fwrite($file, "\t * Public set function that sets the " . $field['name'] . PHP_EOL);
                     fwrite($file, "\t * @param array  \$" . $field['name'] . PHP_EOL);
+                    fwrite($file, "\t * @return \$this" . PHP_EOL);
                     fwrite($file, "\t */" . PHP_EOL);
-                    fwrite($file, "\tpublic function set" . $functionName . "(array \$val = array()){ \$this->data->" . $field["name"] . " = serialize(\$val); }" . PHP_EOL);
+                    fwrite($file, "\tpublic function set" . $functionName . "(array \$val = array()){ \$this->data->" . $field["name"] . " = serialize(\$val); return \$this; }" . PHP_EOL);
                     fwrite($file, PHP_EOL);
                     break;
                 case 'timestamp':
@@ -147,8 +148,9 @@ class BusinessLayer extends \Forge\baseGenerator {
                     fwrite($file, "\t/**" . PHP_EOL);
                     fwrite($file, "\t * Public set function that sets the " . $field['name'] . PHP_EOL);
                     fwrite($file, "\t * @param array  \$" . $field['name'] . PHP_EOL);
+                    fwrite($file, "\t * @return \$this" . PHP_EOL);
                     fwrite($file, "\t */" . PHP_EOL);
-                    fwrite($file, "\tpublic function set" . $functionName . "(\$val){ \$this->data->" . $field["name"] . " = date('Y-m-d H:i:s',\$val); }" . PHP_EOL);
+                    fwrite($file, "\tpublic function set" . $functionName . "(\$val){ \$this->data->" . $field["name"] . " = date('Y-m-d H:i:s',\$val); return \$this; }" . PHP_EOL);
                     fwrite($file, PHP_EOL);
                     break;
                 default:
@@ -161,8 +163,9 @@ class BusinessLayer extends \Forge\baseGenerator {
                     fwrite($file, "\t/**" . PHP_EOL);
                     fwrite($file, "\t * Public set function that sets the " . $field['name'] . PHP_EOL);
                     fwrite($file, "\t * @param " . $field["type"] . ' $' . $field['name'] . PHP_EOL);
+                    fwrite($file, "\t * @return \$this" . PHP_EOL);
                     fwrite($file, "\t */" . PHP_EOL);
-                    fwrite($file, "\tpublic function set" . $functionName . "(\$val){ \$this->data->" . $field["name"] . " = \$val; }" . PHP_EOL);
+                    fwrite($file, "\tpublic function set" . $functionName . "(\$val){ \$this->data->" . $field["name"] . " = \$val; return \$this; }" . PHP_EOL);
                     fwrite($file, PHP_EOL);
                     break;
             }
@@ -201,7 +204,20 @@ class BusinessLayer extends \Forge\baseGenerator {
                 fwrite($file, "\t */" . PHP_EOL);
                 fwrite($file, "\tpublic function get".$translated_field['name']."(\$lang = null){" . PHP_EOL);
                 fwrite($file, "\t\tif(\$lang === null) \$lang = Forge::Translate()->getActiveLanguage();" . PHP_EOL);
-                fwrite($file, "\t\treturn " . $this->name . "_i18n::Find()->getTranslationByID(\$this->data->ID,\$lang)->get".$translated_field['name'].";" . PHP_EOL);
+                fwrite($file, "\t\treturn " . $this->name . "_i18n::Find()->getTranslationByID(\$this->data->ID,\$lang)->get".$translated_field['name']."();" . PHP_EOL);
+                fwrite($file, "\t}" . PHP_EOL);
+                fwrite($file, "" . PHP_EOL);
+                fwrite($file, "\t/**" . PHP_EOL);
+                fwrite($file, "\t * Set translated value for ".$translated_field['name'] . PHP_EOL);
+                fwrite($file, "\t * @param string \$value" . PHP_EOL);
+                fwrite($file, "\t * @param string \$lang" . PHP_EOL);
+                fwrite($file, "\t * @return \$this" . PHP_EOL);
+                fwrite($file, "\t */" . PHP_EOL);
+                fwrite($file, "\tpublic function set".$translated_field['name']."(\$value, \$lang = null){" . PHP_EOL);
+                fwrite($file, "\t\tif(\$lang === null) \$lang = Forge::Translate()->getActiveLanguage();" . PHP_EOL);
+                fwrite($file, "\t\t\$i18n = &" . $this->name . "_i18n::Find()->getTranslationByID(\$this->data->ID,\$lang);".PHP_EOL);
+                fwrite($file, "\t\t\$i18n->set".$translated_field['name']."(\$value);" . PHP_EOL);
+                fwrite($file, "\t\treturn \$this;".PHP_EOL);
                 fwrite($file, "\t}" . PHP_EOL);
                 fwrite($file, "" . PHP_EOL);
             }

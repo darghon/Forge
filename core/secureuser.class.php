@@ -11,7 +11,7 @@ class SecureUser implements ISecurity{
 	protected $credentials = array();
 	protected $attributes = array();
 	protected $flag = self::USER_GUEST;
-	
+
 	public function setUserMode($user_mode = self::USER_GUEST){
 		$this->flag = $user_mode;
 	}

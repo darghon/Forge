@@ -4,9 +4,12 @@ namespace Forge;
 class Persister
 {
     private $pref = null;
+    /**
+     * @var DataLayer
+     */
     private $object = false;
     private $method = false;
-    private $fields = false;
+    private $fields = array();
     private $sql = false;
 
     public function __construct($prefix = null)
@@ -50,7 +53,7 @@ class Persister
         foreach ($this->fields as $key => $field) {
             if ($key == 'ID') continue;
             if($this->object->$key === null) $tmpsql [] = "null";
-            else $tmpsql[] = "'" . Database::escape($this->object->$key) . "'";
+            else $tmpsql[] = "'" . $this->getValue($this->object, $key) . "'";
         }
         $this->sql .= implode(",", $tmpsql);
         $this->sql .= ")";
@@ -71,7 +74,7 @@ class Persister
         foreach ($this->fields as $key => $field) {
             if (!$field) continue; //If field is false, then do nothing, go to next field
             if ($key == "_recordVersion" || $key == "ID") continue; //always skip record version and ID
-            $tmpsql[] = "`" . $key . "`" . " = " . ($this->object->$key === null ? "null" : "'".Database::escape($this->object->$key) . "'");
+            $tmpsql[] = "`" . $key . "`" . " = " . ($this->object->$key === null ? "null" : "'".$this->getValue($this->object, $key) . "'");
         }
         if (count($tmpsql) > 0) {
             $tmpsql[] = "_recordVersion='" . (int)($this->object->_recordVersion + 1) . "'";
@@ -82,6 +85,12 @@ class Persister
         }
     }
 
+    protected function getValue($object, $key){
+        $value = $this->object->$key;
+        if($value instanceOf \DateTime) return $value->getTimestamp();
+        return Database::escape($value);
+    }
+
     public function getSmallSql(&$object)
     {
         $sql = "(";
@@ -89,7 +98,7 @@ class Persister
         $fields = $object->getFields();
         foreach ($fields as $key => $field) {
             if ($key == 'ID') continue;
-            $tmpsql[] = '"' . Database::escape($object->$key) . '"';
+            $tmpsql[] = '"' . $this->getValue($object, $key) . '"';
         }
         $sql .= implode(',', $tmpsql) . ")";
         return $sql;

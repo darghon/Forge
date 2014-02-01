@@ -24,11 +24,17 @@ class Forge{
 	private static $classBuffer = null;
 	private static $variableHolder = array();
 	private static $environment = null;
+
 	private static $autoloaders = array('Forge::loadOnDemand');
 	
 	private static $version = null;
 	
 	private static $pageincludes = 0;
+
+    /**
+     * @var EventListener[]
+     */
+    public static $_eventCollection = array();
 
 	/**
 	 * Forge collects objects of every type.
@@ -111,7 +117,7 @@ class Forge{
 
 	/**
 	 * This function returns the instance of the connection object
-	 * @return \Connection
+	 * @return Connection
 	 */
 	public static function & Connection($index = null){
 		if($index === null) $index = self::getDefaultConnection();
@@ -120,7 +126,7 @@ class Forge{
 			return self::$connections[$index];
 		}
 		else{
-			throw new Exception("Connection '".$index."' not found.");
+			throw new \Exception("Connection '".$index."' not found.");
 		}
 	}
 
@@ -136,7 +142,7 @@ class Forge{
 
 	/**
 	 * This function returns the instance the of route handler object
-	 * @return \RouteHandler routehandler
+	 * @return RouteHandler routehandler
 	 */
 	public static function & Route(){
 		if(self::$routehandler === null) trigger_error('No route stage handler has been specified.');
@@ -154,7 +160,7 @@ class Forge{
 
 	/**
 	 * This function returns the instance the of request handler object
-	 * @return \RequestHandler requesthandler
+	 * @return RequestHandler requesthandler
 	 */
 	public static function & Request(){
 		if(self::$requesthandler === null) trigger_error('No request stage handler has been specified.');
@@ -163,7 +169,7 @@ class Forge{
 
 	/**
 	 * This function returns the instance fo the log handler
-	 * @return \LogHandler
+	 * @return LogHandler
 	 */
 	public static function & Log(){
 		if(self::$loghandler === null) self::createLogHandler();
@@ -312,7 +318,7 @@ class Forge{
 	public static function loadOnDemand($class){
 		//check cache
 		self::loadFromCache($class);
-		if(class_exists($class) || interface_exists($class)){
+		if(class_exists($class) || interface_exists($class) || trait_exists($class)){
 			return true;
 		}
 	    //retrieve namespaces configuration

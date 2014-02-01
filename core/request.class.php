@@ -11,6 +11,10 @@ class Request{
     return Forge::Request()->getMethod();
   }
 
+    public static function getInstance(){
+        return Forge::Request();
+    }
+
   public static function getGetParameter($key,$default = null){
     return Forge::Request()->getGetParameter($key, $default);
   }

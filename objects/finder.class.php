@@ -156,9 +156,9 @@ abstract class Finder {
     /**
      * @return mixed
      */
-    protected function _getClassName()
-    {
-        return array_pop(explode('\\', get_class($this)));
+    protected function _getClassName() {
+        $explode = explode('\\', get_class($this));
+        return array_pop($explode);
     }
 
 }

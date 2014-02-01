@@ -91,6 +91,9 @@ class ResponseHandler implements IStage {
 				Cache::save_fpc(Tools::encrypt('fpc_'.$this->configuration->getApp().'_'.$this->configuration->getMod().'_'.$this->configuration->getAct()).'.php',$this->content_buffer);
 			}
 		}
+
+        //before dumping the content, raise all pending events
+        foreach(Forge::$_eventCollection as $collection) $collection->handleEventBuffer();
 		
 		//echo content
 		echo $this->content_buffer;
@@ -142,7 +145,8 @@ class ResponseHandler implements IStage {
 				$action->{$act}($param);
 				Debug::stopTimer($mod.'-component');
 			}
-			if(method_exists($action,"postActions")) $action->postActions();
+            if(method_exists($action,"postActions")) $action->postActions();
+
 			Debug::addTimer($mod.'-template');
 			$action->loadTemplate($this->configuration->getApp(),$mod,$act);
 			Debug::stopTimer($mod.'-template');
@@ -162,6 +166,7 @@ class ResponseHandler implements IStage {
 		//require needed file (once)
 		if(file_exists(Config::path("app")."/".$app."/modules/".$mod."/actions/actions.class.php")){
 			require_once(Config::path("app")."/".$app."/modules/".$mod."/actions/actions.class.php");
+            /** @var Actions $action */
 			$action = new $action_class();
 			if(method_exists($action,"preActions")) $action->preActions();
 			if(method_exists($action, $action_method)){
@@ -176,10 +181,10 @@ class ResponseHandler implements IStage {
                 exit;
 			}
 			if(method_exists($action,"postActions")) $action->postActions();
-			if(Debug::enabled()) Debug::addTimer($mod.'-template');
-			$action->loadTemplate($this->configuration->getApp(),$mod,$act);
-			if(Debug::enabled()) Debug::stopTimer($mod.'-template');
-		}
+            if(Debug::enabled()) Debug::addTimer($mod.'-template');
+            $action->loadTemplate($this->configuration->getApp(),$mod,$act);
+            if(Debug::enabled()) Debug::stopTimer($mod.'-template');
+        }
 		else{
 			ob_end_clean();
 			echo '<h1>404 - Page not found!</h1>';Tools::dump($this->configuration);exit;

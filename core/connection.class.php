@@ -86,9 +86,9 @@ class Connection {
 	private function createConnection() {
 		//Validate every needed input field
 		if ($this->user !== null && $this->pass !== null && $this->host !== null && $this->database !== null) {
-			$this->connection = mysql_connect($this->host, $this->user, $this->pass) OR die("Could not connect with user: {$this->user} and pass: {$this->pass}");
-			mysql_query(sprintf('CREATE DATABASE IF NOT EXISTS %s',$this->database),$this->connection) || die(mysql_error());
-			mysql_select_db($this->database, $this->connection) || die(mysql_error());
+			$this->connection = mysqli_connect($this->host, $this->user, $this->pass) OR die("Could not connect with user: {$this->user} and pass: {$this->pass}");
+			mysqli_query($this->connection,sprintf('CREATE DATABASE IF NOT EXISTS %s',$this->database)) || die(mysql_error());
+			mysqli_select_db($this->connection, $this->database) || die(mysql_error());
 			$this->initiated = true;
 		}
 	}

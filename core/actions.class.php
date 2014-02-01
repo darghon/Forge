@@ -3,6 +3,9 @@ namespace Forge;
 
 
 abstract class Actions {
+    //Add the needed traits
+    use EventListener,
+        Translator;
 
 	/**
 	 * A force static template that needs to be loaded for the requested page.
@@ -10,13 +13,7 @@ abstract class Actions {
 	 */
 	protected $static_template = "";
 
-    /**
-     * @param string $string
-     * @return string $translatedString
-     */
-    public function __($string){
-        return Forge::Translate()->translate($string);
-    }
+
 	
 	/**
 	 * Redirect he application to the specified location
@@ -24,8 +21,9 @@ abstract class Actions {
 	 * @param Array $param list of additional parameters
 	 */
 	public function redirect($location, $param = array()) {
+        $this->endRequest();
 		//echo "should be setting header location to: ".Config::path("url").Route::url($location, $param);
-		Route::redirect($location, $param);
+		return Route::redirect($location, $param);
 	}
 
 	/**
@@ -91,4 +89,8 @@ abstract class Actions {
 	public function changeTemplate($template) {
 		$this->static_template = strtolower($template);
 	}
+
+    public function endRequest(){
+        $this->handleEventBuffer();
+    }
 }

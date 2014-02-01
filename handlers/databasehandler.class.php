@@ -88,17 +88,17 @@ class DatabaseHandler {
     }
 	
 	public function escape($value){
-		return mysql_real_escape_string($value, $this->_getConnection());
+		return mysqli_real_escape_string($this->_getConnection(),$value);
 	}
 
     public function getLastInsertID() {
     //Getting the autonumber ID of the last insert statement
     //is used to set a objectID when new objects are persisted to the database
-        return mysql_insert_id($this->_getConnection());
+        return mysqli_insert_id($this->_getConnection());
     }
     
     public function getAffectedRows(){
-    	return mysql_affected_rows($this->_getConnection());
+    	return mysqli_affected_rows($this->_getConnection());
     }
 
     public function prepareStatement($sql) {
@@ -139,7 +139,7 @@ class DatabaseHandler {
             $this->usecounter ++;
             $this->sqlcollection[] = (string)$this->query;
             Debug::startTimer('query');
-            $result = mysql_query((string)$this->query, $this->_getConnection()) OR $this->showError();
+            $result = mysqli_query( $this->_getConnection(), (string)$this->query) OR $this->showError();
             Debug::stopTimer('query');
         }
         //Check if preparedStatement is set, and fully completed
@@ -148,7 +148,7 @@ class DatabaseHandler {
             $this->usecounter ++;
             $this->sqlcollection[] = (string)$this->prepquery;
             Debug::startTimer('query');
-            $result = mysql_query((string)$this->prepquery, $this->_getConnection()) OR $this->showError();
+            $result = mysqli_query($this->_getConnection(),(string)$this->prepquery) OR $this->showError();
             Debug::stopTimer('query');
         }
 		
@@ -171,7 +171,7 @@ class DatabaseHandler {
 	        else {
 	        //If a result set is returned, start processing the data
 	            $this->processdata($result);
-	            mysql_free_result($result);
+	            mysqli_free_result($result);
 	        }
         }
     }
@@ -180,7 +180,7 @@ class DatabaseHandler {
     //dubblecheck the result
         if($rs !== false && $rs !== true) {
         //Set the found number of records
-            $this->numRows = mysql_num_rows($rs);
+            $this->numRows = mysqli_num_rows($rs);
             //Set reporting for records processed
             $this->recordcounter += $this->numRows;
             if($this->numRows > 0) {
@@ -270,7 +270,7 @@ class DatabaseHandler {
 						<p>Error: %s</p>';
 				break;
 		}
-		throw new \Exception(printf($string, $this->query, mysql_error($this->_getConnection())));
+		throw new \Exception(printf($string, $this->query, mysqli_error($this->_getConnection())));
 	}
 
     public function __destroy() {

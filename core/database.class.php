@@ -26,7 +26,7 @@ class Database {
 
 	public static function escape($value) {
         if(is_array($value)) $value = serialize($value); //escape arrays to serialized strings
-		return is_string($value) ? mysql_real_escape_string($value, Forge::Connection()->getConnection()) : $value;
+		return is_string($value) ? mysqli_real_escape_string(Forge::Connection()->getConnection(),$value) : $value;
 	}
 
 	public static function getTables() {

@@ -10,13 +10,10 @@ class RequestHandler implements IStage {
 	protected $user_ip = null;
 	protected $user_agent = null;
 	protected $session_id = null;
+	protected $referrer = null;
 	protected $post_vars = array();
 	protected $get_vars = array();
 	protected $files_vars = array();
-
-	public function __construct() {
-		
-	}
 
 	public function initialize() {
 		$this->retrieveData();
@@ -25,7 +22,6 @@ class RequestHandler implements IStage {
 		$this->parseGet();
 		$this->parsePost();
 		$this->parseFiles();
-		//TODO: route parameters will be added later
 	}
 
 	public function deploy() {
@@ -72,10 +68,35 @@ class RequestHandler implements IStage {
 	
 	public function getSessionID(){ return $this->session_id; }
 
+    /**
+     * @return null
+     */
+    public function getUserAgent()
+    {
+        return $this->user_agent;
+    }
+
+    /**
+     * @return null
+     */
+    public function getUserIp()
+    {
+        return $this->user_ip;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getReferrer()
+    {
+        return $this->referrer;
+    }
+
 	protected function retrieveData() {
 		$this->method = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') ? 'AJAX' : $_SERVER["REQUEST_METHOD"];
 		$this->user_ip = $_SERVER['REMOTE_ADDR'];
 		$this->user_agent = $_SERVER['HTTP_USER_AGENT'];
+		$this->referrer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null;
 		$this->session_id = isset($_REQUEST['phpsessid']) ? $_REQUEST['phpsessid'] : (isset($_COOKIE['PHPSESSID']) ? $_COOKIE['PHPSESSID'] : null);
 		if(isset($_COOKIE) && (isset($_COOKIE['language']) || array_key_exists('language', $_COOKIE))) Session::language($_COOKIE['language']);
 	}
