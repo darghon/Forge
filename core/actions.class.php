@@ -23,7 +23,7 @@ abstract class Actions {
 	public function redirect($location, $param = array()) {
         $this->endRequest();
 		//echo "should be setting header location to: ".Config::path("url").Route::url($location, $param);
-		return Route::redirect($location, $param);
+		Route::redirect($location, $param);
 	}
 
 	/**

@@ -7,5 +7,3 @@
 class {mod_name}Actions extends \Forge\Actions{
 {actions}
 }
-
-?>

@@ -32,14 +32,14 @@ timezone: "UTC"
 # language support can be defined by country as well, if the country isn't specified, it will try to match with a simular language
 # ex: languagecode "en_US", if not defined, will use the first "en_*" language it can find. If no language is found, the default language will be used.
 multilingual:
-  enabled: false
-  #default: en_GB
-  #available:
-  #  -en_GB
-  #  -nl_NL
-  #  -fr_FR
-  #  -de_DE
-  #translations: i18n
+  enabled: true
+  default: en_GB
+  available:
+    -en_GB
+    -nl_NL
+    -fr_FR
+    -de_DE
+  translations: i18n
 
 # make sure you turn this on when putting the application online
 cache:

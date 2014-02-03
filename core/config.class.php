@@ -165,10 +165,10 @@ class Config {
 
     public static function loadAddon($addon) {
 		if (is_array($addon)) {
-			foreach ($addon as $help)
-				require(self::path("helpers") . '/' . $help . ".class.php");
+			foreach ($addon as $add)
+				require(self::path("addon") . '/' . $add . ".class.php");
 		} else {
-			require(self::path("helpers") . '/' . $addon . ".class.php");
+			require(self::path("addon") . '/' . $addon . ".class.php");
 		}
 	}
 

@@ -7,7 +7,9 @@ namespace Forge;
  * @author gerry.vanbael
  */
 class ResponseHandler implements IStage {
-	
+
+    use Translator;
+
 	protected $content_buffer = null;
 	protected $main_buffer = null;
 	protected $slots = array();
@@ -97,6 +99,7 @@ class ResponseHandler implements IStage {
 		
 		//echo content
 		echo $this->content_buffer;
+        return true;
 	}
 	
 	public function loadMain(){

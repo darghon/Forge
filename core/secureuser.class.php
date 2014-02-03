@@ -17,7 +17,7 @@ class SecureUser implements ISecurity{
 	}
 	
 	public function setCredentials(array $cred) {
-		foreach($cred as $key => $value) $this->credentials[] = $value;
+		foreach($cred as $value) $this->credentials[] = $value;
 	}
 	
 	public function getCredentials() {

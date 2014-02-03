@@ -19,7 +19,7 @@ abstract class Finder {
 	}
 	
 	public function & createObject($row){
-		return ObjectFactory::build(array_pop(explode('\\',get_class($this))),$row);
+		return ObjectFactory::build($this->_getClassName(),$row);
 	}
 
 	public function _set($key, $value) {
@@ -67,7 +67,7 @@ abstract class Finder {
                         $obj->_recordVersion
                 )
             );
-            $this->db->execute();
+            return $this->db->execute();
         } else {
             return false;
         }

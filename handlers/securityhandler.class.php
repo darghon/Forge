@@ -17,6 +17,7 @@ class SecurityHandler implements IStage {
 
 	protected $is_secure = null;
 	protected $cred_required = null;
+	protected $auth_application = null;
 	protected $auth_module = null;
 	protected $auth_action = null;
 	protected $credentials = null;
@@ -36,9 +37,9 @@ class SecurityHandler implements IStage {
 	public function initialize() {
 		//load security configuration
 		$security = Config::get('security');
-		$app_security = Config::get("security", "/application/" . Route::curr_app() . "/config/");
-		$mod_security = Config::get("security", "/application/" . Route::curr_app() . "/modules/" . Route::curr_mod() . "/config/");
-		
+		$app_security = Config::get("security", Config::path('app') . '/' . Route::curr_app() . "/config/");
+		$mod_security = Config::get("security", Config::path('app') . '/' . Route::curr_app() . "/modules/" . Route::curr_mod() . "/config/");
+
 		if (isset($security['global']) || array_key_exists('global', $security)) $this->parseConfig($security['global']);
 		if (isset($app_security['global']) || array_key_exists('global', $app_security)) $this->parseConfig($app_security['global']);
 		if (isset($app_security[Route::curr_mod()]) || array_key_exists(Route::curr_mod(), $app_security)) $this->parseConfig($app_security[Route::curr_mod()]);
@@ -46,6 +47,7 @@ class SecurityHandler implements IStage {
 		if (isset($mod_security[Route::curr_act()]) || array_key_exists(Route::curr_act(), $mod_security)) $this->parseConfig($mod_security[Route::curr_act()]);
 
 		$this->_user = &Session::getActiveUser();
+
 		if($this->_user === null){
             if(!class_exists($this->security_class)){
                 Debug::add('NOTICE', 'Failed to load security class '.$this->security_class);
@@ -79,7 +81,8 @@ class SecurityHandler implements IStage {
 	}
 	
 	protected function notAllowed(){
-		Route::redirect($this->auth_module.'/'.$this->auth_action);
+		Route::redirect($this->auth_module.'/'.$this->auth_action, array('application' => !is_null($this->auth_application) ? $this->auth_application : Route::curr_app()));
+        return true;
 	}
 
 	public function __destroy() {

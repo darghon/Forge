@@ -283,7 +283,7 @@ class Forge{
 	
 	public static function & getVariableHolder($key){
 		$def = false;
-		if(!key_exists($key,self::$variableHolder)){
+		if(!array_key_exists($key,self::$variableHolder)){
 			return $def;
 		}
 		return self::$variableHolder[$key];

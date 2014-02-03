@@ -107,7 +107,7 @@ class Query{
                     else $this->orWhereIn($field,$value);
                     break;
 				default:
-					if($value == null){
+					if($value === null){
 						$this->criteria[] = $field.' is null';
 					}
 					else{

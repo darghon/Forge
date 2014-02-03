@@ -10,10 +10,6 @@ abstract class DataLayer {
      */
     protected $fields = array();
     /**
-     * @var int $recordVersion
-     */
-    protected $_recordVersion = 0;
-    /**
      * @var bool $isNewRecord
      */
     protected $_new = true;
@@ -91,6 +87,8 @@ abstract class DataLayer {
      * @return mixed
      */
     public function __get($key){
+        if($this->$key === null) return null;
+
         $rules = $this->_retrieveRulesFor($key);
 
         if(!is_object($this->$key) && in_array($rules['type'],array(ObjectGenerator::FIELD_TYPE_DATE,ObjectGenerator::FIELD_TYPE_DATETIME))) {
@@ -152,7 +150,7 @@ abstract class DataLayer {
      *  - self::STATE_LOADED
      * @param boolean $state
      */
-    public function state($state = STATE_LOADED) {
+    public function state($state = self::STATE_LOADED) {
         $this->_new = $state;
     }
 
@@ -218,8 +216,8 @@ abstract class DataLayer {
      */
     protected function _validateBooleanInput($key, $val){
         if($val === "") throw new \InvalidArgumentException('Expected boolean for '.get_class($this).'->'.$key.'. Received empty string');
-        if(is_bool($val) || $val === 0 || $val === 1){
-            if(!is_bool($val)) $val = ($val == 0)?false:true;
+        if(is_bool($val) || in_array($val,array(0,1,"0","1"))){
+            if(!is_bool($val)) $val = (intval($val) == 0)?false:true;
             if(!$this->init) $this->fields[$key] = true;
             $this->$key = (int)($val);
         }
@@ -274,7 +272,14 @@ abstract class DataLayer {
             $this->$key = $val;
         }
         else{
-            throw new \InvalidArgumentException('Expected valid datetime object for '.get_class($this).'->'.$key.'. Received "'.$val.'"');
+            //might be a timestamp
+            if(intval($val) > 10){
+                $this->$key = new \DateTime();
+                $this->$key->setTimestamp(intval($val));
+            }
+            else{
+                throw new \InvalidArgumentException('Expected valid datetime object for '.get_class($this).'->'.$key.'. Received "'.$val.'"');
+            }
         }
     }
 

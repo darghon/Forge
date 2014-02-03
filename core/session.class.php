@@ -52,7 +52,7 @@ class Session {
 					array(&self::$_session, 'clean')); //Cleanup by Garbage Collector
 		}
 
-		//session_start(); //start session handler
+		session_start(); //start session handler
 		return true;
 	}
 	
@@ -202,11 +202,13 @@ class Session {
 	public static function & getActiveUser(){
 		$default = null;
 		
-		if(isset($_SESSION['active_user'])) return $_SESSION['active_user'];
-		return $default;
+		if(isset($_SESSION['active_user'])){
+            $default = unserialize($_SESSION['active_user']);
+        }
+        return $default;
 	}
 	
 	public static function setActiveUser($user){
-		$_SESSION['active_user'] = &$user;
+		$_SESSION['active_user'] = serialize($user);
 	}
 }

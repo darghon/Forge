@@ -94,11 +94,12 @@ class MemoryHandler{
 	 * Public function that registers an object in the specified container (by mode)
 	 * This function will return a reference to the object rather than the object itself.
 	 * @param Object $object
-	 * @return Object $object_ref
+	 * @return Object|null $object_ref
 	 */
 	public function & register($object){
 		if($this->mode == self::MODE_MEMCACHE) return $this->register_memory($object);
 		if($this->mode == self::MODE_REGISTRY) return $this->register_registry($object);
+        return null;
 	}
 	
 	/**
@@ -144,12 +145,12 @@ class MemoryHandler{
 	 * Public function that retrieves an object of the specified class, and optional id.
 	 * @param String $class_name
 	 * @param Integer $id optional
-	 * @return Object $class
+	 * @return Object|null $class
 	 */
 	public function & retrieve($class, $id = null){
-		
 		if($this->mode == self::MODE_MEMCACHE) return $this->retrieve_memory($class,$id);
 		if($this->mode == self::MODE_REGISTRY) return $this->retrieve_registry($class,$id);
+        return null;
 	}
 	
 	/**
@@ -208,11 +209,12 @@ class MemoryHandler{
 	 * This function will return a reference of the passed object
 	 * @param Object $object
 	 * @param Integer $old_id
-	 * @return Object $reference
+	 * @return Object|null $reference
 	 */
 	public function & update($object, $old_id = null){
 		if($this->mode == self::MODE_MEMCACHE) return $this->update_memory($object, $old_id);
 		if($this->mode == self::MODE_REGISTRY) return $this->update_registry($object, $old_id);
+        return null;
 	}
 	
 	private function & update_memory($object, $old_id = null){

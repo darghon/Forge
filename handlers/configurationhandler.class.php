@@ -143,6 +143,7 @@ class ConfigurationHandler implements IStage {
 		else{
 			$this->applyEntry($type,$value);
 		}
+        return true;
 	}
 
 	private function applyEntry($type,$value){

@@ -17,7 +17,7 @@ class DataLayerTest extends \Forge\baseGenerator {
 		if (is_array($this->translate) && !empty($this->translate)) $this->multi_lang = true;
 		$this->extends = '\DataLayerBaseTest';
 
-        $this->implements == null;
+        $this->implements = null;
 	}
 
     public function setName($name) {

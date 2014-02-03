@@ -174,6 +174,7 @@ class DatabaseHandler {
 	            mysqli_free_result($result);
 	        }
         }
+        return true;
     }
 
     private function processdata($rs) {
@@ -188,7 +189,7 @@ class DatabaseHandler {
                 $this->hasRecords = true;
                 //Add every record to the recordset collection
                 for($i = 0;$i < $this->numRows; $i++) {
-                    $this->rs[$i] = mysql_fetch_assoc($rs);
+                    $this->rs[$i] = mysqli_fetch_assoc($rs);
                 }
 
             }

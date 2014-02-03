@@ -154,10 +154,12 @@ abstract class ObjectGenerator extends baseGenerator{
                     $field["length"] = "10";
                     $field["default"] = "null";
                     $field["null"] = "true";
+                    break;
                 case self::FIELD_TYPE_DATETIME:
                     $field["length"] = "20";
                     $field["default"] = "null";
                     $field["null"] = "true";
+                    break;
                 case self::FIELD_TYPE_STRING:
                 case self::FIELD_TYPE_LIST:
                     $field["length"] = "0";

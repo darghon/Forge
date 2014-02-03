@@ -177,6 +177,7 @@ class Tools {
 				break;
 			case 6: return 'Zaterdag';
 				break;
+            default: return null;
 		}
 	}
 

@@ -23,6 +23,7 @@ class UnitTests extends \Forge\ObjectGenerator {
 			echo "Building ".$table_name; flush();
 
 			list($fields, $links, $translation, $extends, $implements) = $this->processTable($table_name, $table);
+            unset($links);
             \Forge\Generator::getInstance()->build('datalayertest',array($table_name,$fields,$translation, $extends['Data'], $implements['Data']));
             \Forge\Generator::getInstance()->build('businesslayertest',array($table_name,$fields,$translation, $extends['Business'], $implements['Business']));
 

@@ -146,12 +146,18 @@ class RouteHandler implements IStage {
 
 		//else get all parts of passed url
 		$uri = Tools::cleanExplode("/", $for);
-		if (count($uri) == 1) return $this->url_from_rule($for, $param);
+		if (count($uri) == 1){
+            $url = $this->url_from_rule($for, $param);
+            if($url !== null) return $url;
+        }
 		
-		//now the complex stuff, $for now must be module/action
+		//now the complex stuff, $for now must be app/module/action, fill in all attributes starting for the last one
 		$vars = array();
-		$vars["module"] = $uri[0]; //set module to vars array
-		$vars["action"] = $uri[1]; //set action to vars array
+
+        $vars["action"] = !empty($uri) ? array_pop($uri) : $this->action; //set action to vars array
+        $vars["module"] = !empty($uri) ? array_pop($uri) : $this->module; //set module to vars array
+        $vars["application"] = !empty($uri) ? array_pop($uri) : $this->application; //set application to vars array
+
 		foreach ($param as $key => $entry) {
 			$vars[$key] = $entry; //set other passed parameters
 		}
@@ -162,11 +168,12 @@ class RouteHandler implements IStage {
 			//first check all parameters, if module and / or action parameter is set, then route can continue
 			$ok = true; //assume route is ok
 			$attributes = $route->getAttributes();
+
 			foreach ($attributes as $name => $value) {
 				if (!$ok) continue; //route already failed
-				if ($name == "application" && $value != Route::curr_app()) $ok = false; //make sure that non-tagged linking remains in the active application
-				if ($name == "module" && $value != $vars["module"]) $ok = false; //invalid module, route failes
-				if ($name == "action" && $value != $vars["action"]) $ok = false; //invalid action, route failes
+				if ($name == "application" && $value != $vars["application"]) $ok = false; //invalid application, route fails
+				if ($name == "module" && $value != $vars["module"]) $ok = false; //invalid module, route fails
+				if ($name == "action" && $value != $vars["action"]) $ok = false; //invalid action, route fails
 			}
 			if (!$ok) {
 				unset($rtc[$key]); //if it failed, it will be unset
@@ -182,7 +189,9 @@ class RouteHandler implements IStage {
 			unset($param['#']);
 		}
 		//return the result
-		return Config::path('url') .'/'. $best_rule->buildUrl($vars) . "/" . (isset($hash) ? '#' . $hash : '');
+		$build_url = Config::path('url') .$best_rule->buildUrl($vars);
+        if(substr($build_url,-1) != '/') $build_url .= "/";
+        return $build_url . (isset($hash) ? '#' . $hash : '');
 	}
 
 	public function link($text, $link, $param = array(), $linkparam = array()) {
