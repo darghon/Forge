@@ -36,6 +36,7 @@ class Route {
 	}
 
 	public static function redirect($location, $param = array()) {
+        Forge::registerShutdown();
 		header("location: " . self::url($location, $param));
 		exit();
 	}

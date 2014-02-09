@@ -3,11 +3,15 @@ namespace Forge;
 
 class Query{
 	
-	const COMPARE_LIKE = 'like "%$1%"';
-	const COMPARE_EQUALS = '= "$1"';
-	const COMPARE_STARTLIKE = '= "$1%"';
-	const COMPARE_ENDLIKE = '= "%$1"';
-	
+	const COMPARE_LIKE = ' like "%$1%"';
+	const COMPARE_EQUALS = ' = "$1"';
+	const COMPARE_STARTLIKE = ' = "$1%"';
+	const COMPARE_ENDLIKE = ' = "%$1"';
+    const COMPARE_GREATER_THAN = ' > "$1"';
+    const COMPARE_GREATER_THAN_EQUAL = ' >= "$1"';
+    const COMPARE_LESS_THAN = ' < "$1"';
+    const COMPARE_LESS_THAN_EQUAL = ' <= "$1"';
+
 	const JOIN_INNER = 'inner';
 	const JOIN_LEFT = 'left';
 	const JOIN_RIGHT = 'right';
@@ -21,6 +25,7 @@ class Query{
 	private $criteria = array();
 	private $criteria_link = null;
 	private $order = array();
+    private $limit = null;
 	private $error = array();
 
     /**
@@ -207,13 +212,17 @@ class Query{
 		}
 		return $this;
 	}
+
+    public function limit($page = 1, $size = 20){
+            $this->limit = ' limit '.(($page-1)*$size).', '.$size;
+    }
 	
 	public function assign($param,&$variable){
 	
 	}
 	
 	public function __toString(){
-		return $this->type.' '.implode(', ',$this->fields).' from '.implode(', ',$this->table).(count($this->join) > 0 ? ' '.implode(' ',$this->join) : '').(count($this->criteria) > 0 ? ' where '.implode($this->criteria_link,$this->criteria) : '').(count($this->order) > 0 ? ' order by '.implode(', ',$this->order) : '').';';
+		return $this->type.' '.implode(', ',$this->fields).' from '.implode(', ',$this->table).(count($this->join) > 0 ? ' '.implode(' ',$this->join) : '').(count($this->criteria) > 0 ? ' where '.implode($this->criteria_link,$this->criteria) : '').(count($this->order) > 0 ? ' order by '.implode(', ',$this->order) : '').($this->limit !== null ? $this->limit : '').';';
 	}
 	
 	public function clear(){

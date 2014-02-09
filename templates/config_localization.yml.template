@@ -1,0 +1,43 @@
+# This file contains the default localize settings for each of the available languages
+# If no localize is set for a language, the system default will be used
+en_GB:
+  DateFormat: d/m/Y H:i:s
+  NumberFormat:
+    Thousand: ,
+    Decimal: .
+  TimeZone: Europe/London
+
+en_US:
+  DateFormat: m/d/Y H:i:s
+  NumberFormat:
+    Thousand: ,
+    Decimal: .
+  TimeZone: UTC
+
+nl_NL:
+  DateFormat: d.m.Y H:i:s
+  NumberFormat:
+    Thousand: .
+    Decimal: ,
+  TimeZone: Europe/Brussels
+
+fr_FR:
+  DateFormat: d/m/Y H:i:s
+  NumberFormat:
+    Thousand: .
+    Decimal: ,
+  TimeZone: Europe/Paris
+
+de_DE:
+  DateFormat: d.m.Y H:i:s
+  NumberFormat:
+    Thousand: .
+    Decimal: ,
+  TimeZone: Europe/Berlin
+
+es_ES:
+  DateFormat: d/m/Y H:i:s
+  NumberFormat:
+    Thousand: .
+    Decimal: ,
+  TimeZone: Europe/Madrid

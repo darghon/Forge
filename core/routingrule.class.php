@@ -152,11 +152,20 @@ class RoutingRule{
 	 */
 	public function buildUrl($attributes = array(),$iso2 = '__'){
 		if($iso2 != '__' && (!isset($this->raw_url[$iso2]) || !array_key_exists($iso2,$this->raw_url))) $iso2 = '__';
-		
+
+        //remove default params if they where set
+        $attributes = array_diff($attributes,$this->attributes);
+
 		$url = $this->raw_url[$iso2];
+        //replace params in url
 		if(preg_match_all("/\/({{([^\}:]*):?[^\}]*}})/",$this->raw_url[$iso2],$variables) > 0){
 			foreach($variables[1] as $key => $variable){
-				if(isset($attributes[$variables[2][$key]]) || isset($this->attributes[$variables[2][$key]]) || array_key_exists($variables[2][$key],$attributes) || array_key_exists($variables[2][$key],$this->attributes)){
+				if(
+                    isset($attributes[$variables[2][$key]]) ||
+                    isset($this->attributes[$variables[2][$key]]) ||
+                    array_key_exists($variables[2][$key],$attributes) ||
+                    array_key_exists($variables[2][$key],$this->attributes)
+                ){
 					
 					$attr = isset($attributes[$variables[2][$key]]) || array_key_exists($variables[2][$key],$attributes) ? $attributes[$variables[2][$key]] : $this->attributes[$variables[2][$key]];
 

@@ -41,6 +41,8 @@ class StageHandler {
 			Debug::Notice('Stage', 'Deploying '.$key);
 			$stage->deploy();
 		}
+        //register end of request
+        Forge::registerShutdown();
         return true;
 	}
 	

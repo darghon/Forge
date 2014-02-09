@@ -36,6 +36,14 @@ abstract class BusinessLayer {
 		return false;
 	}
 
+    /**
+     * @param string|null $field
+     * @return array
+     */
+    public function getValidationRules($field = null){
+        return $this->data->getValidationRules($field);
+    }
+
 	public function fromArray($arr) {
 		foreach ($arr as $field => $value) {
 			$fun = "set" . Tools::strtocamelcase($field, true);

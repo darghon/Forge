@@ -21,7 +21,6 @@ abstract class Actions {
 	 * @param Array $param list of additional parameters
 	 */
 	public function redirect($location, $param = array()) {
-        $this->endRequest();
 		//echo "should be setting header location to: ".Config::path("url").Route::url($location, $param);
 		Route::redirect($location, $param);
 	}
@@ -89,8 +88,4 @@ abstract class Actions {
 	public function changeTemplate($template) {
 		$this->static_template = strtolower($template);
 	}
-
-    public function endRequest(){
-        $this->handleEventBuffer();
-    }
 }

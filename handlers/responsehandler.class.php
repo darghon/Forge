@@ -93,9 +93,6 @@ class ResponseHandler implements IStage {
 				Cache::save_fpc(Tools::encrypt('fpc_'.$this->configuration->getApp().'_'.$this->configuration->getMod().'_'.$this->configuration->getAct()).'.php',$this->content_buffer);
 			}
 		}
-
-        //before dumping the content, raise all pending events
-        foreach(Forge::$_eventCollection as $collection) $collection->handleEventBuffer();
 		
 		//echo content
 		echo $this->content_buffer;

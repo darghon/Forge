@@ -87,7 +87,14 @@ class Persister
 
     protected function getValue($object, $key){
         $value = $this->object->$key;
-        if($value instanceOf \DateTime) return $value->getTimestamp();
+        if($value instanceOf \DateTime){
+            //Always save UTC Time
+            $value->setTimezone(new \DateTimeZone('UTC'));
+            $returnValue = $value->getTimestamp();
+            //reset the timezone
+            $value->setTimezone(new \DateTimeZone(\Forge\Forge::Translate()->getTimeZone()));
+            return $returnValue;
+        }
         return Database::escape($value);
     }
 

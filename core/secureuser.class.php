@@ -28,7 +28,7 @@ class SecureUser implements ISecurity{
 		return in_array($cred,$this->credentials);
 	}
 	
-	public function getAttribute($attr, $default_value) {
+	public function getAttribute($attr, $default_value = null) {
 		return isset($this->attributes[$attr]) || array_key_exists($attr, $this->attributes) ? $this->attributes[$attr] : $default_value;
 	}
 	

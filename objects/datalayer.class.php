@@ -93,10 +93,29 @@ abstract class DataLayer {
 
         if(!is_object($this->$key) && in_array($rules['type'],array(ObjectGenerator::FIELD_TYPE_DATE,ObjectGenerator::FIELD_TYPE_DATETIME))) {
             $dt = new \DateTime();
-            return $dt->setTimestamp($this->$key);
+            $dt->setTimestamp($this->$key);
+            $dt->setTimezone(new \DateTimeZone(Forge::Translate()->getTimeZone()));
+            return $dt;
         }
 		return $this->$key;
 	}
+
+    /**
+     * Retrieve the validation rules for a specific field.
+     * Rules are publicly available for automatic validation creation
+     * @param string|null $field
+     * @return array $rules
+     */
+    public function getValidationRules($field = null) {
+        if($field === null){
+            return $this->_rules();
+        }
+        else{
+            $rules = $this->_rules();
+            if(array_key_exists($field, $rules)) return $rules[$field];
+        }
+        return array();
+    }
 
     /**
 	 * Get an array of object fields
@@ -274,8 +293,10 @@ abstract class DataLayer {
         else{
             //might be a timestamp
             if(intval($val) > 10){
+                if(!$this->init) $this->fields[$key] = true;
                 $this->$key = new \DateTime();
                 $this->$key->setTimestamp(intval($val));
+                $this->$key->setTimezone(new \DateTimeZone(Forge::Translate()->getTimeZone()));
             }
             else{
                 throw new \InvalidArgumentException('Expected valid datetime object for '.get_class($this).'->'.$key.'. Received "'.$val.'"');

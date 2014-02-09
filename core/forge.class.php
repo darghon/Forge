@@ -175,8 +175,11 @@ class Forge{
 		if(self::$loghandler === null) self::createLogHandler();
 		return self::$loghandler;
 	}
-	
-	public static function & Configuration(){
+
+    /**
+     * @return ConfigurationHandler
+     */
+    public static function & Configuration(){
 		if(self::$configurationhandler === null) trigger_error('No configuration stage handler has been specified.');
 		return self::$configurationhandler;
 	}
@@ -275,6 +278,11 @@ class Forge{
 	public static function update($object){
 		return self::Memory()->update($object);
 	}
+
+    //Execute all pending actions before shutting down
+    public static function registerShutdown(){
+        foreach(self::$_eventCollection as $collection) $collection->handleEventBuffer();
+    }
 
 	public static function & setVariableHolder($key,&$value){
 		self::$variableHolder[$key] = &$value;
