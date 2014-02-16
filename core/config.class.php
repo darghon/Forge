@@ -18,7 +18,7 @@ class Config {
 	private static $default_language = null;
 	private static $available_languages = array();
 	private static $project_name = 'default_project';
-	private static $namespaces = null;
+	public static $namespaces = null;
 
 	/**
 	 * Retrieves a configuration file and returns the parsed array
@@ -88,7 +88,7 @@ class Config {
         self::registerPath("root", $root); //register root
 
         self::registerPath("applications|app", $root . DIRECTORY_SEPARATOR . "app"); //register application
-        self::registerPath("externals|ext", $root . DIRECTORY_SEPARATOR . "ext"); //register application
+        self::registerPath("externals|ext|addon", $root . DIRECTORY_SEPARATOR . "ext"); //register application
         self::registerPath("forge", $root . DIRECTORY_SEPARATOR . "ext" . DIRECTORY_SEPARATOR . "forge"); //register framework
         self::registerPath("public|web", $public); //register web root
         self::registerPath("cache", $root . DIRECTORY_SEPARATOR . "cache"); //register cache
@@ -166,9 +166,15 @@ class Config {
     public static function loadAddon($addon) {
 		if (is_array($addon)) {
 			foreach ($addon as $add)
-				require(self::path("addon") . '/' . $add . ".class.php");
+				self::loadAddon($add);
 		} else {
-			require(self::path("addon") . '/' . $addon . ".class.php");
+            $config = self::get('addon',self::path('addon').'/'.$addon.'/config/');
+            if(!empty($config) && array_key_exists('Config',$config)){
+                if(array_key_exists('Namespace',$config['Config'])){
+                    $namespace = self::get($config['Config']['Namespace'],self::path('addon').'/'.$addon.'/config/');
+                    self::updateAutoloaderNamespaces($namespace['Global']);
+                }
+            }
 		}
 	}
 

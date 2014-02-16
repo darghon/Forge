@@ -53,8 +53,8 @@ abstract class DataLayer {
             else $this->$key = $val;
         }
         else{
-            if(isset($rules['length']['min']) && strlen((string)$val) < $rules['length']['min']) throw new \InvalidArgumentException(sprintf('Passed value is to short for %s->%s. Value needs to be at least %s characters long. "%s" was passed (%s long).', get_class($this),$key, $rules['length']['min'], (string)$val, strlen($val)));
-            if(isset($rules['length']['max']) && strlen((string)$val) > $rules['length']['max']) throw new \InvalidArgumentException(sprintf('Passed value is to long for %s->%s. Value can not be longer than %s characters. "%s" was passed (%s long).', get_class($this),$key, $rules['length']['max'], (string)$val, strlen($val)));
+            if(isset($rules['length']['min']) && !is_object($val) && strlen((string)$val) < $rules['length']['min']) throw new \InvalidArgumentException(sprintf('Passed value is to short for %s->%s. Value needs to be at least %s characters long. "%s" was passed (%s long).', get_class($this),$key, $rules['length']['min'], (string)$val, strlen($val)));
+            if(isset($rules['length']['max']) && !is_object($val) && strlen((string)$val) > $rules['length']['max']) throw new \InvalidArgumentException(sprintf('Passed value is to long for %s->%s. Value can not be longer than %s characters. "%s" was passed (%s long).', get_class($this),$key, $rules['length']['max'], (string)$val, strlen($val)));
 
             switch($rules['type']){
                 case ObjectGenerator::FIELD_TYPE_STRING:
@@ -155,8 +155,8 @@ abstract class DataLayer {
         foreach($rules as $field => $definition){
             if(isset($definition['allowNull']) && $definition['allowNull'] == false && is_null($this->$field)) $this->_errors[] = "Null is not allowed for ".get_class($this).'->'.$field;
             if(isset($definition['length'])){
-                if(isset($definition['length']['min']) && $definition['length']['min'] > strlen((string)($this->$field))) $this->_errors[] = "Value for ".get_class($this).'->'.$field." is to short, needs to be at least ".$definition['length']['min']." long";
-                if(isset($definition['length']['max']) && $definition['length']['max'] < strlen((string)($this->$field))) $this->_errors[] = "Value for ".get_class($this).'->'.$field." is to long, may to be a maximum of ".$definition['length']['max']." long";
+                if(isset($definition['length']['min']) && !is_object($this->$field) && $definition['length']['min'] > strlen((string)($this->$field))) $this->_errors[] = "Value for ".get_class($this).'->'.$field." is to short, needs to be at least ".$definition['length']['min']." long";
+                if(isset($definition['length']['max']) && !is_object($this->$field) && $definition['length']['max'] < strlen((string)($this->$field))) $this->_errors[] = "Value for ".get_class($this).'->'.$field." is to long, may to be a maximum of ".$definition['length']['max']." long";
             }
         }
         return empty($this->_errors);

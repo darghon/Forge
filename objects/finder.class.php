@@ -92,8 +92,9 @@ abstract class Finder {
 
 	public function & all($page = false, $pagesize = 20) {
 		$return = array();
-        Query::build()->select()->from($this->getTableName())->where('_deletedAt IS NULL');
-		$this->db->setQuery(sprintf("SELECT * FROM %s%s WHERE _deletedAt IS NULL %s;", $this->db->getPrefix(),  array_pop(explode('\\',get_class($this))), ($page !== false ? " Limit " . (($page - 1) * $pagesize) . "," . $pagesize : "")));
+        $query = \Forge\Query::build()->select()->from($this->getTableName())->where('_deletedAt', null);
+        if($page !== false) $query->limit($page, $pagesize);
+		$this->db->setQuery($query);
 		$this->db->execute();
 		if ($this->db->hasRecords()) {
 			while ($row = $this->db->getRecord()) {

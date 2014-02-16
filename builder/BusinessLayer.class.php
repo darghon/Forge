@@ -191,8 +191,9 @@ class BusinessLayer extends \Forge\baseGenerator {
 			fwrite($file, "\t * @return " . $this->name . "_i18n " . PHP_EOL);
 			fwrite($file, "\t */" . PHP_EOL);
 			fwrite($file, "\tpublic function & getTranslation(\$lang = null){" . PHP_EOL);
-			fwrite($file, "\t\tif(\$lang === null) \$lang = Forge::Translate()->getActiveLanguage();" . PHP_EOL);
-			fwrite($file, "\t\treturn " . $this->name . "_i18n::Find()->getTranslationByID(\$this->data->ID,\$lang);" . PHP_EOL);
+			fwrite($file, "\t\tif(\$lang === null) \$lang = \Forge\Forge::Translate()->getActiveLanguage();" . PHP_EOL);
+			fwrite($file, "\t\t\$lang = explode('_',\$lang);" . PHP_EOL);
+			fwrite($file, "\t\treturn " . $this->name . "_i18n::Find()->getTranslationByID(\$this->data->ID,\$lang[0]);" . PHP_EOL);
 			fwrite($file, "\t}" . PHP_EOL);
 			fwrite($file, "" . PHP_EOL);
             //create a getter for each translated field
@@ -203,8 +204,7 @@ class BusinessLayer extends \Forge\baseGenerator {
                 fwrite($file, "\t * @return " . $translated_field['type'] . " \$" . $translated_field['name'] . PHP_EOL);
                 fwrite($file, "\t */" . PHP_EOL);
                 fwrite($file, "\tpublic function get".$translated_field['name']."(\$lang = null){" . PHP_EOL);
-                fwrite($file, "\t\tif(\$lang === null) \$lang = Forge::Translate()->getActiveLanguage();" . PHP_EOL);
-                fwrite($file, "\t\treturn " . $this->name . "_i18n::Find()->getTranslationByID(\$this->data->ID,\$lang)->get".$translated_field['name']."();" . PHP_EOL);
+                fwrite($file, "\t\treturn \$this->getTranslation(\$lang)->get".$translated_field['name']."();" . PHP_EOL);
                 fwrite($file, "\t}" . PHP_EOL);
                 fwrite($file, "" . PHP_EOL);
                 fwrite($file, "\t/**" . PHP_EOL);
@@ -214,8 +214,7 @@ class BusinessLayer extends \Forge\baseGenerator {
                 fwrite($file, "\t * @return \$this" . PHP_EOL);
                 fwrite($file, "\t */" . PHP_EOL);
                 fwrite($file, "\tpublic function set".$translated_field['name']."(\$value, \$lang = null){" . PHP_EOL);
-                fwrite($file, "\t\tif(\$lang === null) \$lang = Forge::Translate()->getActiveLanguage();" . PHP_EOL);
-                fwrite($file, "\t\t\$i18n = &" . $this->name . "_i18n::Find()->getTranslationByID(\$this->data->ID,\$lang);".PHP_EOL);
+                fwrite($file, "\t\t\$i18n = &\$this->getTranslation(\$lang);".PHP_EOL);
                 fwrite($file, "\t\t\$i18n->set".$translated_field['name']."(\$value);" . PHP_EOL);
                 fwrite($file, "\t\treturn \$this;".PHP_EOL);
                 fwrite($file, "\t}" . PHP_EOL);
