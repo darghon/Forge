@@ -124,6 +124,9 @@ class DatabaseHandler {
         return $this->prepquery;
     }
 
+    /**
+     * @return bool|\mysqli_result|null
+     */
     public function execute() {
     //Executing sql
     //Clear all previous data
