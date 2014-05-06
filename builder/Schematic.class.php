@@ -92,9 +92,16 @@ class Schematic extends \Forge\baseGenerator {
             case 'tinyint':
                 return 'Integer';
             case 'datetime':
+            case 'timestamp':
                 return 'Datetime';
             case 'date':
                 return 'Date';
+            case 'time':
+                return 'Time';
+            case 'double':
+            case 'float':
+            case 'decimal':
+                return 'Decimal';
             default:
                 die('Unknown datatype '.$db_type);
         }
