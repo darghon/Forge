@@ -86,10 +86,13 @@ class Schematic extends \Forge\baseGenerator {
         switch($db_type){
             case 'varchar':
             case 'text':
+            case 'longtext':
                 return 'String';
             case 'int':
             case 'bigint':
             case 'tinyint':
+            case 'smallint':
+            case 'largeint':
                 return 'Integer';
             case 'datetime':
             case 'timestamp':
