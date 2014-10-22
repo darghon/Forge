@@ -1,12 +1,14 @@
 <?php
 namespace Forge;
 
-trait Translator{
+trait Translator
+{
     /**
      * @param string $string
      * @return string $translatedString
      */
-    public function __($string){
+    public function __($string)
+    {
         return Forge::Translate()->translate($string);
     }
 }

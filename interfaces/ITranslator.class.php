@@ -1,10 +1,11 @@
 <?php
 namespace Forge;
 
-interface ITranslator{
-	
-	public function translate($text);
-	
+interface ITranslator
+{
+
+    public function translate($text);
+
 }
 
 ?>

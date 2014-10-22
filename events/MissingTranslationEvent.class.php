@@ -1,7 +1,8 @@
 <?php
 namespace Forge\Event;
 
-class MissingTranslationEvent implements \Forge\IEvent{
+class MissingTranslationEvent implements \Forge\IEvent
+{
 
     /**
      * @var \Forge\TranslationHandler
@@ -14,7 +15,7 @@ class MissingTranslationEvent implements \Forge\IEvent{
      */
     public function __construct($context = null)
     {
-        if(is_null($context)) throw new \InvalidArgumentException('Expected context to be instance of TranslationHandler');
+        if (is_null($context)) throw new \InvalidArgumentException('Expected context to be instance of TranslationHandler');
         $this->_context = $context;
 
     }
@@ -28,26 +29,27 @@ class MissingTranslationEvent implements \Forge\IEvent{
         $path = $this->_context->getTranslationPath();
         @mkdir($path, 0777, true);
         //create file
-        file_put_contents($path.$this->_context->getActiveLanguage().'.i18n.php', sprintf(<<<eof
+        file_put_contents($path . $this->_context->getActiveLanguage() . '.i18n.php', sprintf(<<<eof
 <?php
 
 return array(
 %s
 );
 eof
-            ,$this->_getTranslations())
+                , $this->_getTranslations())
         );
     }
 
     /**
      * @return string
      */
-    protected function _getTranslations(){
+    protected function _getTranslations()
+    {
         $translations = array();
         $allTranslations = $this->_context->getTranslations();
         ksort($allTranslations);
-        foreach($allTranslations as $key => $value) $translations[] = sprintf("\t'%s' => '%s'", addslashes($key), addslashes($value));
-        return implode(','.PHP_EOL, $translations);
+        foreach ($allTranslations as $key => $value) $translations[] = sprintf("\t'%s' => '%s'", addslashes($key), addslashes($value));
+        return implode(',' . PHP_EOL, $translations);
     }
 
 }

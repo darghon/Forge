@@ -1,7 +1,8 @@
 <?php
 namespace Forge;
 
-interface IEvent{
+interface IEvent
+{
 
     /**
      * Initiate the event class with a context (object that triggered the event)

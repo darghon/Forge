@@ -4,7 +4,7 @@
  * Task is a custom start_up script that sets up the envirement, and loads a task that needs to be executed.
  * This will be used as a feature to launch cron jobs.
  */
-require(realpath(dirname(__FILE__)."/handlers/commandhandler.class.php"));
+require(realpath(dirname(__FILE__) . "/handlers/commandhandler.class.php"));
 
 $command = new Forge\CommandHandler($argv);
 

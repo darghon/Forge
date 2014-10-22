@@ -1,7 +1,8 @@
 <?php
 namespace Forge;
 
-abstract class ObjectGenerator extends baseGenerator{
+abstract class ObjectGenerator extends baseGenerator
+{
 
     const FIELD_TYPE_STRING = 'string';
     const FIELD_TYPE_INTEGER = 'integer';
@@ -11,7 +12,8 @@ abstract class ObjectGenerator extends baseGenerator{
     const FIELD_TYPE_DATETIME = 'datetime';
     const FIELD_TYPE_LIST = 'list';
 
-    protected function & getDatabaseSchema() {
+    protected function & getDatabaseSchema()
+    {
         $schema = array();
         if (false !== ($handle = opendir(Config::path("root") . "/config/database/"))) {
             while (false !== ($file = readdir($handle))) {
@@ -26,63 +28,46 @@ abstract class ObjectGenerator extends baseGenerator{
         return $schema;
     }
 
-    protected function validateSchema($schema){
+    protected function validateSchema($schema)
+    {
         //check if all Object types are valid
-        foreach($schema as $table_name => $table_definition){
-            foreach($table_definition['Columns'] as $field_name => $field_definition){
-                if(!is_array($field_definition)){
-                    switch(strtolower($field_definition)){
-                        case self::FIELD_TYPE_STRING:
-                        case self::FIELD_TYPE_INTEGER:
-                        case self::FIELD_TYPE_FLOAT:
-                        case self::FIELD_TYPE_BOOLEAN:
-                        case self::FIELD_TYPE_DATE:
-                        case self::FIELD_TYPE_DATETIME:
-                        case self::FIELD_TYPE_LIST:
-                            continue; //all ok
-                            break;
-                        default: //check if passed type is a passed table
-                            if(!isset($schema[$field_definition])) throw new \Exception('Unable to add field '.$field_name.' to table '.$table_name.' with type '.$field_definition.': Type does not exist');
-                            continue;
-                            break;
-                    }
-                }
-                else{
-                    $type = !isset($field_definition['Type']) ? $field_definition['type'] : $field_definition['Type'];
-
-                    switch(strtolower($type)){
-                        case self::FIELD_TYPE_STRING:
-                        case self::FIELD_TYPE_INTEGER:
-                        case self::FIELD_TYPE_FLOAT:
-                        case self::FIELD_TYPE_BOOLEAN:
-                        case self::FIELD_TYPE_DATE:
-                        case self::FIELD_TYPE_DATETIME:
-                        case self::FIELD_TYPE_LIST:
-                            continue; //all ok
-                            break;
-                        default: //check if passed type is a passed table
-                            if(!isset($schema[$type])) throw new \Exception('Unable to add field '.$field_name.' to table '.$table_name.' with type '.$type.': Type does not exist');
-                            continue;
-                            break;
-                    }
+        foreach ($schema as $table_name => $table_definition) {
+            foreach ($table_definition['Columns'] as $field_name => $field_definition) {
+                $type = !is_array($field_definition) ? $field_definition : (!isset($field_definition['Type']) ? $field_definition['type'] : $field_definition['Type']);
+                switch (strtolower($type)) {
+                    case self::FIELD_TYPE_STRING:
+                    case self::FIELD_TYPE_INTEGER:
+                    case self::FIELD_TYPE_FLOAT:
+                    case self::FIELD_TYPE_BOOLEAN:
+                    case self::FIELD_TYPE_DATE:
+                    case self::FIELD_TYPE_DATETIME:
+                    case self::FIELD_TYPE_LIST:
+                        continue; //all ok
+                        break;
+                    default: //check if passed type is a passed table //Might also be a collection of a table
+                        if (substr($type, -2) == '[]') $type = substr($type, 0, -2);
+                        if (!isset($schema[$type])) throw new \Exception('Unable to add field ' . $field_name . ' to table ' . $table_name . ' with type ' . $field_definition . ': Type does not exist');
+                        continue;
+                        break;
                 }
             }
         }
     }
 
-    protected function processTable($name, &$table) {
-        if(!isset($table["Links"])) $table["Links"] = array();
+    protected function processTable($name, &$table)
+    {
+        if (!isset($table["Links"])) $table["Links"] = array();
         $fields = $this->processFields($table["Columns"], $table["Links"]);
         $translate_buffer = array();
-        if(isset($table["Translate"])) {
+        if (isset($table["Translate"])) {
             //set default ID and language fields
             $translate_buffer[] = array("name" => "ID", "type" => "integer", "length" => "20", "default" => "null", "null" => "false");
             $translate_buffer[] = array("name" => $name . "ID", "type" => "integer", "length" => "20", "default" => "null", "null" => "false");
             $translate_buffer[] = array("name" => "Lang", "type" => "string", "length" => "2", "default" => "EN", "null" => "false");
             //copy all translate values from fields
-            foreach($table["Translate"] as $trans) {
-                foreach($fields as $key => $field) {
-                    if($trans == $field["name"]) {
+            foreach ($table["Translate"] as $trans) {
+                foreach ($fields as $key => $field) {
+                    if ($trans == $field["name"]) {
                         $translate_buffer[] = $field;
                         unset($fields[$key]);
                     }
@@ -93,15 +78,15 @@ abstract class ObjectGenerator extends baseGenerator{
             $translate_buffer[] = array("name" => "_deletedAt", "type" => "datetime", "length" => "10", "default" => "null", "null" => "true");
         }
         $links = array();
-        if(!empty($table["Links"]) || count($translate_buffer) > 0) {
-            if(!empty($table["Links"])) {
+        if (!empty($table["Links"]) || count($translate_buffer) > 0) {
+            if (!empty($table["Links"])) {
                 $links = $this->processLinks($table["Links"]);
             }
         }
         //Pass if any Extending classes have been defined
         $extends = array_merge(array('Business' => '~', 'Finder' => '~', 'Data' => '~'), isset($table['Extends']) ? $table['Extends'] : array());
         $implements = array_merge(array('Business' => '~', 'Finder' => '~', 'Data' => '~'), isset($table['Implements']) ? $table['Implements'] : array());
-        return array($fields,$links,$translate_buffer, $extends, $implements);
+        return array($fields, $links, $translate_buffer, $extends, $implements);
     }
 
     /**
@@ -109,12 +94,13 @@ abstract class ObjectGenerator extends baseGenerator{
      * @param array $table
      * @return array $fields
      */
-    protected function processFields(&$table, &$links = array()) {
+    protected function processFields(&$table, &$links = array())
+    {
         //create Fields
         $fields = array();
         //standard ID field
         $fields[] = array("name" => "ID", "type" => "integer", "length" => "20", "default" => "null", "null" => "false");
-        foreach($table as $column_name => &$column) {
+        foreach ($table as $column_name => &$column) {
             $field = $this->processColumnDefinition($column_name, $column, $links);
             $fields[] = $field;
         }
@@ -124,17 +110,17 @@ abstract class ObjectGenerator extends baseGenerator{
         return $fields;
     }
 
-    protected function processColumnDefinition($column_name, $definition, &$links){
+    protected function processColumnDefinition($column_name, $definition, &$links)
+    {
         $field = array();
-        if(is_array($definition)){
-            $field["type"] = $this->defineFieldType((isset($definition["Type"]) ? strtolower($definition["Type"]) : "string"),$links, $column_name);
+        if (is_array($definition)) {
+            $field["type"] = $this->defineFieldType((isset($definition["Type"]) ? strtolower($definition["Type"]) : "string"), $links, $column_name);
             $field["length"] = (isset($definition["Length"])) ? $definition["Length"] : "0";
             $field["default"] = (isset($definition["Default"])) ? (($definition["Default"] === true) ? 'true' : (($definition["Default"] === false) ? 'false' : $definition["Default"])) : "null";
             $field["null"] = (isset($definition["Null"])) ? $definition["Null"] : "true";
-        }
-        else{
+        } else {
             $field["type"] = $this->defineFieldType($definition, $links, $column_name);
-            switch(strtolower($definition)){
+            switch (strtolower($definition)) {
                 case self::FIELD_TYPE_INTEGER:
                     $field["length"] = "20";
                     $field["default"] = "null";
@@ -178,8 +164,9 @@ abstract class ObjectGenerator extends baseGenerator{
         return $field;
     }
 
-    protected function defineFieldType($type, &$links = array(), &$field_name = ''){
-        switch(strtolower($type)){
+    protected function defineFieldType($type, &$links = array(), &$field_name = '')
+    {
+        switch (strtolower($type)) {
             case self::FIELD_TYPE_STRING:
             case self::FIELD_TYPE_INTEGER:
             case self::FIELD_TYPE_BOOLEAN:
@@ -191,7 +178,7 @@ abstract class ObjectGenerator extends baseGenerator{
                 break;
             default: //passed type needs to be reverted to the ForeignKey
                 $links[$field_name] = array(
-                    'Local' => $field_name.'ID',
+                    'Local' => $field_name . 'ID',
                     'Target' => $type
                 );
                 $field_name .= 'ID';
@@ -205,10 +192,11 @@ abstract class ObjectGenerator extends baseGenerator{
      * @param array $links
      * @return array $relations
      */
-    protected function processLinks($links) {
+    protected function processLinks($links)
+    {
         //create Links
         $relations = array();
-        foreach($links as $relation_name => &$relation) {
+        foreach ($links as $relation_name => &$relation) {
             $link = array();
             $link["name"] = $relation_name;
             $link["target"] = $relation["Target"];

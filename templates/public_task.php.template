@@ -1,6 +1,6 @@
 #!/bin/php
 <?php
-require(realpath(dirname(__FILE__)."/../config/projectConfigurator.class.php"));
+require(realpath(dirname(__FILE__) . "/../config/projectConfigurator.class.php"));
 
 //initiate the wanted environment for task
 ProjectConfigurator::deployTask('development', $argv);

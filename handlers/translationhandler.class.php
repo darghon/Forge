@@ -2,7 +2,8 @@
 namespace Forge;
 
 
-class TranslationHandler{
+class TranslationHandler
+{
 
     use EventListener;
     /**
@@ -59,17 +60,19 @@ class TranslationHandler{
     /**
      * @param array $settings
      */
-    public function __construct($settings = array()){
-        if(array_key_exists('enabled', $settings)) $this->_enabled = !!($settings['enabled']);
-        if(array_key_exists('default', $settings)) $this->_defaultLanguage = $settings['default'];
-        if(array_key_exists('available', $settings)) $this->_availableLanguages = $settings['available'];
+    public function __construct($settings = array())
+    {
+        if (array_key_exists('enabled', $settings)) $this->_enabled = !!($settings['enabled']);
+        if (array_key_exists('default', $settings)) $this->_defaultLanguage = $settings['default'];
+        if (array_key_exists('available', $settings)) $this->_availableLanguages = $settings['available'];
 
         //check for localization defaults
         $this->_localization = Config::get('localization');
         $this->_detectActiveLocale();
     }
 
-    public function getActiveLanguage(){
+    public function getActiveLanguage()
+    {
         return $this->_activeLanguage;
     }
 
@@ -109,14 +112,14 @@ class TranslationHandler{
      * @param string $string
      * @return string
      */
-    public function translate($string){
-        if($this->_activeLanguage === null) $this->_detectActiveLocale();
-        if($this->_translations === null) $this->_loadTranslations();
+    public function translate($string)
+    {
+        if ($this->_activeLanguage === null) $this->_detectActiveLocale();
+        if ($this->_translations === null) $this->_loadTranslations();
 
-        if(array_key_exists($string, $this->_translations) && $this->_translations[$string] !== ''){
+        if (array_key_exists($string, $this->_translations) && $this->_translations[$string] !== '') {
             return $this->_translations[$string];
-        }
-        else{
+        } else {
             $this->_translations[$string] = ''; //add empty entry
             $this->raiseEvent(new \Forge\Event\MissingTranslationEvent($this));
         }
@@ -124,11 +127,13 @@ class TranslationHandler{
         return $string;
     }
 
-    public function getTranslationPath(){
-        return Config::path('app').'/'.str_replace('{{app}}', Route::curr_app(), $this->_i18nLocation);
+    public function getTranslationPath()
+    {
+        return Config::path('app') . '/' . str_replace('{{app}}', Route::curr_app(), $this->_i18nLocation);
     }
 
-    protected function _detectActiveLocale(){
+    protected function _detectActiveLocale()
+    {
         //read from cookie
 
         //fallback
@@ -136,16 +141,18 @@ class TranslationHandler{
         $this->_applyDefaultLocalize();
     }
 
-    protected function _applyDefaultLocalize(){
-        if(array_key_exists($this->_activeLanguage, $this->_localization)){
+    protected function _applyDefaultLocalize()
+    {
+        if (array_key_exists($this->_activeLanguage, $this->_localization)) {
             $locale = $this->_localization[$this->_activeLanguage];
-            if($this->_numberFormat === null && array_key_exists('NumberFormat', $locale)) $this->_numberFormat = $locale['NumberFormat'];
-            if($this->_timeZone === null && array_key_exists('TimeZone', $locale)) $this->_timeZone = $locale['TimeZone'];
-            if($this->_dateFormat === null && array_key_exists('DateFormat', $locale)) $this->_dateFormat = $locale['DateFormat'];
+            if ($this->_numberFormat === null && array_key_exists('NumberFormat', $locale)) $this->_numberFormat = $locale['NumberFormat'];
+            if ($this->_timeZone === null && array_key_exists('TimeZone', $locale)) $this->_timeZone = $locale['TimeZone'];
+            if ($this->_dateFormat === null && array_key_exists('DateFormat', $locale)) $this->_dateFormat = $locale['DateFormat'];
         }
     }
 
-    protected function _loadTranslations(){
+    protected function _loadTranslations()
+    {
         $this->_translations = $this->_readFile($this->_activeLanguage);
     }
 
@@ -153,14 +160,15 @@ class TranslationHandler{
      * @param $language
      * @return array $translations
      */
-    protected function _readFile($language){
-        try{
-            $path = $this->getTranslationPath().$this->_activeLanguage.'.i18n.php';
-            if(file_exists($path)){
+    protected function _readFile($language)
+    {
+        try {
+            $path = $this->getTranslationPath() . $this->_activeLanguage . '.i18n.php';
+            if (file_exists($path)) {
                 return include $path;
             }
+        } catch (Exception $error) {
         }
-        catch(Exception $error){}
         return array();
     }
 

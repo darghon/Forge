@@ -5,6 +5,7 @@ namespace Forge;
  * Interface ICommand
  * @package Forge
  */
-interface ICommand{
+interface ICommand
+{
     public function showHelp();
 }

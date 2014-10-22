@@ -1,15 +1,17 @@
 <?php
 namespace Forge;
 
-trait Localize {
+trait Localize
+{
     protected $_initializedLocale = false;
     protected $_userLanguage = null;
     protected $_dateFormat = null;
     protected $_timeZone = null;
     protected $_numberFormat = null;
 
-    public function getUserLanguage(){
-        if($this->_initializedLocale == false) $this->_initUserLocale();
+    public function getUserLanguage()
+    {
+        if ($this->_initializedLocale == false) $this->_initUserLocale();
     }
 
     /**
@@ -26,7 +28,7 @@ trait Localize {
      */
     public function getDateFormat()
     {
-        if($this->_initializedLocale == false) $this->_initUserLocale();
+        if ($this->_initializedLocale == false) $this->_initUserLocale();
         return $this->_dateFormat;
     }
 
@@ -44,7 +46,7 @@ trait Localize {
      */
     public function getNumberFormat()
     {
-        if($this->_initializedLocale == false) $this->_initUserLocale();
+        if ($this->_initializedLocale == false) $this->_initUserLocale();
         return $this->_numberFormat;
     }
 
@@ -62,11 +64,12 @@ trait Localize {
      */
     public function getTimeZone()
     {
-        if($this->_initializedLocale == false) $this->_initUserLocale();
+        if ($this->_initializedLocale == false) $this->_initUserLocale();
         return $this->_timeZone;
     }
 
-    protected function _initUserLocale(){
+    protected function _initUserLocale()
+    {
         $this->_userLanguage = Forge::Translate()->getActiveLanguage();
         $this->_dateFormat = Forge::Translate()->getDateFormat();
         $this->_timeZone = Forge::Translate()->getTimeZone();

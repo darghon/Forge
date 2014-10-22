@@ -52,7 +52,7 @@ class Persister
         $tmpsql = array();
         foreach ($this->fields as $key => $field) {
             if ($key == 'ID') continue;
-            if($this->object->$key === null) $tmpsql [] = "null";
+            if ($this->object->$key === null) $tmpsql [] = "null";
             else $tmpsql[] = "'" . $this->getValue($this->object, $key) . "'";
         }
         $this->sql .= implode(",", $tmpsql);
@@ -74,7 +74,7 @@ class Persister
         foreach ($this->fields as $key => $field) {
             if (!$field) continue; //If field is false, then do nothing, go to next field
             if ($key == "_recordVersion" || $key == "ID") continue; //always skip record version and ID
-            $tmpsql[] = "`" . $key . "`" . " = " . ($this->object->$key === null ? "null" : "'".$this->getValue($this->object, $key) . "'");
+            $tmpsql[] = "`" . $key . "`" . " = " . ($this->object->$key === null ? "null" : "'" . $this->getValue($this->object, $key) . "'");
         }
         if (count($tmpsql) > 0) {
             $tmpsql[] = "_recordVersion='" . (int)($this->object->_recordVersion + 1) . "'";
@@ -85,9 +85,10 @@ class Persister
         }
     }
 
-    protected function getValue($object, $key){
+    protected function getValue($object, $key)
+    {
         $value = $this->object->$key;
-        if($value instanceOf \DateTime){
+        if ($value instanceOf \DateTime) {
             //Always save UTC Time
             $value->setTimezone(new \DateTimeZone('UTC'));
             $returnValue = $value->getTimestamp();
