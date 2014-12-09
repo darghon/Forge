@@ -5,7 +5,6 @@ namespace Forge;
  * Security Handler checks if the requested action is allowed for the current system actor.
  * Initialize loads all security settings
  * Deploy checks if the access is allowed
- *
  * Security loads the security that is needed for the request.
  * The loaded security indicates if the request is_secure or not.
  * If so, the logged on user will be validated to check if they have the required credentials
@@ -23,10 +22,11 @@ class SecurityHandler implements IStage
     protected $auth_action = null;
     protected $credentials = null;
     protected $security_class = null;
-    protected $variables = array();
+    protected $variables = [];
 
     /**
      * Internal variable that contains a reference of the logged in user which is retrieved from the session
+     *
      * @var SecureUser
      */
     protected $_user = null;
@@ -54,6 +54,7 @@ class SecurityHandler implements IStage
         if ($this->_user === null) {
             if (!class_exists($this->security_class)) {
                 Debug::add('NOTICE', 'Failed to load security class ' . $this->security_class);
+
                 return true;
             }
             $user = new $this->security_class;
@@ -61,12 +62,6 @@ class SecurityHandler implements IStage
             $this->_user = &Session::getActiveUser();
         }
 
-        return true;
-    }
-
-    public function deploy()
-    {
-        if ($this->is_secure && ($this->_user === null || !$this->_user->hasCredentials($this->cred_required))) return $this->notAllowed();
         return true;
     }
 
@@ -84,9 +79,17 @@ class SecurityHandler implements IStage
         }
     }
 
+    public function deploy()
+    {
+        if ($this->is_secure && ($this->_user === null || !$this->_user->hasCredentials($this->cred_required))) return $this->notAllowed();
+
+        return true;
+    }
+
     protected function notAllowed()
     {
-        Route::redirect($this->auth_module . '/' . $this->auth_action, array('application' => !is_null($this->auth_application) ? $this->auth_application : Route::curr_app()));
+        Route::redirect($this->auth_module . '/' . $this->auth_action, ['application' => !is_null($this->auth_application) ? $this->auth_application : Route::curr_app()]);
+
         return true;
     }
 

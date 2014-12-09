@@ -8,18 +8,21 @@ namespace Forge;
 class XMLTextNode
 {
     /**
-     * Text of the text node
-     * @var String
-     */
-    private $text = null;
-    /**
      * Reference to parent object
+     *
      * @var Pointer
      */
     protected $parent = null;
+    /**
+     * Text of the text node
+     *
+     * @var String
+     */
+    private $text = null;
 
     /**
      * Constructor
+     *
      * @param String $text optional
      */
     public function __construct($text = null)
@@ -29,6 +32,7 @@ class XMLTextNode
 
     /**
      * Magic method that returns the text of the TextNode
+     *
      * @return String
      */
     public function __toString()
@@ -37,16 +41,8 @@ class XMLTextNode
     }
 
     /**
-     * Sets the text of the text node
-     * @param String $text
-     */
-    public function setText($text = null)
-    {
-        $this->text = $text;
-    }
-
-    /**
      * Returns the text of the TextNode
+     *
      * @return String
      */
     public function getText()
@@ -55,7 +51,18 @@ class XMLTextNode
     }
 
     /**
+     * Sets the text of the text node
+     *
+     * @param String $text
+     */
+    public function setText($text = null)
+    {
+        $this->text = $text;
+    }
+
+    /**
      * Get the pointer of the parent object
+     *
      * @return Pointer
      */
     public function & getParent()
@@ -65,6 +72,7 @@ class XMLTextNode
 
     /**
      * Set the pointer or reference of the parent object
+     *
      * @param Pointer $parent
      */
     public function setParent(&$parent)

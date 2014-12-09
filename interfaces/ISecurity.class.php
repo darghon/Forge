@@ -15,12 +15,14 @@ interface ISecurity
 
     /**
      * Public function to check if the active user has specific credentials
+     *
      * @param String|Array $cred
      */
     public function hasCredentials($cred);
 
     /**
      * Public function to set the credentials of the active user
+     *
      * @param Array $credentials
      */
     public function setCredentials(array $cred);
@@ -37,21 +39,24 @@ interface ISecurity
 
     /**
      * Public method to add an attribute to the active user
+     *
      * @param String $attribute_name
-     * @param Mixed $attribute_value
+     * @param Mixed  $attribute_value
      */
     public function setAttribute($attr, $value);
 
     /**
      * Public method to add more than 1 attribute at once
+     *
      * @param Array $attributes
      */
     public function setAttributes(array $attr);
 
     /**
      * Public method to retrieve an attribute of the active user
+     *
      * @param String $attribute_name
-     * @param Mixed $default_value
+     * @param Mixed  $default_value
      */
     public function getAttribute($attr, $default_value);
 

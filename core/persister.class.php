@@ -1,5 +1,6 @@
 <?php
 namespace Forge;
+
 //This class will receive a object, and will transform it into a sql statement to insert or delete
 class Persister
 {
@@ -9,7 +10,7 @@ class Persister
      */
     private $object = false;
     private $method = false;
-    private $fields = array();
+    private $fields = [];
     private $sql = false;
 
     public function __construct($prefix = null)
@@ -22,6 +23,7 @@ class Persister
         $this->object =& $object;
         $this->fields = $this->object->getFields();
         $this->process();
+
         return $this->sql;
     }
 
@@ -42,14 +44,14 @@ class Persister
         $this->method = "Insert";
         $this->sql = "Insert into ";
         $this->sql .= $this->pref . $this->getTableName();
-        $tmpsql = array();
+        $tmpsql = [];
         foreach ($this->fields as $key => $field) {
             if ($key == 'ID') continue;
             $tmpsql[] = "`" . $key . "`";
         }
         $this->sql .= "(" . implode(",", $tmpsql) . ")";
         $this->sql .= " values(";
-        $tmpsql = array();
+        $tmpsql = [];
         foreach ($this->fields as $key => $field) {
             if ($key == 'ID') continue;
             if ($this->object->$key === null) $tmpsql [] = "null";
@@ -64,13 +66,29 @@ class Persister
         return substr(get_class($this->object), strrpos(get_class($this->object), '\\') + 1);
     }
 
+    protected function getValue($object, $key)
+    {
+        $value = $this->object->$key;
+        if ($value instanceOf \DateTime) {
+            //Always save UTC Time
+            $value->setTimezone(new \DateTimeZone('UTC'));
+            $returnValue = $value->getTimestamp();
+            //reset the timezone
+            $value->setTimezone(new \DateTimeZone(\Forge\Forge::Translate()->getTimeZone()));
+
+            return $returnValue;
+        }
+
+        return Database::escape($value);
+    }
+
     private function createUpdateStatement()
     {
         $this->method = "Update";
         $this->sql = "Update ";
         //get table name from tag (tag: DUser)
         $this->sql .= $this->pref . $this->getTableName();
-        $tmpsql = array();
+        $tmpsql = [];
         foreach ($this->fields as $key => $field) {
             if (!$field) continue; //If field is false, then do nothing, go to next field
             if ($key == "_recordVersion" || $key == "ID") continue; //always skip record version and ID
@@ -85,30 +103,17 @@ class Persister
         }
     }
 
-    protected function getValue($object, $key)
-    {
-        $value = $this->object->$key;
-        if ($value instanceOf \DateTime) {
-            //Always save UTC Time
-            $value->setTimezone(new \DateTimeZone('UTC'));
-            $returnValue = $value->getTimestamp();
-            //reset the timezone
-            $value->setTimezone(new \DateTimeZone(\Forge\Forge::Translate()->getTimeZone()));
-            return $returnValue;
-        }
-        return Database::escape($value);
-    }
-
     public function getSmallSql(&$object)
     {
         $sql = "(";
-        $tmpsql = array();
+        $tmpsql = [];
         $fields = $object->getFields();
         foreach ($fields as $key => $field) {
             if ($key == 'ID') continue;
             $tmpsql[] = '"' . $this->getValue($object, $key) . '"';
         }
         $sql .= implode(',', $tmpsql) . ")";
+
         return $sql;
     }
 

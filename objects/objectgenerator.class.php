@@ -14,7 +14,7 @@ abstract class ObjectGenerator extends baseGenerator
 
     protected function & getDatabaseSchema()
     {
-        $schema = array();
+        $schema = [];
         if (false !== ($handle = opendir(Config::path("root") . "/config/database/"))) {
             while (false !== ($file = readdir($handle))) {
                 //Do not load files that start with . and/or end with ~
@@ -25,6 +25,7 @@ abstract class ObjectGenerator extends baseGenerator
             closedir($handle);
         }
         $this->validateSchema($schema);
+
         return $schema;
     }
 
@@ -56,14 +57,14 @@ abstract class ObjectGenerator extends baseGenerator
 
     protected function processTable($name, &$table)
     {
-        if (!isset($table["Links"])) $table["Links"] = array();
+        if (!isset($table["Links"])) $table["Links"] = [];
         $fields = $this->processFields($table["Columns"], $table["Links"]);
-        $translate_buffer = array();
+        $translate_buffer = [];
         if (isset($table["Translate"])) {
             //set default ID and language fields
-            $translate_buffer[] = array("name" => "ID", "type" => "integer", "length" => "20", "default" => "null", "null" => "false");
-            $translate_buffer[] = array("name" => $name . "ID", "type" => "integer", "length" => "20", "default" => "null", "null" => "false");
-            $translate_buffer[] = array("name" => "Lang", "type" => "string", "length" => "2", "default" => "EN", "null" => "false");
+            $translate_buffer[] = ["name" => "ID", "type" => "integer", "length" => "20", "default" => "null", "null" => "false"];
+            $translate_buffer[] = ["name" => $name . "ID", "type" => "integer", "length" => "20", "default" => "null", "null" => "false"];
+            $translate_buffer[] = ["name" => "Lang", "type" => "string", "length" => "2", "default" => "EN", "null" => "false"];
             //copy all translate values from fields
             foreach ($table["Translate"] as $trans) {
                 foreach ($fields as $key => $field) {
@@ -74,45 +75,49 @@ abstract class ObjectGenerator extends baseGenerator
                 }
             }
             //System fields for record version and deleted at timestamp
-            $translate_buffer[] = array("name" => "_recordVersion", "type" => "integer", "length" => "20", "default" => "0", "null" => "false");
-            $translate_buffer[] = array("name" => "_deletedAt", "type" => "datetime", "length" => "10", "default" => "null", "null" => "true");
+            $translate_buffer[] = ["name" => "_recordVersion", "type" => "integer", "length" => "20", "default" => "0", "null" => "false"];
+            $translate_buffer[] = ["name" => "_deletedAt", "type" => "datetime", "length" => "10", "default" => "null", "null" => "true"];
         }
-        $links = array();
+        $links = [];
         if (!empty($table["Links"]) || count($translate_buffer) > 0) {
             if (!empty($table["Links"])) {
                 $links = $this->processLinks($table["Links"]);
             }
         }
         //Pass if any Extending classes have been defined
-        $extends = array_merge(array('Business' => '~', 'Finder' => '~', 'Data' => '~'), isset($table['Extends']) ? $table['Extends'] : array());
-        $implements = array_merge(array('Business' => '~', 'Finder' => '~', 'Data' => '~'), isset($table['Implements']) ? $table['Implements'] : array());
-        return array($fields, $links, $translate_buffer, $extends, $implements);
+        $extends = array_merge(['Business' => '~', 'Finder' => '~', 'Data' => '~'], isset($table['Extends']) ? $table['Extends'] : []);
+        $implements = array_merge(['Business' => '~', 'Finder' => '~', 'Data' => '~'], isset($table['Implements']) ? $table['Implements'] : []);
+
+        return [$fields, $links, $translate_buffer, $extends, $implements];
     }
 
     /**
      * Private static function to process the fields of a given table schema.
+     *
      * @param array $table
+     *
      * @return array $fields
      */
-    protected function processFields(&$table, &$links = array())
+    protected function processFields(&$table, &$links = [])
     {
         //create Fields
-        $fields = array();
+        $fields = [];
         //standard ID field
-        $fields[] = array("name" => "ID", "type" => "integer", "length" => "20", "default" => "null", "null" => "false");
+        $fields[] = ["name" => "ID", "type" => "integer", "length" => "20", "default" => "null", "null" => "false"];
         foreach ($table as $column_name => &$column) {
             $field = $this->processColumnDefinition($column_name, $column, $links);
             $fields[] = $field;
         }
         //Standard Version & Delflag field
-        $fields[] = array("name" => "_recordVersion", "type" => "integer", "length" => "20", "default" => "0", "null" => "false");
-        $fields[] = array("name" => "_deletedAt", "type" => "datetime", "length" => "20", "default" => "null", "null" => "true");
+        $fields[] = ["name" => "_recordVersion", "type" => "integer", "length" => "20", "default" => "0", "null" => "false"];
+        $fields[] = ["name" => "_deletedAt", "type" => "datetime", "length" => "20", "default" => "null", "null" => "true"];
+
         return $fields;
     }
 
     protected function processColumnDefinition($column_name, $definition, &$links)
     {
-        $field = array();
+        $field = [];
         if (is_array($definition)) {
             $field["type"] = $this->defineFieldType((isset($definition["Type"]) ? strtolower($definition["Type"]) : "string"), $links, $column_name);
             $field["length"] = (isset($definition["Length"])) ? $definition["Length"] : "0";
@@ -161,10 +166,11 @@ abstract class ObjectGenerator extends baseGenerator
         }
 
         $field["name"] = $column_name;
+
         return $field;
     }
 
-    protected function defineFieldType($type, &$links = array(), &$field_name = '')
+    protected function defineFieldType($type, &$links = [], &$field_name = '')
     {
         switch (strtolower($type)) {
             case self::FIELD_TYPE_STRING:
@@ -177,11 +183,12 @@ abstract class ObjectGenerator extends baseGenerator
                 return strtolower($type);
                 break;
             default: //passed type needs to be reverted to the ForeignKey
-                $links[$field_name] = array(
-                    'Local' => $field_name . 'ID',
+                $links[$field_name] = [
+                    'Local'  => $field_name . 'ID',
                     'Target' => $type
-                );
+                ];
                 $field_name .= 'ID';
+
                 return self::FIELD_TYPE_INTEGER;
                 break;
         }
@@ -189,20 +196,23 @@ abstract class ObjectGenerator extends baseGenerator
 
     /**
      * Private static function to process the links of a given table schema
+     *
      * @param array $links
+     *
      * @return array $relations
      */
     protected function processLinks($links)
     {
         //create Links
-        $relations = array();
+        $relations = [];
         foreach ($links as $relation_name => &$relation) {
-            $link = array();
+            $link = [];
             $link["name"] = $relation_name;
             $link["target"] = $relation["Target"];
             $link["local"] = $relation["Local"];
             $relations[] = $link;
         }
+
         return $relations;
     }
 }

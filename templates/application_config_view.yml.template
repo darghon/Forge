@@ -1,17 +1,14 @@
-# global application header information
-global:
+global:                                         # global application header information
   title: "{app_name}"
   template: {app_name}.template.php
-# add js files from the source folder web/js
-  javascript:
+
+  javascript:                                   # add js files from the source folder public/js
     #-jquery.js
 
-# add css files from the source folder web/css
-  stylesheet:
+  stylesheet:                                   # add css files from the source folder public/css
     #-reset.css
 
-# add meta data to the header
-  metas:
+  metas:                                        # add meta data to the header
     tags: "{app_name}"
     description: "{app_name}"
     author: "Gerry Van Bael"

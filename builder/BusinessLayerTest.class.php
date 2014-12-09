@@ -1,7 +1,9 @@
 <?php
 namespace Forge\Builder;
 
-class BusinessLayerTest extends \Forge\baseGenerator
+use Forge\baseGenerator;
+
+class BusinessLayerTest extends baseGenerator
 {
 
     protected $name = null;
@@ -12,17 +14,12 @@ class BusinessLayerTest extends \Forge\baseGenerator
     protected $location = null;
     protected $multi_lang = false;
 
-    public function __construct($args = array())
+    public function __construct($args = [])
     {
-        list($this->name, $this->fields, $this->translate, $this->extends, $this->implements) = $args + array(null, array(), array(), null, null);
+        list($this->name, $this->fields, $this->translate, $this->extends, $this->implements) = $args + [null, [], [], null, null];
         $this->location = \Forge\Config::path('tests') . '/unit/Objects/Business/Base/';
         if (is_array($this->translate) && !empty($this->translate)) $this->multi_lang = true;
         $this->extends = 'PHPUnit_Framework_TestCase';
-    }
-
-    public function setName($name)
-    {
-        $this->name = $name;
     }
 
     public function getName()
@@ -30,9 +27,9 @@ class BusinessLayerTest extends \Forge\baseGenerator
         return $this->name;
     }
 
-    public function setFields($fields)
+    public function setName($name)
     {
-        $this->fields = $fields;
+        $this->name = $name;
     }
 
     public function getFields()
@@ -40,19 +37,24 @@ class BusinessLayerTest extends \Forge\baseGenerator
         return $this->fields;
     }
 
+    public function setFields($fields)
+    {
+        $this->fields = $fields;
+    }
+
     public function addTranslator($opt = true)
     {
         $this->multi_lang = $opt;
     }
 
-    public function setExtends($extends)
-    {
-        $this->extends = $extends;
-    }
-
     public function getExtends()
     {
         return $this->extends;
+    }
+
+    public function setExtends($extends)
+    {
+        $this->extends = $extends;
     }
 
     public function generate()
@@ -129,27 +131,6 @@ class BusinessLayerTest extends \Forge\baseGenerator
         fwrite($file, "?>");
     }
 
-    public function __destroy()
-    {
-        unset($this->name, $this->fields, $this->location);
-    }
-
-    private function writeClassTestContent($file)
-    {
-        fwrite($file, "<?php" . PHP_EOL);
-        fwrite($file, "/**" . PHP_EOL);
-        fwrite($file, " * Forge Business Test class" . PHP_EOL);
-        fwrite($file, " * --------------------" . PHP_EOL);
-        fwrite($file, " * This class is the test class for " . $this->name . "." . PHP_EOL);
-        fwrite($file, " * Any custom tests need to be specified here." . PHP_EOL);
-        fwrite($file, " * " . PHP_EOL);
-        fwrite($file, " * @author Gerry Van Bael " . PHP_EOL);
-        fwrite($file, " */" . PHP_EOL);
-        fwrite($file, "class " . $this->name . "Test extends base" . $this->name . "Test{" . PHP_EOL);
-        fwrite($file, "" . PHP_EOL);
-        fwrite($file, "}" . PHP_EOL);
-    }
-
     protected function & getValidValue($fieldDefinition)
     {
         $value = null;
@@ -177,6 +158,7 @@ class BusinessLayerTest extends \Forge\baseGenerator
                 $value = "array('A','b','c' => 'd')";
                 break;
         }
+
         return $value;
     }
 
@@ -207,7 +189,29 @@ class BusinessLayerTest extends \Forge\baseGenerator
                 $value = '"NOT A LIST"';
                 break;
         }
+
         return $value;
+    }
+
+    private function writeClassTestContent($file)
+    {
+        fwrite($file, "<?php" . PHP_EOL);
+        fwrite($file, "/**" . PHP_EOL);
+        fwrite($file, " * Forge Business Test class" . PHP_EOL);
+        fwrite($file, " * --------------------" . PHP_EOL);
+        fwrite($file, " * This class is the test class for " . $this->name . "." . PHP_EOL);
+        fwrite($file, " * Any custom tests need to be specified here." . PHP_EOL);
+        fwrite($file, " * " . PHP_EOL);
+        fwrite($file, " * @author Gerry Van Bael " . PHP_EOL);
+        fwrite($file, " */" . PHP_EOL);
+        fwrite($file, "class " . $this->name . "Test extends base" . $this->name . "Test{" . PHP_EOL);
+        fwrite($file, "" . PHP_EOL);
+        fwrite($file, "}" . PHP_EOL);
+    }
+
+    public function __destroy()
+    {
+        unset($this->name, $this->fields, $this->location);
     }
 
 }

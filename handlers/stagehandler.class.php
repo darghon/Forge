@@ -10,15 +10,15 @@ class StageHandler
 
     protected static $current_stage = 0; //Boot
 
-    protected $stages = array();
+    protected $stages = [];
 
-    protected $defaults = array(
-        'request' => '\Forge\RequestHandler',
-        'routing' => '\Forge\RouteHandler',
+    protected $defaults = [
+        'request'       => '\Forge\RequestHandler',
+        'routing'       => '\Forge\RouteHandler',
         'configuration' => '\Forge\ConfigurationHandler',
-        'security' => '\Forge\SecurityHandler',
-        'response' => '\Forge\ResponseHandler'
-    );
+        'security'      => '\Forge\SecurityHandler',
+        'response'      => '\Forge\ResponseHandler'
+    ];
 
     public function __construct($config)
     {
@@ -35,6 +35,11 @@ class StageHandler
         }
     }
 
+    public static function getCurrentStage()
+    {
+        return self::$current_stage;
+    }
+
     public function deploy()
     {
         foreach ($this->stages as $key => &$stage) {
@@ -46,12 +51,8 @@ class StageHandler
         }
         //register end of request
         Forge::registerShutdown();
-        return true;
-    }
 
-    public static function getCurrentStage()
-    {
-        return self::$current_stage;
+        return true;
     }
 
     public function __destroy()

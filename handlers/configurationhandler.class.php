@@ -7,12 +7,12 @@ namespace Forge;
 class ConfigurationHandler implements IStage
 {
 
-    protected $js = array();
-    protected $css = array();
-    protected $meta = array();
+    protected $js = [];
+    protected $css = [];
+    protected $meta = [];
     protected $title = "No Title";
     protected $template = null;
-    protected $variables = array();
+    protected $variables = [];
     protected $app = null;
     protected $mod = null;
     protected $act = null;
@@ -62,6 +62,111 @@ class ConfigurationHandler implements IStage
                 $this->variables[$key] = $value;
             }
         }
+    }
+
+    private function loadFromCache()
+    {
+        $result = Cache::load('modulecache_' . $this->app . '_' . $this->mod . '_' . $this->act . '.php', false);
+        if (!$result) return false;
+        $this->js = $result['js'];
+        $this->css = $result['css'];
+        $this->meta = $result['meta'];
+        $this->title = $result['title'];
+        $this->template = $result['template'];
+        $this->variables = $result['variables'];
+
+        return true;
+    }
+
+    /**
+     * This function parses a configuration array to apply its content.
+     *
+     * @param array $config
+     */
+    private function parseConfig($config)
+    {
+        if (is_array($config)) {
+            foreach ($config as $index => $entry) {
+                if (empty($entry)) continue;
+                switch ($index) {
+                    case 'title': //Set Title
+                        $this->title = $entry;
+                        break;
+                    case 'template': //Set Template
+                        $this->template = $entry;
+                        break;
+                    case 'stylesheet': //Set Css
+                        $this->setEntry('css', $entry);
+                        break;
+                    case 'javascript': //Set Js
+                        $this->setEntry('js', $entry);
+                        break;
+                    case 'metas': //Set metas
+                        $this->setMeta($entry);
+                        break;
+                    default: //Else
+                        $this->variables[$index] = $entry;
+                        break;
+                }
+            }
+        }
+    }
+
+    private function setEntry($type, $value)
+    {
+        if (is_array($value)) {
+            foreach ($value as $entry) {
+                $this->applyEntry($type, $entry);
+            }
+        } else {
+            $this->applyEntry($type, $value);
+        }
+
+        return true;
+    }
+
+    private function applyEntry($type, $value)
+    {
+        if (substr($value, 0, 1) == "-") { //needs to be removed
+            if (substr($value, 1, 1) == "*") { //remove all
+                $this->$type = [];
+            } else { //remove specific
+                foreach ($this->$type as $key => $i) {
+                    if ($i == $value) {
+                        unset($this->$type[$i]);
+                    }
+                }
+            }
+        } else {
+            array_push($this->$type, $value);
+        }
+    }
+
+    private function setMeta($metas)
+    {
+        foreach ($metas as $name => $meta) {
+            switch ($name) {
+                case 'tags':
+                    if (!is_array($meta)) $meta = [$meta];
+                    $this->meta[$name] = isset($this->meta[$name]) || array_key_exists($name, $this->meta) ? array_merge($this->meta[$name], $meta) : $meta;
+                    break;
+                default:
+                    $this->meta[$name] = $meta;
+                    break;
+            }
+        }
+    }
+
+    private function cacheConfig()
+    {
+        $toBuff = [];
+        $toBuff['js'] = $this->js;
+        $toBuff['css'] = $this->css;
+        $toBuff['meta'] = $this->meta;
+        $toBuff['title'] = $this->title;
+        $toBuff['template'] = $this->template;
+        $toBuff['variables'] = $this->variables;
+        Cache::save('modulecache_' . $this->app . '_' . $this->mod . '_' . $this->act . '.php', serialize($toBuff));
     }
 
     public function getApp()
@@ -121,7 +226,7 @@ class ConfigurationHandler implements IStage
 
     public function addMeta($type, $values)
     {
-        $this->setMeta(array($type => $values));
+        $this->setMeta([$type => $values]);
     }
 
     public function getTitle()
@@ -157,108 +262,6 @@ class ConfigurationHandler implements IStage
     public function addVariables($key, $value)
     {
         $this->variables[$key] = $value;
-    }
-
-    private function cacheConfig()
-    {
-        $toBuff = array();
-        $toBuff['js'] = $this->js;
-        $toBuff['css'] = $this->css;
-        $toBuff['meta'] = $this->meta;
-        $toBuff['title'] = $this->title;
-        $toBuff['template'] = $this->template;
-        $toBuff['variables'] = $this->variables;
-        Cache::save('modulecache_' . $this->app . '_' . $this->mod . '_' . $this->act . '.php', serialize($toBuff));
-    }
-
-    private function loadFromCache()
-    {
-        $result = Cache::load('modulecache_' . $this->app . '_' . $this->mod . '_' . $this->act . '.php', false);
-        if (!$result) return false;
-        $this->js = $result['js'];
-        $this->css = $result['css'];
-        $this->meta = $result['meta'];
-        $this->title = $result['title'];
-        $this->template = $result['template'];
-        $this->variables = $result['variables'];
-        return true;
-    }
-
-    /**
-     * This function parses a configuration array to apply its content.
-     * @param array $config
-     */
-    private function parseConfig($config)
-    {
-        if (is_array($config)) {
-            foreach ($config as $index => $entry) {
-                if (empty($entry)) continue;
-                switch ($index) {
-                    case 'title': //Set Title
-                        $this->title = $entry;
-                        break;
-                    case 'template': //Set Template
-                        $this->template = $entry;
-                        break;
-                    case 'stylesheet': //Set Css
-                        $this->setEntry('css', $entry);
-                        break;
-                    case 'javascript': //Set Js
-                        $this->setEntry('js', $entry);
-                        break;
-                    case 'metas': //Set metas
-                        $this->setMeta($entry);
-                        break;
-                    default: //Else
-                        $this->variables[$index] = $entry;
-                        break;
-                }
-            }
-        }
-    }
-
-    private function setEntry($type, $value)
-    {
-        if (is_array($value)) {
-            foreach ($value as $entry) {
-                $this->applyEntry($type, $entry);
-            }
-        } else {
-            $this->applyEntry($type, $value);
-        }
-        return true;
-    }
-
-    private function applyEntry($type, $value)
-    {
-        if (substr($value, 0, 1) == "-") { //needs to be removed
-            if (substr($value, 1, 1) == "*") { //remove all
-                $this->$type = array();
-            } else { //remove specific
-                foreach ($this->$type as $key => $i) {
-                    if ($i == $value) {
-                        unset($this->$type[$i]);
-                    }
-                }
-            }
-        } else {
-            array_push($this->$type, $value);
-        }
-    }
-
-    private function setMeta($metas)
-    {
-        foreach ($metas as $name => $meta) {
-            switch ($name) {
-                case 'tags':
-                    if (!is_array($meta)) $meta = array($meta);
-                    $this->meta[$name] = isset($this->meta[$name]) || array_key_exists($name, $this->meta) ? array_merge($this->meta[$name], $meta) : $meta;
-                    break;
-                default:
-                    $this->meta[$name] = $meta;
-                    break;
-            }
-        }
     }
 
     public function __destroy()

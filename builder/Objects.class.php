@@ -20,22 +20,19 @@ class Objects extends ObjectGenerator
 
     /**
      * Public generate action. This method performs all actions required to build the wanted files
+     *
      * @return boolean $result;
      */
     public function generate()
     {
-//        $dbschema = new DatabaseSchema(Config::path('config').'/database/');
-//        $dbschema->loadSchema();
-//
+        $dbschema = new DatabaseSchema(Config::path('config') . '/database/');
+        $schema = $dbschema->loadSchema()->getTableDefinitions();
 
-        $schema = &$this->getDatabaseSchema();
-        //Schema is now an array with all the tables loaded from the config/database folder
         foreach ($schema as $table_name => &$table) {
 
-            list($fields, $links, $translation, $extends, $implements) = $this->processTable($table_name, $table);
-            Generator::getInstance()->build('businesslayer', array($table_name, $fields, $links, $translation, $extends['Business'], $implements['Business']));
-            Generator::getInstance()->build('datalayer', array($table_name, $fields, $translation, $extends['Data'], $implements['Data']));
-            Generator::getInstance()->build('finder', array($table_name, $fields, $translation, $extends['Finder'], $implements['Finder']));
+            Generator::getInstance()->build('businesslayer', [$table]);
+            Generator::getInstance()->build('datalayer', [$table_name, $fields, $translation, $extends['Data'], $implements['Data']]);
+            Generator::getInstance()->build('finder', [$table_name, $fields, $translation, $extends['Finder'], $implements['Finder']]);
 
             echo " DONE!" . PHP_EOL;
             flush();

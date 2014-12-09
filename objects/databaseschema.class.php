@@ -9,45 +9,198 @@ class DatabaseSchema
     protected $_schema_folder;
     /** @var TableDefinition[] */
     protected $_table_definitions;
+    /** @var array */
+    protected $_working_schema = [];
 
+    /**
+     * @param null|string $schema_folder
+     */
     public function __construct($schema_folder = null)
     {
         if (!is_null($schema_folder)) $this->setSchemaFolder($schema_folder);
     }
 
+    /**
+     * Public function that loads all yaml files from the schema folder
+     * All contents are delegated to the parseSchema function that calculates the actual schema
+     *
+     * @return $this
+     * @throws \Exception
+     */
     public function loadSchema()
     {
         if (is_null($this->_schema_folder)) throw new \Exception($this->__('No schema folder has been defined'));
 
-        $schema = [];
+        $this->_working_schema = [];
         if (false !== ($handle = opendir($this->_schema_folder))) {
             while (false !== ($file = readdir($handle))) {
                 if (substr($file, 0, 1) !== "." && substr($file, strlen($file) - 1) !== "~") {
-                    $schema = array_merge($schema, Config::get(substr($file, 0, strrpos($file, ".")), $this->_schema_folder));
+                    $this->_working_schema = array_merge($this->_working_schema, Config::get(substr($file, 0, strrpos($file, ".")), $this->_schema_folder));
                 }
             }
             closedir($handle);
         }
-        if ($this->_parseSchema($schema)) {
-            //basic check is ok, lets parse each table
 
+        if ($this->_parseSchema()) {
+            //basic check is ok, lets parse each table
+            foreach($this->_working_schema as $table_name => $definitions) {
+                $tableDefinition = new TableDefinition($table_name, $definitions);
+                $this->_table_definitions[] = $tableDefinition;
+            }
         }
+
         return $this;
     }
 
-    protected function _parseSchema($schema)
+    /**
+     * @return bool $success
+     * @throws \Exception
+     */
+    protected function _parseSchema()
     {
+        $translationAdded = false;
         //check if all Object types are valid
-        foreach ($schema as $table_name => $table_definition) {
+        while (list($table_name, $table_definition) = each($this->_working_schema)) {
             //check the columns definitions, if type is a collection of other objects, link tables may be added as well
-            if (isset($table_definition['Columns'])) $this->_parseColumns($schema, $table_definition['Columns'], $table_name);
-            //Check if translation table needs to be added as well
-            if (isset($table_definition['Translate'])) $this->_parseTranslations($schema, $table_definition['Translate'], $table_name);
+            if (isset($table_definition['Behaviors'])) $this->_validateBehaviors($table_definition['Behaviors'], $table_name, $table_definition);
+            if (isset($table_definition['Columns'])) $this->_validateColumns($table_definition['Columns'], $table_name, $table_definition);
+            if (isset($table_definition['Translation']) && !$translationAdded){
+                $translationAdded = true;
+                $this->_addTranslationTable();
+            }
         }
-
         return true; //only reached when no errors are found.
     }
 
+    /**
+     * @param array  $behaviors
+     * @param string $table_name
+     * @param array  $table_definition
+     */
+    protected function _validateBehaviors($behaviors, $table_name, &$table_definition)
+    {
+        /** @var Apply global config to each table **/
+        $columns = $table_definition['Columns'];
+        $table_definition['Columns'] = ['Id'  => ['Type' => 'Integer', 'Length' => '10', 'Null' => false]];
+        foreach($columns as $key => $column) $table_definition['Columns'][$key] = $column;
+        $table_definition['Columns'] = ['_recordVersion'  => ['Type' => 'Integer', 'Length' => '10', 'Null' => false, 'Default' => 0]];
+        $table_definition['Columns'] = ['_deletedAt'  => ['Type' => 'Datetime', 'Length' => '20']];
+
+        foreach ($behaviors as $behavior) {
+
+            trigger_error('Behavior: ' . $behavior . ' not recognised' . PHP_EOL);
+        }
+    }
+
+    /**
+     * @param array  $table_definition
+     * @param string $table_name
+     *
+     * @throws \Exception
+     */
+    protected function _validateColumns($table_definition, $table_name)
+    {
+        foreach ($table_definition as $field_name => $field_definition) {
+            $type = !is_array($field_definition) ? $field_definition : (!isset($field_definition['Type']) ? $field_definition['type'] : $field_definition['Type']);
+            if (!in_array(strtolower($type), ColumnDefinition::$validFieldTypes)) {
+                if (substr($type, -2) == '[]') {
+                    if (!isset($this->_working_schema[substr($type, 0, -2)])) {
+                        throw new \Exception(sprintf($this->__('Unable to add field %s to table %s with type %s: Type does not exist'), $field_name, $table_name, $type));
+                    }
+                    else {
+                        $this->_addComboToSchema($table_name, $field_name, $type);
+                    }
+                } else {
+                    if (!isset($this->_working_schema[$type])) {
+                        throw new \Exception(sprintf($this->__('Unable to add field %s to table %s with type %s: Type does not exist'), $field_name, $table_name, $type));
+                    }
+                    else{
+                        $this->_addLink($table_name, $field_name, Tools::camelcasetostr($field_name).'_id', $type);
+                        $this->_addLink($type, $table_name, Tools::camelcasetostr($table_name).'_id', $table_name);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @param string $table_name
+     * @param string $field_name
+     * @param string $type
+     */
+    protected function _addComboToSchema($table_name, $field_name, $type)
+    {
+        $new_table_name = $table_name . substr($type, 0, -2);
+        if (isset($this->_working_schema[substr($type, 0, -2) . $table_name])) $new_table_name = substr($type, 0, -2) . $table_name;
+
+        $columns = [
+            Tools::camelcasetostr($table_name)          => $table_name,
+            Tools::camelcasetostr(substr($type, 0, -2)) => substr($type, 0, -2)
+        ];
+
+        $this->_addNewTable($new_table_name, $columns);
+
+        //remove field from current table
+        unset($this->_working_schema[$table_name]['Columns'][$field_name]);
+
+        //add links
+        $this->_addLink($table_name, $field_name, 'id', $type, $new_table_name);
+        $this->_addLink(substr($type, 0, -2), $table_name . 's', 'id', $table_name . '[]', $new_table_name);
+    }
+
+    /**
+     * @param string $new_table_name
+     * @param array  $columns
+     *
+     * @return bool
+     */
+    protected function _addNewTable($new_table_name, $columns)
+    {
+        if (!isset($this->_working_schema[$new_table_name])) $this->_working_schema[$new_table_name] = [];
+        if (!isset($this->_working_schema[$new_table_name]['Columns'])) $this->_working_schema[$new_table_name]['Columns'] = [];
+
+        $this->_working_schema[$new_table_name]['Columns'] = array_merge($this->_working_schema[$new_table_name]['Columns'], $columns);
+        return true;
+    }
+
+    /**
+     * @param string      $table_name
+     * @param string      $link_name
+     * @param string      $local_identifier
+     * @param string      $target_table
+     * @param null|string $link_table
+     *
+     * @return bool
+     */
+    protected function _addLink($table_name, $link_name, $local_identifier, $target_table, $link_table = null)
+    {
+        $link = [
+            'Local'  => $local_identifier,
+            'Target' => $target_table
+        ];
+
+        if ($link_table != null) {
+            $link['Link'] = $link_table;
+        }
+
+        if (!isset($this->_working_schema[$table_name]['Links'])) $this->_working_schema[$table_name]['Links'] = [];
+        $this->_working_schema[$table_name]['Links'] = array_merge($this->_working_schema[$table_name]['Links'], [
+            $link_name => $link
+        ]);
+        return true;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function _addTranslationTable()
+    {
+        return $this->_addNewTable('_I18n', [
+            'Tag'  => ['Type' => 'String', 'Length' => '25', 'Null' => false],
+            'Lang' => ['Type' => 'String', 'Length' => '2', 'Null' => false],
+            'Text' => 'String'
+        ]);
+    }
 
     /**
      * @return String
@@ -66,49 +219,22 @@ class DatabaseSchema
     }
 
     /**
-     * @param $schema
-     * @param $table_definition
-     * @param $table_name
-     * @throws \Exception
+     * @return TableDefinition[]
      */
-    protected function _parseColumns(&$schema, $table_definition, $table_name)
+    public function getTableDefinitions()
     {
-        foreach ($table_definition as $field_name => $field_definition) {
-            $type = !is_array($field_definition) ? $field_definition : (!isset($field_definition['Type']) ? $field_definition['type'] : $field_definition['Type']);
-            switch (strtolower($type)) {
-                case ColumnDefinition::TYPE_STRING:
-                case ColumnDefinition::TYPE_INTEGER:
-                case ColumnDefinition::TYPE_FLOAT:
-                case ColumnDefinition::TYPE_BOOLEAN:
-                case ColumnDefinition::TYPE_DATE:
-                case ColumnDefinition::TYPE_DATETIME:
-                case ColumnDefinition::TYPE_LIST:
-                    continue; //all ok
-                    break;
-                default: //check if passed type is a passed table //Might also be a collection of a table
-                    if (substr($type, -2) == '[]') {
-                        if (!isset($schema[substr($type, 0, -2)])) throw new \Exception(sprintf($this->__('Unable to add field %s to table %s with type %s: Type does not exist'), $field_name, $table_name, $type));
-                        else {
-                            //Add link table to schema
-                            $schema[$table_name . substr($type, 0, -2)] = [
-                                'Columns' => [
-                                    Tools::camelcasetostr($table_name, '_') => $table_name,
-                                    Tools::camelcasetostr(substr($type, 0, -2)) => substr($type, 0, -2)
-                                ]
-                            ];
-                        }
-                    } else {
-                        if (!isset($schema[$type])) throw new \Exception(sprintf($this->__('Unable to add field %s to table %s with type %s: Type does not exist'), $field_name, $table_name, $type));
-                    }
-                    continue;
-                    break;
-            }
-        }
+        return $this->_table_definitions;
     }
 
-    protected function _parseTranslations(&$schema, $table_definition, $table_name)
+    /**
+     * @param TableDefinition[] $table_definitions
+     *
+     * @return $this
+     */
+    public function setTableDefinitions(array $table_definitions)
     {
-
+        $this->_table_definitions = $table_definitions;
+        return $this;
     }
 
 

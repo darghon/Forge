@@ -9,8 +9,8 @@ namespace Forge;
 class SecureUser implements ISecurity
 {
 
-    protected $credentials = array();
-    protected $attributes = array();
+    protected $credentials = [];
+    protected $attributes = [];
     protected $flag = self::USER_GUEST;
 
     public function setUserMode($user_mode = self::USER_GUEST)
@@ -18,14 +18,14 @@ class SecureUser implements ISecurity
         $this->flag = $user_mode;
     }
 
-    public function setCredentials(array $cred)
-    {
-        foreach ($cred as $value) $this->credentials[] = $value;
-    }
-
     public function getCredentials()
     {
         return $this->credentials;
+    }
+
+    public function setCredentials(array $cred)
+    {
+        foreach ($cred as $value) $this->credentials[] = $value;
     }
 
     public function hasCredentials($cred)
@@ -38,20 +38,20 @@ class SecureUser implements ISecurity
         return isset($this->attributes[$attr]) || array_key_exists($attr, $this->attributes) ? $this->attributes[$attr] : $default_value;
     }
 
-    public function setAttribute($attr, $value)
-    {
-        $this->attributes[$attr] = $value;
-    }
-
     public function setAttributes(array $attr)
     {
         foreach ($attr as $key => $value) $this->setAttribute($key, $value);
     }
 
+    public function setAttribute($attr, $value)
+    {
+        $this->attributes[$attr] = $value;
+    }
+
     public function destroy()
     {
-        $this->credentials = array(); //flush credentials
-        $this->attributes = array(); //flush all attributes
+        $this->credentials = []; //flush credentials
+        $this->attributes = []; //flush all attributes
     }
 
     public function removeCredentials(array $cred)

@@ -9,22 +9,26 @@ class XMLNode extends XMLTextNode
 {
     /**
      * Collection of Childnodes
+     *
      * @var XMLNode[]
      */
-    public $children = array();
+    public $children = [];
     /**
      * Collection of attributes
+     *
      * @var array attributes
      */
-    public $attributes = array();
+    public $attributes = [];
     /**
      * Name of the element (basicly what is between the < and > markers)
+     *
      * @var String
      */
     protected $name = null;
 
     /**
      * Constructor
+     *
      * @param String $name Optional
      */
     public function __construct($name = null, $content = null)
@@ -36,25 +40,8 @@ class XMLNode extends XMLTextNode
     }
 
     /**
-     * Get name of the xmlnode
-     * @return String
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * Set the name of the xmlnode
-     * @param String $name
-     */
-    public function setName($name = null)
-    {
-        $this->name = $name;
-    }
-
-    /**
      * Add a child to the XMLNode
+     *
      * @param XMLNode $node
      */
     public function appendChild($node)
@@ -65,6 +52,7 @@ class XMLNode extends XMLTextNode
 
     /**
      * Add children to the XMLNode
+     *
      * @param array $nodeCollection
      */
     public function appendChildren(array $nodeCollection)
@@ -76,7 +64,18 @@ class XMLNode extends XMLTextNode
     }
 
     /**
+     * Remove children from XMLNode
+     *
+     * @param array $indexCollection
+     */
+    public function removeChildren(array $indexCollection)
+    {
+        foreach ($indexCollection as $index) $this->removeChild($index);
+    }
+
+    /**
      * Remove a child from XMLNode
+     *
      * @param Integer $index
      */
     public function removeChild($index)
@@ -86,16 +85,8 @@ class XMLNode extends XMLTextNode
     }
 
     /**
-     * Remove children from XMLNode
-     * @param array $indexCollection
-     */
-    public function removeChildren(array $indexCollection)
-    {
-        foreach ($indexCollection as $index) $this->removeChild($index);
-    }
-
-    /**
      * Returns the first child element if it exists, else it returns null
+     *
      * @return XMLNode
      */
     public function & firstChild()
@@ -109,6 +100,7 @@ class XMLNode extends XMLTextNode
 
     /**
      * Returns the last child element if it exists, else it returns null
+     *
      * @return XMLNode
      */
     public function & lastChild()
@@ -122,7 +114,9 @@ class XMLNode extends XMLTextNode
 
     /**
      * Returns the specified child element if it exists, else it returns null
+     *
      * @param Integer $index
+     *
      * @return XMLNode
      */
     public function & child($index)
@@ -136,6 +130,7 @@ class XMLNode extends XMLTextNode
 
     /**
      * Returns true or false if the node has children
+     *
      * @return Boolean
      */
     public function hasChildren()
@@ -144,7 +139,18 @@ class XMLNode extends XMLTextNode
     }
 
     /**
+     * Adds multible attributes to the current element
+     *
+     * @param array $attributeCollection
+     */
+    public function setAttributes(array $attributeCollection)
+    {
+        foreach ($attributeCollection as $key => $value) $this->setAttribute($key, $value);
+    }
+
+    /**
      * Adds an attribute to the current element
+     *
      * @param String $key
      * @param String $value
      */
@@ -154,16 +160,8 @@ class XMLNode extends XMLTextNode
     }
 
     /**
-     * Adds multible attributes to the current element
-     * @param array $attributeCollection
-     */
-    public function setAttributes(array $attributeCollection)
-    {
-        foreach ($attributeCollection as $key => $value) $this->setAttribute($key, $value);
-    }
-
-    /**
      * Returns the requested attribute if it exists, if not it returns null
+     *
      * @param String $key
      */
     public function getAttribute($key)
@@ -173,12 +171,14 @@ class XMLNode extends XMLTextNode
 
     /**
      * Returns a reference collection of elements with the specified name
+     *
      * @param String $name
+     *
      * @return \Forge\XMLNode|\Forge\XMLNode[]
      */
     public function & getElementsByTagName($name)
     {
-        $result = array();
+        $result = [];
         //check self
         if ($this->name == $name) $result[] = &$this;
         foreach ($this->children as &$child) {
@@ -188,25 +188,49 @@ class XMLNode extends XMLTextNode
                 $result[] = &$entry;
             }
         }
+
         return $result;
     }
 
     /**
      * @param string $childName
+     *
      * @return XMLNode[]|XMLNode|null
      */
     public function __get($childName)
     {
-        $matches = array();
+        $matches = [];
         foreach ($this->children as &$child) {
             if ($child->getName() == $childName) $matches[] = &$child;
         }
         if (count($matches) > 1) return $matches;
+
         return !empty($matches) ? $matches[0] : null;
     }
 
     /**
+     * Get name of the xmlnode
+     *
+     * @return String
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Set the name of the xmlnode
+     *
+     * @param String $name
+     */
+    public function setName($name = null)
+    {
+        $this->name = $name;
+    }
+
+    /**
      * Handles the given array to parse the item name and attributes if needed
+     *
      * @param array $list
      */
     public function parse(array $list)
@@ -224,6 +248,7 @@ class XMLNode extends XMLTextNode
 
     /**
      * Magic method that returns a string representation of the object
+     *
      * @return String
      */
     public function writeXml()
@@ -241,6 +266,7 @@ class XMLNode extends XMLTextNode
         } else {
             $string .= " />";
         }
+
         return str_replace("><", ">\n<", $string); //format with breaklines for nicer source code
     }
 
@@ -254,6 +280,7 @@ class XMLNode extends XMLTextNode
     {
         $string = '';
         foreach ($this->children as &$child) $string .= $child->getText();
+
         return $string;
     }
 

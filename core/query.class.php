@@ -20,23 +20,14 @@ class Query
     const JOIN_NONE = null;
 
     private $type = 'select';
-    private $fields = array();
-    private $table = array();
-    private $join = array();
-    private $criteria = array();
+    private $fields = [];
+    private $table = [];
+    private $join = [];
+    private $criteria = [];
     private $criteria_link = ' and ';
-    private $order = array();
+    private $order = [];
     private $limit = null;
-    private $error = array();
-
-    /**
-     * @return Query
-     */
-    public static function build()
-    {
-        $query = new Query();
-        return $query;
-    }
+    private $error = [];
 
     /**
      * @param null $select
@@ -48,11 +39,13 @@ class Query
         if ($select !== null) $this->select($select);
         if ($from !== null) $this->from($from);
         if ($where !== null) $this->where($where);
+
         return $this;
     }
 
     /**
      * @param null $select
+     *
      * @return $this
      */
     public function select($select = null)
@@ -60,6 +53,7 @@ class Query
         $this->type = 'select';
         if ($select === null) {
             $this->fields[] = '*';
+
             return $this;
         }
         if (!is_array($select)) {
@@ -69,11 +63,13 @@ class Query
                 $this->fields[] = $value . (!is_numeric($alias) ? ' as ' . $alias : '');
             }
         }
+
         return $this;
     }
 
     /**
      * @param $table
+     *
      * @return $this
      */
     public function from($table)
@@ -87,66 +83,15 @@ class Query
                 $this->table[] = new QueryTable($ex[0], isset($ex[1]) ? $ex[1] : null);
             }
         }
+
         return $this;
     }
 
     /**
-     * @param $table
-     * @param $on
-     * @param string $method
-     * @return $this
-     */
-    public function join($table, $on, $method = Query::JOIN_INNER)
-    {
-        $ex = explode(' ', $table);
-        $this->join[] = new QueryTable($ex[0], isset($ex[1]) ? $ex[1] : null, $on, $method);
-        return $this;
-    }
-
-    /**
-     * @param $table
-     * @param $on
-     * @return Query
-     */
-    public function innerJoin($table, $on)
-    {
-        return $this->join($table, $on, self::JOIN_INNER);
-    }
-
-    /**
-     * @param $table
-     * @param $on
-     * @return Query
-     */
-    public function leftJoin($table, $on)
-    {
-        return $this->join($table, $on, self::JOIN_LEFT);
-    }
-
-    /**
-     * @param $table
-     * @param $on
-     * @return Query
-     */
-    public function rightJoin($table, $on)
-    {
-        return $this->join($table, $on, self::JOIN_RIGHT);
-    }
-
-    /**
-     * @param $table
-     * @param $on
-     * @return Query
-     */
-    public function union($table, $on)
-    {
-        return $this->join($table, $on, self::JOIN_UNION);
-    }
-
-    /**
-     * @param $field
+     * @param        $field
      * @param string $value
      * @param string $compare
+     *
      * @return $this
      */
     public function where($field, $value = '/**empty**/', $compare = self::COMPARE_EQUALS)
@@ -155,12 +100,13 @@ class Query
             //intercept a array to do multiple compare statements (always and)
             foreach ($field as $key => $def) {
                 if (is_array($def)) { //definition in a subarray
-                    list($subField, $subValue, $subCompare) = $def + array(null, '/**empty**/', self::COMPARE_EQUALS);
+                    list($subField, $subValue, $subCompare) = $def + [null, '/**empty**/', self::COMPARE_EQUALS];
                     $this->where($subField, $subValue, $subCompare);
                 } else {
                     $this->where($key, $def, self::COMPARE_EQUALS);
                 }
             }
+
             return $this;
         }
         if ($value === '/**empty**/') {
@@ -183,13 +129,142 @@ class Query
                     break;
             }
         }
+
         return $this;
     }
 
     /**
-     * @param $field
+     * @param       $field
+     * @param array $value
+     *
+     * @return Query
+     */
+    public function andWhereIn($field, $value = [])
+    {
+        foreach ($value as $val) {
+            $conditions[] = sprintf('`%s` = "%s"', $field, $val);
+        }
+
+        return $this->where('(' . implode(' or ', $conditions) . ')');
+    }
+
+    public function orWhereIn()
+    {
+
+    }
+
+    /**
+     * @return Query
+     */
+    public static function build()
+    {
+        $query = new Query();
+
+        return $query;
+    }
+
+    /**
+     * @param $table
+     * @param $on
+     *
+     * @return Query
+     */
+    public function innerJoin($table, $on)
+    {
+        return $this->join($table, $on, self::JOIN_INNER);
+    }
+
+    /**
+     * @param        $table
+     * @param        $on
+     * @param string $method
+     *
+     * @return $this
+     */
+    public function join($table, $on, $method = Query::JOIN_INNER)
+    {
+        $ex = explode(' ', $table);
+        $this->join[] = new QueryTable($ex[0], isset($ex[1]) ? $ex[1] : null, $on, $method);
+
+        return $this;
+    }
+
+    /**
+     * @param $table
+     * @param $on
+     *
+     * @return Query
+     */
+    public function leftJoin($table, $on)
+    {
+        return $this->join($table, $on, self::JOIN_LEFT);
+    }
+
+    /**
+     * @param $table
+     * @param $on
+     *
+     * @return Query
+     */
+    public function rightJoin($table, $on)
+    {
+        return $this->join($table, $on, self::JOIN_RIGHT);
+    }
+
+    /**
+     * @param $table
+     * @param $on
+     *
+     * @return Query
+     */
+    public function union($table, $on)
+    {
+        return $this->join($table, $on, self::JOIN_UNION);
+    }
+
+    /**
+     * @param        $field
      * @param string $value
      * @param string $compare
+     *
+     * @return $this|Query
+     */
+    public function andWhere($field, $value = '/**empty**/', $compare = Query::COMPARE_EQUALS)
+    {
+        if ($this->criteria_link !== null && $this->criteria_link !== ' and ') {
+            $this->error[] = 'Can not combine AND and OR criteria like this.';
+
+            return $this;
+        }
+        $this->criteria_link = ' and ';
+
+        return $this->where($field, $value, $compare);
+    }
+
+    /**
+     * @param        $field
+     * @param string $value
+     * @param string $compare
+     *
+     * @return $this|Query
+     */
+    public function andWhereNot($field, $value = '/**empty**/', $compare = Query::COMPARE_EQUALS)
+    {
+        if ($this->criteria_link !== null && $this->criteria_link !== ' and ') {
+            $this->error[] = 'Can not combine AND and OR criteria like this.';
+
+            return $this;
+        }
+        $this->criteria_link = ' and ';
+
+        return $this->whereNot($field, $value, $compare);
+    }
+
+    /**
+     * @param        $field
+     * @param string $value
+     * @param string $compare
+     *
      * @return $this
      */
     public function whereNot($field, $value = '/**empty**/', $compare = Query::COMPARE_EQUALS)
@@ -212,104 +287,64 @@ class Query
                     break;
             }
         }
+
         return $this;
     }
 
     /**
-     * @param $field
-     * @param string $value
-     * @param string $compare
-     * @return $this|Query
-     */
-    public function andWhere($field, $value = '/**empty**/', $compare = Query::COMPARE_EQUALS)
-    {
-        if ($this->criteria_link !== null && $this->criteria_link !== ' and ') {
-            $this->error[] = 'Can not combine AND and OR criteria like this.';
-            return $this;
-        }
-        $this->criteria_link = ' and ';
-        return $this->where($field, $value, $compare);
-    }
-
-    /**
-     * @param $field
-     * @param string $value
-     * @param string $compare
-     * @return $this|Query
-     */
-    public function andWhereNot($field, $value = '/**empty**/', $compare = Query::COMPARE_EQUALS)
-    {
-        if ($this->criteria_link !== null && $this->criteria_link !== ' and ') {
-            $this->error[] = 'Can not combine AND and OR criteria like this.';
-            return $this;
-        }
-        $this->criteria_link = ' and ';
-        return $this->whereNot($field, $value, $compare);
-    }
-
-    /**
-     * @param $field
+     * @param       $field
      * @param array $value
-     * @return Query
-     */
-    public function andWhereIn($field, $value = array())
-    {
-        foreach ($value as $val) {
-            $conditions[] = sprintf('`%s` = "%s"', $field, $val);
-        }
-        return $this->where('(' . implode(' or ', $conditions) . ')');
-    }
-
-    /**
-     * @param $field
-     * @param array $value
+     *
      * @return $this|Query
      */
-    public function andWhereNotIn($field, $value = array())
+    public function andWhereNotIn($field, $value = [])
     {
         if ($this->criteria_link !== null && $this->criteria_link !== ' and ') {
             $this->error[] = 'Can not combine AND and OR criteria like this.';
+
             return $this;
         }
         $this->criteria_link = ' and ';
+
         return $this->whereNot($field, $value, Query::COMPARE_EQUALS);
     }
 
     /**
-     * @param $field
+     * @param        $field
      * @param string $value
      * @param string $compare
+     *
      * @return $this|Query
      */
     public function orWhere($field, $value = '/**empty**/', $compare = Query::COMPARE_EQUALS)
     {
         if ($this->criteria_link !== null && $this->criteria_link !== ' or ') {
             $this->error[] = 'Can not combine AND and OR criteria like this.';
+
             return $this;
         }
         $this->criteria_link = ' or ';
+
         return $this->where($field, $value, $compare);
     }
 
     /**
-     * @param $field
+     * @param        $field
      * @param string $value
      * @param string $compare
+     *
      * @return $this|Query
      */
     public function orWhereNot($field, $value = '/**empty**/', $compare = Query::COMPARE_EQUALS)
     {
         if ($this->criteria_link !== null && $this->criteria_link !== ' or ') {
             $this->error[] = 'Can not combine AND and OR criteria like this.';
+
             return $this;
         }
         $this->criteria_link = ' or ';
+
         return $this->whereNot($field, $value, $compare);
-
-    }
-
-    public function orWhereIn()
-    {
 
     }
 
@@ -320,6 +355,7 @@ class Query
 
     /**
      * @param $order
+     *
      * @return $this
      */
     public function orderBy($order)
@@ -331,17 +367,20 @@ class Query
                 $this->order[] = $value;
             }
         }
+
         return $this;
     }
 
     /**
      * @param int $page
      * @param int $size
+     *
      * @return $this
      */
     public function limit($page = 1, $size = 20)
     {
         $this->limit = ' limit ' . (($page - 1) * $size) . ', ' . $size;
+
         return $this;
     }
 
@@ -360,12 +399,12 @@ class Query
 
     public function clear()
     {
-        $this->fields = array();
-        $this->table = array();
-        $this->join = array();
-        $this->criteria = array();
+        $this->fields = [];
+        $this->table = [];
+        $this->join = [];
+        $this->criteria = [];
         $this->criteria_link = null;
-        $this->order = array();
+        $this->order = [];
     }
 
 }

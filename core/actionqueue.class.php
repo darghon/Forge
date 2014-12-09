@@ -3,11 +3,11 @@ namespace Forge;
 
 class ActionQueue
 {
+    public $content = '';
     private $module = null;
     private $action = null;
     private $params = null;
     private $placeholder = null;
-    public $content = '';
 
     public function __construct($mod, $act, $params)
     {
@@ -17,10 +17,9 @@ class ActionQueue
         $this->createHolder();
     }
 
-    public function setModule($mod)
+    private function createHolder()
     {
-        $this->module = $mod;
-        $this->createHolder();
+        $this->placeholder = '[HOLDER[' . $this->module . '|' . $this->action . '|' . time() . '] FOR COMPONENT]';
     }
 
     public function getModule()
@@ -28,9 +27,9 @@ class ActionQueue
         return $this->module;
     }
 
-    public function setAction($action)
+    public function setModule($mod)
     {
-        $this->action = $action;
+        $this->module = $mod;
         $this->createHolder();
     }
 
@@ -39,14 +38,20 @@ class ActionQueue
         return $this->action;
     }
 
-    public function setParams($params)
+    public function setAction($action)
     {
-        $this->params = $params;
+        $this->action = $action;
+        $this->createHolder();
     }
 
     public function getParams()
     {
         return $this->params;
+    }
+
+    public function setParams($params)
+    {
+        $this->params = $params;
     }
 
     public function getPlaceholder()
@@ -57,11 +62,6 @@ class ActionQueue
     public function placeHolder()
     {
         echo $this->placeholder;
-    }
-
-    private function createHolder()
-    {
-        $this->placeholder = '[HOLDER[' . $this->module . '|' . $this->action . '|' . time() . '] FOR COMPONENT]';
     }
 
 }

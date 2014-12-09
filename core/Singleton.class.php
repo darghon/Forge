@@ -15,6 +15,7 @@ abstract class Singleton
     public static function getInstance()
     {
         if (self::$_instance === null) self::_createInstance();
+
         return self::$_instance;
     }
 

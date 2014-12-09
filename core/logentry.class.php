@@ -13,24 +13,24 @@ class LogEntry
         $this->message = $message;
     }
 
-    public function setType($type)
-    {
-        $this->type = $type;
-    }
-
     public function getType()
     {
         return $this->type;
     }
 
-    public function setMessage($mess)
+    public function setType($type)
     {
-        $this->message = $mess;
+        $this->type = $type;
     }
 
     public function getMessage()
     {
         return $this->message;
+    }
+
+    public function setMessage($mess)
+    {
+        $this->message = $mess;
     }
 
     public function __toString()

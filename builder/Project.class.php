@@ -15,14 +15,16 @@ class Project extends \Forge\baseGenerator
 
     /**
      * Public constructor that receives an in this case empty parameter array.
+     *
      * @param array empty
      */
-    public function __construct($args = array())
+    public function __construct($args = [])
     {
     }
 
     /**
      * Public generate action. This method performs all actions required to build the wanted files
+     *
      * @return boolean $result;
      */
     public function generate()
@@ -31,9 +33,11 @@ class Project extends \Forge\baseGenerator
             //folder does not exists, so ok to proceed
             $this->generateFolderStructure();
             $this->generateDefaultFiles();
+
             return true;
         } else {
             print('Project has already been build.' . PHP_EOL);
+
             return false;
         }
     }
@@ -43,7 +47,7 @@ class Project extends \Forge\baseGenerator
         /** Todo: Refactor all paths to create a new and correct structure */
         print('Creating folder structure');
         flush();
-        $this->_createDirectory(array(
+        $this->_createDirectory([
             \Forge\Config::path("app"),
             \Forge\Config::path("config") . '/database',
             \Forge\Config::path("lib"),
@@ -55,7 +59,7 @@ class Project extends \Forge\baseGenerator
             \Forge\Config::path("public") . '/images',
             \Forge\Config::path("public") . '/plugins',
             \Forge\Config::path("public") . '/uploads',
-        ), '.', 'x');
+        ], '.', 'x');
         print('DONE' . PHP_EOL);
         flush();
     }
@@ -64,7 +68,7 @@ class Project extends \Forge\baseGenerator
     {
         print('Creating default files');
         flush();
-        $templates = scandir(\Forge\Config::path('forge') . '/templates');
+        $templates = $this->_getTemplatesByType();
         foreach ($templates as $template) {
             $file = explode('_', $template);
             if ($file[0] == 'config' || $file[0] == 'public' || $file[0] == 'lib' || substr($file[0], 0, 9) == '.htaccess') {

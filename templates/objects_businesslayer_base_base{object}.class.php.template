@@ -1,0 +1,71 @@
+<?php
+
+/**
+ * Forge Business class
+ * --------------------
+ * base{object} is a generated base businesslayer class.
+ * It is not possible to add custom functions to this file, as each time it's generated, it will be overwritten.
+ * This class extends Forge\BusinessLayer by default.
+ *
+ * @author Gerry Van Bael
+ */
+abstract class base{object} extends {extends} {implements}
+{
+
+{{BLOCK: columns}}
+    /**
+     * Public get function that retrieves the {column_name}
+     *
+     * @return {column_type} ${raw_column_name}
+     */
+    public function get{column_name}()
+    {
+        return $this->data->{raw_column_name};
+    }
+
+    /**
+     * Public set function that sets the {column_name}
+     *
+     * @param {column_type} ${raw_column_name}
+     *
+     * @return $this
+     */
+    public function set{column_name}(${raw_column_name})
+    {
+        $this->data->{raw_column_name} = ${raw_column_name};
+        return $this;
+    }
+
+{{ENDBLOCK}}
+{{BLOCK: links}}
+    /**
+     * Lazy loading function that retrieves the selected {link_name}
+     *
+     * @return {link_result}
+     */
+    public function & get{link_name}()
+    {
+        return {link_object}::Find($this->data->{raw_link_name});
+    }
+
+{{ENDBLOCK}}
+    /**
+     * Public Destructor, unset every used variable
+     */
+    public function __destroy()
+    {
+        foreach ($this as $key => $val) unset($this->$key);
+        unset($this);
+    }
+
+    /**
+     * Final Static function that allows the retrieval of the correct Finder functions for this object
+     * @param null|integer $id
+     *
+     * @return Finder\{object}|{object}
+     */
+    final public static function & Find($id = null)
+    {
+        return parent::Find($id);
+    }
+}

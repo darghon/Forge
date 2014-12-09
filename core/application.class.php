@@ -35,17 +35,19 @@ class Application
 
     /**
      * Load and display a specified component and action
+     *
      * @param String $module
      * @param String $action
-     * @param Array $params
+     * @param Array  $params
      */
-    public static function loadComponent($module = null, $action = null, $params = array())
+    public static function loadComponent($module = null, $action = null, $params = [])
     {
         Forge::Response()->loadComponent($module, $action, $params);
     }
 
     /**
      * Create and place a slot placeholder
+     *
      * @param String $name
      */
     public static function defineSlot($name)
@@ -55,18 +57,20 @@ class Application
 
     /**
      * Assign a component action to a slot
+     *
      * @param String $slot_name
      * @param String $module
      * @param String $action
-     * @param Array $params
+     * @param Array  $params
      */
-    public static function assignSlot($slot_name, $module = null, $action = null, $params = array())
+    public static function assignSlot($slot_name, $module = null, $action = null, $params = [])
     {
         Forge::Response()->assignSlot($slot_name, $module, $action, $params);
     }
 
     /**
      * Assign a value to a defined slot
+     *
      * @param String $slot_name
      * @param String $value
      */
@@ -77,7 +81,9 @@ class Application
 
     /**
      * Place a custom placeholder
+     *
      * @param String $type
+     *
      * @return String
      */
     public static function placeHolder($type)

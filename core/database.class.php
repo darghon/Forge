@@ -8,16 +8,6 @@ namespace Forge;
 class Database
 {
 
-    /**
-     * This function uses the Forge to fetch a finder of a specific data type
-     * It returns a reference to the object
-     * @return Finder
-     */
-    public static function & Find($objectname)
-    {
-        return Forge::getFinder($objectname);
-    }
-
     public static function Persist(\Forge\DataLayer $object)
     {
         return Forge::getFinder(str_replace('Data\\', 'Finder\\', get_class($object)))->persist($object);
@@ -34,13 +24,9 @@ class Database
         return is_string($value) ? mysqli_real_escape_string(Forge::Connection()->getConnection(), $value) : $value;
     }
 
-    public static function getTables()
-    {
-        return Forge::Database()->getTables();
-    }
-
     /**
      * This function returns a reference to the DB object within the Forge
+     *
      * @return DatabaseHandler
      */
     public static function & getDB()
@@ -51,9 +37,10 @@ class Database
     /**
      * This function exports all the tables or all the specified tables to the data directory
      * Each table will create it's own xml file contains it's records
+     *
      * @param array $tablenames optional
      */
-    public static function exportToXML($tablenames = array())
+    public static function exportToXML($tablenames = [])
     {
         if (count($tablenames) == 0) {
             $tablenames = Database::getTables();
@@ -76,7 +63,23 @@ class Database
         }
     }
 
-    public static function importFromXML($filenames = array())
+    public static function getTables()
+    {
+        return Forge::Database()->getTables();
+    }
+
+    /**
+     * This function uses the Forge to fetch a finder of a specific data type
+     * It returns a reference to the object
+     *
+     * @return Finder
+     */
+    public static function & Find($objectname)
+    {
+        return Forge::getFinder($objectname);
+    }
+
+    public static function importFromXML($filenames = [])
     {
         $all = count($filenames) > 0 ? false : true;
         if (false !== ($handle = opendir(Config::path("data")))) {

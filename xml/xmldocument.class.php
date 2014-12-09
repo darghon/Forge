@@ -11,32 +11,38 @@ class XMLDocument
 
     /**
      * root of xml document tree
+     *
      * @var XMLNode
      */
     public $root = null;
     /**
      * String that contains the base xml code.
+     *
      * @var String
      */
     protected $xml = null;
     /**
      * String that contains the version of the xml
+     *
      * @var String
      */
     protected $version = "1.0";
     /**
      * String that contains the encoding of the xml
+     *
      * @var String
      */
     protected $encoding = "ISO-8859-1";
     /**
      * String that contains the document type of the xml document
+     *
      * @var String
      */
     protected $doctype = null;
 
     /**
      * Constructor
+     *
      * @param String $path Optional
      */
     public function __construct($path = null)
@@ -44,13 +50,6 @@ class XMLDocument
         if ($path !== null) {
             $this->load($path);
         }
-    }
-
-    public function create($root_element = "root", $version = "1.0", $encoding = "ISO-8859-1")
-    {
-        $this->root = new XMLNode($root_element);
-        $this->version = $version;
-        $this->encoding = $encoding;
     }
 
     public function load($path)
@@ -61,81 +60,26 @@ class XMLDocument
         }
     }
 
-    public function loadXML($string)
-    {
-        $this->xml = $string;
-        $this->parse();
-    }
-
-    public function setVersion($version = "1.0")
-    {
-        $this->version = $version;
-    }
-
-    public function getVersion()
-    {
-        return $this->version;
-    }
-
-    public function setEncoding($enc = "ISO-8859-1")
-    {
-        $this->encoding = $enc;
-    }
-
-    public function getEncoding()
-    {
-        return $this->encoding;
-    }
-
-    public function setDoctype($doctype)
-    {
-        $this->doctype = $doctype;
-    }
-
-    public function getDoctype()
-    {
-        return $this->doctype;
-    }
-
-    public function save($path)
-    {
-        $file = fopen($path, "w");
-        fwrite($file, $this->toString());
-        fclose($file);
-    }
-
-    public function saveXML()
-    {
-        $string = "<?xml version=\"" . $this->version . "\" encoding=\"" . $this->encoding . "\" ?>\n";
-        $string .= $this->root->writeXml();
-        return $string;
-    }
-
-    public function __toString()
-    {
-        return $this->toString();
-    }
-
-    public function toString()
-    {
-        $string = "<?xml version=\"" . $this->version . "\" encoding=\"" . $this->encoding . "\" ?>\n";
-        $string .= $this->root;
-        return $string;
-    }
-
     /**
-     * @param $name
-     * @return \Forge\XMLNode[]
+     * Private function that retrieves the content of an xml file
+     *
+     * @param String $file Path of the xml file
+     *
+     * @return String $file_content
      */
-    public function & getElementsByTagName($name)
+    private function getContent($file_path)
     {
-        return $this->root->getElementsByTagName($name);
+        $file = fopen($file_path, "r");
+        $result = fread($file, filesize($file_path));
+        fclose($file);
+
+        return $result;
     }
 
     private function parse()
     {
         $xml = $this->xml;
-        $ignores = array();
+        $ignores = [];
         //first strip all parser ignores and replace with token holders
         preg_match_all('|(<!\[CDATA\[[^\]]*\]\]>)|U', $xml, $result);
         foreach ($result[1] as $key => $entry) {
@@ -184,7 +128,7 @@ class XMLDocument
                         if (trim($result[0][$key]) != "") {
                             $text = $result[0][$key];
                             if (substr($text, 0, 5) == "{SPL:" && substr($text, -5) == ":EPL}") {
-                                $text = $ignores[str_replace(array("{SPL:", ":EPL}"), "", $text)];
+                                $text = $ignores[str_replace(["{SPL:", ":EPL}"], "", $text)];
                             }
                             $textnode = new XMLTextNode($text);
                             if ($current !== null) {
@@ -219,7 +163,7 @@ class XMLDocument
                         if (trim($result[2][$key]) != "") {
                             $text = trim($result[2][$key]);
                             if (substr($text, 0, 5) == "{SPL:" && substr($text, -5) == ":EPL}") {
-                                $text = $ignores[(int)(str_replace(array("{SPL:", ":EPL}"), "", $text))];
+                                $text = $ignores[(int)(str_replace(["{SPL:", ":EPL}"], "", $text))];
                             }
                             $textnode = new XMLTextNode($text);
                             if ($current !== null) {
@@ -234,17 +178,85 @@ class XMLDocument
         }
     }
 
-    /**
-     * Private function that retrieves the content of an xml file
-     * @param String $file Path of the xml file
-     * @return String $file_content
-     */
-    private function getContent($file_path)
+    public function create($root_element = "root", $version = "1.0", $encoding = "ISO-8859-1")
     {
-        $file = fopen($file_path, "r");
-        $result = fread($file, filesize($file_path));
+        $this->root = new XMLNode($root_element);
+        $this->version = $version;
+        $this->encoding = $encoding;
+    }
+
+    public function loadXML($string)
+    {
+        $this->xml = $string;
+        $this->parse();
+    }
+
+    public function getVersion()
+    {
+        return $this->version;
+    }
+
+    public function setVersion($version = "1.0")
+    {
+        $this->version = $version;
+    }
+
+    public function getEncoding()
+    {
+        return $this->encoding;
+    }
+
+    public function setEncoding($enc = "ISO-8859-1")
+    {
+        $this->encoding = $enc;
+    }
+
+    public function getDoctype()
+    {
+        return $this->doctype;
+    }
+
+    public function setDoctype($doctype)
+    {
+        $this->doctype = $doctype;
+    }
+
+    public function save($path)
+    {
+        $file = fopen($path, "w");
+        fwrite($file, $this->toString());
         fclose($file);
-        return $result;
+    }
+
+    public function toString()
+    {
+        $string = "<?xml version=\"" . $this->version . "\" encoding=\"" . $this->encoding . "\" ?>\n";
+        $string .= $this->root;
+
+        return $string;
+    }
+
+    public function saveXML()
+    {
+        $string = "<?xml version=\"" . $this->version . "\" encoding=\"" . $this->encoding . "\" ?>\n";
+        $string .= $this->root->writeXml();
+
+        return $string;
+    }
+
+    public function __toString()
+    {
+        return $this->toString();
+    }
+
+    /**
+     * @param $name
+     *
+     * @return \Forge\XMLNode[]
+     */
+    public function & getElementsByTagName($name)
+    {
+        return $this->root->getElementsByTagName($name);
     }
 
 }

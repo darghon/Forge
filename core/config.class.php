@@ -12,19 +12,47 @@ class Config
      * Web interface
      */
     const WEB = 'WEB';
-
-    private static $configurations = array();
-    private static $paths = array();
+    public static $namespaces = null;
+    private static $configurations = [];
+    private static $paths = [];
     private static $mode = self::WEB;
     private static $default_language = null;
-    private static $available_languages = array();
+    private static $available_languages = [];
     private static $project_name = 'default_project';
-    public static $namespaces = null;
+
+    /**
+     * Namespace retrieval for framework paths
+     * Used by the autoloader
+     */
+    public static function getAutoloaderNamespaces()
+    {
+        if (self::$namespaces === null) self::initiateNamespaces();
+
+        return self::$namespaces;
+    }
+
+    /**
+     * Initiate namespace definition for application
+     */
+    protected static function initiateNamespaces()
+    {
+        $namespaces = self::get('Namespaces');
+        if (empty($namespaces)) {
+            //Default Namespaces
+            $namespaces = ['Global' => ['Forge' => ['ext/forge/*', 'Builder' => 'ext/forge/builder']]];
+        }
+        if (!isset($namespaces['Global'])) {
+            throw new \Exception('No global namespace definition was found.');
+        }
+        self::parseNamespace('\\', $namespaces['Global'], self::$namespaces);
+    }
 
     /**
      * Retrieves a configuration file and returns the parsed array
+     *
      * @param String $name Name of the configuration file (without .yml)
      * @param String $path Location of the configuration file (Default main config folder)
+     *
      * @return Array
      * @Todo: Remove lowercase transform
      */
@@ -39,32 +67,19 @@ class Config
 
         //cache config files to read them faster
         if (!file_exists($fullPath)) {
-            return array();
+            return [];
         }
 
         self::$configurations[$fullPath] = YAML::load($fullPath, true);
+
         return self::$configurations[$fullPath];
     }
 
     /**
-     * Namespace retrieval for framework paths
-     * Used by the autoloader
-     */
-    public static function getAutoloaderNamespaces()
-    {
-        if (self::$namespaces === null) self::initiateNamespaces();
-        return self::$namespaces;
-    }
-
-    public static function updateAutoloaderNamespaces(array $namespaces = array())
-    {
-        if (self::$namespaces === null) self::initiateNamespaces();
-        self::parseNamespace('\\', $namespaces, self::$namespaces);
-    }
-
-    /**
      * Retrieve the path location that has been registered
+     *
      * @param String $name
+     *
      * @return String Location
      */
     public static function path($name)
@@ -74,19 +89,56 @@ class Config
     }
 
     /**
-     * Register a path to the configuration
-     * @param String $name
-     * @param String $path
+     * Parse all defined rules for namespace
+     *
+     * @param String       $name
+     * @param String|Array $rules
+     * @param Array        $collection reference
      */
-    public static function registerPath($name, $path)
+    protected static function parseNamespace($name, $rules, &$collection)
     {
-        $names = explode('|', $name);
-        foreach ($names as $name) self::$paths[$name] = $path;
+        $parsedRules = [];
+        foreach (is_array($rules) ? $rules : [$rules] as $key => $rule) {
+            if (!is_numeric($key)) self::parseNamespace($name . $key . '\\', $rule, $collection);
+            else {
+                if (substr($rule, -2) == '/*') { //detect all subfolders as well
+                    $parsedRules = array_merge($parsedRules, self::detectSubFolders(substr($rule, 0, -2)));
+                    $rule = substr($rule, 0, -2);
+                }
+                $parsedRules[] = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $rule);
+            }
+        }
+        if (isset($collection[$name . $key . '\\']) && is_array($collection[$name . $key . '\\'])) {
+            $parsedRules = array_diff($parsedRules, $collection[$name . $key . '\\']);
+        }
+        $collection[$name] = isset($collection[$name]) ? array_merge($collection[$name], $parsedRules) : $parsedRules;
+    }
+
+    /**
+     * Detect subFolders in specified path recursively
+     *
+     * @param $path
+     *
+     * @return array $subFolders
+     */
+    protected static function & detectSubFolders($path)
+    {
+        $subFolders = [];
+        $fullPath = self::path('root') . DIRECTORY_SEPARATOR . $path;
+        $handle = opendir($fullPath);
+        while (is_dir($fullPath) && false !== ($file = readdir($handle))) {
+            if (substr($file, 0, 1) != '.' && is_dir($fullPath . DIRECTORY_SEPARATOR . $file)) {
+                $subFolders[] = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $path . DIRECTORY_SEPARATOR . $file);
+                $subFolders = array_merge($subFolders, self::detectSubFolders($path . DIRECTORY_SEPARATOR . $file));
+            }
+        }
+
+        return $subFolders;
     }
 
     /**
      * @param string $root (Optional)
-     * Todo: Read path configuration from apps config.
+     *                     Todo: Read path configuration from apps config.
      */
     public static function registerPaths($root = null)
     {
@@ -98,7 +150,7 @@ class Config
 
         self::registerPath("applications|app", $root . DIRECTORY_SEPARATOR . "app"); //register application
         self::registerPath("externals|ext|addon", $root . DIRECTORY_SEPARATOR . "ext"); //register application
-        self::registerPath("forge", $root . DIRECTORY_SEPARATOR . "ext" . DIRECTORY_SEPARATOR . "forge"); //register framework
+        self::registerPath("forge|fw", $root . DIRECTORY_SEPARATOR . "ext" . DIRECTORY_SEPARATOR . "forge"); //register framework
         self::registerPath("public|web", $public); //register web root
         self::registerPath("cache", $root . DIRECTORY_SEPARATOR . "cache"); //register cache
         self::registerPath("config", $root . DIRECTORY_SEPARATOR . "config"); //register config
@@ -117,7 +169,7 @@ class Config
         self::registerPath("uploads", $public . DIRECTORY_SEPARATOR . "uploads"); //register uploads root
         self::registerPath("webcache", $public . DIRECTORY_SEPARATOR . "cache"); //register helper
 
-        self::registerPath("sub_dir", (str_replace(array("public/index.php", "index.php"), "", $_SERVER["SCRIPT_NAME"]))); //register sub_dir
+        self::registerPath("sub_dir", (str_replace(["public/index.php", "index.php"], "", $_SERVER["SCRIPT_NAME"]))); //register sub_dir
         if (isset($_SERVER["HTTP_HOST"])) {
             self::registerPath("url", "http://" . $_SERVER["HTTP_HOST"] . self::path("sub_dir")); //register base url
 
@@ -127,6 +179,18 @@ class Config
             self::registerPath("css_url", "css/"); //register css url
         }
 
+    }
+
+    /**
+     * Register a path to the configuration
+     *
+     * @param String $name
+     * @param String $path
+     */
+    public static function registerPath($name, $path)
+    {
+        $names = explode('|', $name);
+        foreach ($names as $name) self::$paths[$name] = $path;
     }
 
     /**
@@ -164,6 +228,31 @@ class Config
         unset($settings);
     }
 
+    private static function applyDebugOptions($settings)
+    {
+        if (!isset($settings['enabled']) || !array_key_exists('enabled', $settings) || $settings['enabled'] == false)
+            return;
+        //Start debug mode
+        Debug::start();
+
+        if ((isset($settings['register_error']) || array_key_exists('register_error', $settings)) && $settings['register_error'] == true) {
+            //set_error_handler("Debug::registerError");
+            //register_shutdown_function("Debug::registerCrash");
+        }
+    }
+
+    /**
+     * applyMultiLingual
+     * This function initiates the translation handler and registers the handler in forge
+     *
+     * @param Array $settings
+     */
+    private static function applyMultiLingual($settings)
+    {
+        $th = new TranslationHandler($settings);
+        Forge::registerTranslationHandler($th);
+    }
+
     public static function loadHelper($helper)
     {
         if (is_array($helper)) {
@@ -190,9 +279,10 @@ class Config
         }
     }
 
-    public static function setMode($mode = Self::WEB)
+    public static function updateAutoloaderNamespaces(array $namespaces = [])
     {
-        self::$mode = $mode;
+        if (self::$namespaces === null) self::initiateNamespaces();
+        self::parseNamespace('\\', $namespaces, self::$namespaces);
     }
 
     public static function getMode()
@@ -200,94 +290,14 @@ class Config
         return self::$mode;
     }
 
+    public static function setMode($mode = Self::WEB)
+    {
+        self::$mode = $mode;
+    }
+
     public static function & getConfiguration()
     {
         return Forge::Configuration();
-    }
-
-
-    /**
-     * Initiate namespace definition for application
-     */
-    protected static function initiateNamespaces()
-    {
-        $namespaces = self::get('Namespaces');
-        if (empty($namespaces)) {
-            //Default Namespaces
-            $namespaces = array('Global' => array('Forge' => array('ext/forge/*', 'Builder' => 'ext/forge/builder')));
-        }
-        if (!isset($namespaces['Global'])) {
-            throw new \Exception('No global namespace definition was found.');
-        }
-        self::parseNamespace('\\', $namespaces['Global'], self::$namespaces);
-    }
-
-    /**
-     * Parse all defined rules for namespace
-     * @param String $name
-     * @param String|Array $rules
-     * @param Array $collection reference
-     */
-    protected static function parseNamespace($name, $rules, &$collection)
-    {
-        $parsedRules = array();
-        foreach (is_array($rules) ? $rules : array($rules) as $key => $rule) {
-            if (!is_numeric($key)) self::parseNamespace($name . $key . '\\', $rule, $collection);
-            else {
-                if (substr($rule, -2) == '/*') { //detect all subfolders as well
-                    $parsedRules = array_merge($parsedRules, self::detectSubFolders(substr($rule, 0, -2)));
-                    $rule = substr($rule, 0, -2);
-                }
-                $parsedRules[] = str_replace(array('\\', '/'), DIRECTORY_SEPARATOR, $rule);
-            }
-        }
-        if (isset($collection[$name . $key . '\\']) && is_array($collection[$name . $key . '\\'])) {
-            $parsedRules = array_diff($parsedRules, $collection[$name . $key . '\\']);
-        }
-        $collection[$name] = isset($collection[$name]) ? array_merge($collection[$name], $parsedRules) : $parsedRules;
-    }
-
-    /**
-     * Detect subFolders in specified path recursively
-     * @param $path
-     * @return array $subFolders
-     */
-    protected static function & detectSubFolders($path)
-    {
-        $subFolders = array();
-        $fullPath = self::path('root') . DIRECTORY_SEPARATOR . $path;
-        $handle = opendir($fullPath);
-        while (is_dir($fullPath) && false !== ($file = readdir($handle))) {
-            if (substr($file, 0, 1) != '.' && is_dir($fullPath . DIRECTORY_SEPARATOR . $file)) {
-                $subFolders[] = str_replace(array('\\', '/'), DIRECTORY_SEPARATOR, $path . DIRECTORY_SEPARATOR . $file);
-                $subFolders = array_merge($subFolders, self::detectSubFolders($path . DIRECTORY_SEPARATOR . $file));
-            }
-        }
-        return $subFolders;
-    }
-
-    private static function applyDebugOptions($settings)
-    {
-        if (!isset($settings['enabled']) || !array_key_exists('enabled', $settings) || $settings['enabled'] == false)
-            return;
-        //Start debug mode
-        Debug::start();
-
-        if ((isset($settings['register_error']) || array_key_exists('register_error', $settings)) && $settings['register_error'] == true) {
-            //set_error_handler("Debug::registerError");
-            //register_shutdown_function("Debug::registerCrash");
-        }
-    }
-
-    /**
-     * applyMultiLingual
-     * This function initiates the translation handler and registers the handler in forge
-     * @param Array $settings
-     */
-    private static function applyMultiLingual($settings)
-    {
-        $th = new TranslationHandler($settings);
-        Forge::registerTranslationHandler($th);
     }
 
 }

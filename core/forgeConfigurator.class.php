@@ -17,6 +17,7 @@ abstract class ForgeConfigurator
 
     /**
      * Setup the initial configuration, make sure the framework gets started, and register all needed paths.
+     *
      * @param String $environment
      */
     public static function configure($environment = null)
@@ -39,10 +40,11 @@ abstract class ForgeConfigurator
     public static function deploy()
     {
         $stages = new StageHandler(Config::get('stages'));
+
         return $stages->deploy();
     }
 
-    public static function deployTask($environment = null, $arguments = array())
+    public static function deployTask($environment = null, $arguments = [])
     {
         //load task
         unset($environment);

@@ -6,6 +6,7 @@ abstract class BusinessLayer
 
     /**
      * Dataobject that is embedded within the business object
+     *
      * @var DataLayer
      */
     protected $data = null;
@@ -23,6 +24,46 @@ abstract class BusinessLayer
         }
     }
 
+    /**
+     * Retrieve the classname of this class. This method is needed to allow extending of business classes, without
+     * breaking the natural build of the object
+     *
+     * @return String $className
+     */
+    protected function getClassName()
+    {
+        $className = explode('\\', get_class($this));
+
+        return array_pop($className);
+    }
+
+    /**
+     * Static function that creates a "Find" static function to each business object,
+     * which in turn is basicly a shortkey to get The Findertype, or when an ID is passed, to get the object by that ID
+     *
+     * @param null|integer $id
+     *
+     * @return BusinessLayer|Finder
+     */
+    public static function & Find($id = null)
+    {
+        $caller = function_exists('get_called_class') ? get_called_class() : Tools::getCaller();
+        $caller = '\\Finder\\' . $caller;
+
+        if ($id !== null) {
+            $return = &Database::Find($caller)->byID($id);
+        } else {
+            $return = &Database::Find($caller);
+        }
+
+        return $return;
+    }
+
+    public static function is_a($class_name)
+    {
+        return (__CLASS__ == $class_name) ? true : false;
+    }
+
     public function _set($var, $value)
     {
         $this->$var = $value;
@@ -35,13 +76,16 @@ abstract class BusinessLayer
     {
         if (method_exists(get_class($object), '_set')) {
             $object->_set('data', $this->data);
+
             return true;
         }
+
         return false;
     }
 
     /**
      * @param string|null $field
+     *
      * @return array
      */
     public function getValidationRules($field = null)
@@ -67,11 +111,12 @@ abstract class BusinessLayer
 
     public function toArray()
     {
-        $result = array();
+        $result = [];
         $fields = $this->data->getFields();
         foreach ($fields as $field => $changed) {
             $result[$field] = $this->data->$field;
         }
+
         return $result;
     }
 
@@ -97,6 +142,7 @@ abstract class BusinessLayer
             }
             $root->appendChild($child);
         }
+
         return $root;
     }
 
@@ -108,6 +154,7 @@ abstract class BusinessLayer
     /**
      * Public persist method.
      * This method checks hooks prePersist and postPersist to do additional functionality
+     *
      * @return boolean
      */
     public function persist()
@@ -122,15 +169,23 @@ abstract class BusinessLayer
                 else Forge::update($this);
 
                 if (method_exists($this, 'postPersist')) $this->postPersist();
+
                 return true;
             }
         }
+
         return false;
+    }
+
+    public function validate()
+    {
+        return true;
     }
 
     /**
      * Persist as new allowed the user to save the current object as a new instance of itself.
      * This is handy for duplicating an object into a new one, without losing the old one.
+     *
      * @return boolean
      */
     public function persistAsNew()
@@ -146,15 +201,18 @@ abstract class BusinessLayer
                 Forge::add($this);
 
                 if (method_exists($this, 'postPersist')) $this->postPersist();
+
                 return true;
             }
         }
+
         return false;
     }
 
     /**
      * Public function that removes the current object.
      * This function will never truely delete the object, just toggle the internal deleted_at
+     *
      * @return Boolean
      */
     public function delete()
@@ -163,6 +221,7 @@ abstract class BusinessLayer
         if (Database::Delete($this->data)) {
             Forge::update($this);
             if (method_exists($this, 'postDelete')) $this->postDelete();
+
             return true;
         } else
             return false;
@@ -176,45 +235,6 @@ abstract class BusinessLayer
     public function getSmallSql(Persister &$persister)
     {
         return $persister->getSmallSql($this->data);
-    }
-
-    public function validate()
-    {
-        return true;
-    }
-
-    /**
-     * Retrieve the classname of this class. This method is needed to allow extending of business classes, without breaking the natural build of the object
-     * @return String $className
-     */
-    protected function getClassName()
-    {
-        $className = explode('\\', get_class($this));
-        return array_pop($className);
-    }
-
-    /**
-     * Static function that creates a "Find" static function to each business object,
-     * which in turn is basicly a shortkey to get The Findertype, or when an ID is passed, to get the object by that ID
-     * @return BusinessLayer|Finder
-     */
-    public static function & Find($id = null)
-    {
-        $caller = function_exists('get_called_class') ? get_called_class() : Tools::getCaller();
-        $caller = '\\Finder\\' . $caller;
-
-        if ($id !== null) {
-            $return = &Database::Find($caller)->byID($id);
-        } else {
-            $return = &Database::Find($caller);
-        }
-
-        return $return;
-    }
-
-    public static function is_a($class_name)
-    {
-        return (__CLASS__ == $class_name) ? true : false;
     }
 
 }

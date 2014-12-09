@@ -1,7 +1,9 @@
 <?php
 namespace Forge\Builder;
 
-class Finder extends \Forge\baseGenerator
+use Forge\baseGenerator;
+
+class Finder extends baseGenerator
 {
 
     protected $name = null;
@@ -12,9 +14,9 @@ class Finder extends \Forge\baseGenerator
     protected $location = null;
     protected $multi_lang = false;
 
-    public function __construct($args = array())
+    public function __construct($args = [])
     {
-        list($this->name, $this->fields, $this->translate, $this->extends, $this->implements) = $args + array(null, array(), array(), null, null);
+        list($this->name, $this->fields, $this->translate, $this->extends, $this->implements) = $args + [null, [], [], null, null];
         $this->location = \Forge\Config::path('objects') . '/finders/';
         if (is_array($this->translate) && !empty($this->translate))
             $this->multi_lang = true;
@@ -39,19 +41,14 @@ class Finder extends \Forge\baseGenerator
         }
     }
 
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-
     public function getName()
     {
         return $this->name;
     }
 
-    public function setFields($fields)
+    public function setName($name)
     {
-        $this->fields = $fields;
+        $this->name = $name;
     }
 
     public function getFields()
@@ -59,14 +56,19 @@ class Finder extends \Forge\baseGenerator
         return $this->fields;
     }
 
-    public function setExtends($extends)
+    public function setFields($fields)
     {
-        $this->extends = $extends;
+        $this->fields = $fields;
     }
 
     public function getExtends()
     {
         return $this->extends;
+    }
+
+    public function setExtends($extends)
+    {
+        $this->extends = $extends;
     }
 
     public function generate()
@@ -97,7 +99,7 @@ class Finder extends \Forge\baseGenerator
 
         if (is_array($this->translate) && !empty($this->translate)) {
             //register the translation handlers
-            \Forge\Generator::getInstance()->build('finder', array($this->name . '_i18n', $this->translate, array()));
+            \Forge\Generator::getInstance()->build('finder', [$this->name . '_i18n', $this->translate, []]);
         }
     }
 

@@ -29,26 +29,26 @@ class Route
         return Forge::Route()->getURL();
     }
 
-    public static function url($link, $param = array())
-    {
-        return Forge::Route()->url($link, $param);
-    }
-
-    public static function url_rule($name, $param = array())
+    public static function url_rule($name, $param = [])
     {
         return Forge::Route()->url_from_rule($name, $param);
     }
 
-    public static function link($text, $link, $param = array(), $linkparam = array())
+    public static function link($text, $link, $param = [], $linkparam = [])
     {
         return Forge::Route()->link($text, $link, $param, $linkparam);
     }
 
-    public static function redirect($location, $param = array())
+    public static function redirect($location, $param = [])
     {
         Forge::registerShutdown();
         header("location: " . self::url($location, $param));
         exit();
+    }
+
+    public static function url($link, $param = [])
+    {
+        return Forge::Route()->url($link, $param);
     }
 
 }

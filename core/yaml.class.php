@@ -4,10 +4,21 @@ namespace Forge;
 class YAML
 {
 
+    protected $key = null;
+    protected $children = [];
+    protected $parent = null;
+
+    public function __construct($key)
+    {
+        $this->key = $key;
+    }
+
     /**
      * Static load function of YAML will try to create a cache file for faster reloading.
-     * @param string $path
+     *
+     * @param string  $path
      * @param boolean $cache
+     *
      * @return type
      */
     public static function load($path, $cache = false)
@@ -20,6 +31,7 @@ class YAML
             $yml = self::parse(file_get_contents($path));
             Cache::saveOutput($hash . '.php', self::createCache($yml));
         }
+
         return $yml;
     }
 
@@ -28,6 +40,7 @@ class YAML
         $list = explode(PHP_EOL, $yml);
         $result = new YAML('root');
         self::parseList($list, $result);
+
         return $result->toArray();
     }
 
@@ -82,12 +95,47 @@ class YAML
         }
     }
 
+    public function toArray()
+    {
+        $children = [];
+        if (count($this->children) == 1) {
+            $child = $this->lastChild();
+            if ($child instanceOf YAML) {
+                $children[$child->getKey()] = $child->toArray();
+            } else {
+                $children = $child;
+            }
+        } else {
+            foreach ($this->children as &$child) {
+                if ($child instanceOf YAML) {
+                    $children[$child->getKey()] = $child->toArray();
+                } else {
+                    $children[] = $child;
+                }
+            }
+        }
+        if (count($this->children) == 0) return '';
+
+        return $children;
+    }
+
+    public function & lastChild()
+    {
+        return $this->children[count($this->children) - 1];
+    }
+
+    public function getKey()
+    {
+        return $this->key;
+    }
+
     protected static function createCache(array $array)
     {
         $result = '<?php' . PHP_EOL;
         $result .= '$yml = array(' . PHP_EOL;
         $result .= self::writeArrayContent($array);
         $result .= ');';
+
         return $result;
     }
 
@@ -108,16 +156,8 @@ class YAML
                 $result .= " '$value'," . PHP_EOL;
             }
         }
+
         return $result;
-    }
-
-    protected $key = null;
-    protected $children = array();
-    protected $parent = null;
-
-    public function __construct($key)
-    {
-        $this->key = $key;
     }
 
     public function addChild($child)
@@ -128,47 +168,14 @@ class YAML
         $this->children[] = $child == 'true' ? true : ($child == 'false' ? false : $child);
     }
 
-    public function setParent(&$object)
-    {
-        $this->parent = &$object;
-    }
-
     public function & getParent()
     {
         return $this->parent;
     }
 
-    public function getKey()
+    public function setParent(&$object)
     {
-        return $this->key;
-    }
-
-    public function & lastChild()
-    {
-        return $this->children[count($this->children) - 1];
-    }
-
-    public function toArray()
-    {
-        $children = array();
-        if (count($this->children) == 1) {
-            $child = $this->lastChild();
-            if ($child instanceOf YAML) {
-                $children[$child->getKey()] = $child->toArray();
-            } else {
-                $children = $child;
-            }
-        } else {
-            foreach ($this->children as &$child) {
-                if ($child instanceOf YAML) {
-                    $children[$child->getKey()] = $child->toArray();
-                } else {
-                    $children[] = $child;
-                }
-            }
-        }
-        if (count($this->children) == 0) return '';
-        return $children;
+        $this->parent = &$object;
     }
 
 }

@@ -10,33 +10,39 @@ class RoutingRule
     /**
      * List of raw URLS that have been defined in the routing config yml
      * The key of each url is it's language code, or __ for default language
+     *
      * @var Array
      */
-    protected $raw_url = array();
+    protected $raw_url = [];
     /**
      * List of raw URL patterns.
-     * This list is internaly populated for each raw url, and is a regex match string to check likelyness of matchable urls
+     * This list is internaly populated for each raw url, and is a regex match string to check likelyness of matchable
+     * urls
+     *
      * @var Array
      */
     //protected $url_pattern = array();
     /**
      * List of attributes that have been defined in the routing rule
+     *
      * @var Array
      */
-    protected $attributes = array();
+    protected $attributes = [];
 
-    protected $defaults = array();
+    protected $defaults = [];
     /**
      * Internal counter of parameters that have been specified in the routing line
+     *
      * @var Integer
      */
     protected $attr_in_url = 0;
 
     /**
      * Construct a Routing rule by it's rule definition
+     *
      * @param Array $url_rule
      */
-    public function __construct($url_rule = array())
+    public function __construct($url_rule = [])
     {
         if (!empty($url_rule)) {
             if (is_array($url_rule['url'])) {
@@ -51,6 +57,7 @@ class RoutingRule
     /**
      * Register URL into routing rule
      * default iso (even if there is none) is __, which represents the default language specified in the settings yaml
+     *
      * @param type $url
      * @param type $iso2
      */
@@ -59,33 +66,12 @@ class RoutingRule
         $this->raw_url[$iso2] = $url;
         if (false != ($this->attr_in_url = preg_match_all("/\/{{([^\}]*)}}/", $url, $variables))) {
             foreach ($variables[1] as $variable) {
-                list($key, $default) = explode(':', $variable) + array(null, null);
+                list($key, $default) = explode(':', $variable) + [null, null];
                 $this->setDefault($key, $default); //add key + value to attribute holder
             }
         }
         //$url = str_replace(array('*','/'),array('.*','\\/'),$url);
         //$this->url_pattern[$iso2] = "/^".preg_replace("/\{\{[^\}]*\}\}/","[^\/]*",$url)."/";
-    }
-
-    /**
-     * Public function to add multiple attributes to the routing rule
-     * @param Array $attributes
-     */
-    public function setAttributes($attributes = array())
-    {
-        foreach ($attributes as $key => $value) {
-            $this->setAttribute($key, $value);
-        }
-    }
-
-    /**
-     * Public function to add a attribute to the routing rule
-     * @param String $key
-     * @param String $value
-     */
-    public function setAttribute($key, $value)
-    {
-        $this->attributes[$key] = $value;
     }
 
     public function setDefault($key, $default)
@@ -94,12 +80,36 @@ class RoutingRule
     }
 
     /**
+     * Public function to add a attribute to the routing rule
+     *
+     * @param String $key
+     * @param String $value
+     */
+    public function setAttribute($key, $value)
+    {
+        $this->attributes[$key] = $value;
+    }
+
+    /**
      * Get all specified attributes in routing rule
+     *
      * @return Array
      */
     public function getAttributes()
     {
         return $this->attributes;
+    }
+
+    /**
+     * Public function to add multiple attributes to the routing rule
+     *
+     * @param Array $attributes
+     */
+    public function setAttributes($attributes = [])
+    {
+        foreach ($attributes as $key => $value) {
+            $this->setAttribute($key, $value);
+        }
     }
 
     public function getAttribute($key, $default = null)
@@ -114,6 +124,7 @@ class RoutingRule
 
     /**
      * Function returns the amount of attributes in the url
+     *
      * @return Integer
      */
     public function getAttrInUrl()
@@ -123,8 +134,10 @@ class RoutingRule
 
     /**
      * Compare rule to a passed url
+     *
      * @param String $url
      * @param String $iso2 (optional)
+     *
      * @return Integer $score
      */
     public function matchToUrl($url, $iso2 = '__')
@@ -151,16 +164,19 @@ class RoutingRule
                 return -3; //if url is longer then match target, and match target doesn't end with a *, then this is not a good url
             }
         }
+
         return $score;
     }
 
     /**
      * Build URL with passed attributes and optional language code
-     * @param Array $attributes
+     *
+     * @param Array  $attributes
      * @param String $iso2 (optional)
+     *
      * @return String $url
      */
-    public function buildUrl($attributes = array(), $iso2 = '__')
+    public function buildUrl($attributes = [], $iso2 = '__')
     {
         if ($iso2 != '__' && (!isset($this->raw_url[$iso2]) || !array_key_exists($iso2, $this->raw_url))) $iso2 = '__';
 

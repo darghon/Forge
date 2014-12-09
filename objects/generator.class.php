@@ -1,7 +1,9 @@
 <?php
 namespace Forge;
+
 /**
  * Class Generator
+ *
  * @package Forge
  */
 class Generator extends Singleton
@@ -10,7 +12,7 @@ class Generator extends Singleton
     /**
      * @var IGenerator[] $_builders
      */
-    protected $_builders = array();
+    protected $_builders = [];
 
     /**
      * @var bool $_initiating
@@ -18,11 +20,22 @@ class Generator extends Singleton
     protected $_init = true;
 
     /**
+     * Implement getInstance for correct code completion
+     *
+     * @return Generator
+     */
+    public static function getInstance()
+    {
+        return parent::getInstance();
+    }
+
+    /**
      * @param string $type
-     * @param array $arguments
+     * @param array  $arguments
+     *
      * @throws \InvalidArgumentException
      */
-    public function build($type, $args = array())
+    public function build($type, $args = [])
     {
         //retrieve all available builders if not done already
         if ($this->_init) $this->initBuilders();
@@ -35,38 +48,6 @@ class Generator extends Singleton
         } else {
             throw new \InvalidArgumentException('Requested builder ' . $type . ' was not found. Request can not be executed.' . PHP_EOL);
         }
-    }
-
-    /**
-     * Retrieve a list of available builders
-     * @return array
-     */
-    public function getAvailableBuilders()
-    {
-        //retrieve all available builders if not done already
-        if ($this->_init) $this->initBuilders();
-
-        return array_keys($this->_builders);
-    }
-
-    /**
-     * @param string $type
-     * @param string $class
-     * @param bool $overwrite
-     * @return bool $registered
-     */
-    public function registerBuilder($type, $class, $overwrite = false)
-    {
-        if ((isset($this->_builders[$type]) || array_key_exists($type, $this->_builders)) && $overwrite == false) {
-            echo "A builder of this type has already been registered.";
-            return false;
-        }
-        if (!is_callable(array($class, 'isGenerator')) === true || !$class::isGenerator() === true) {
-            echo "The class $class is not an implementation of the IGenerator interface." . PHP_EOL;
-            return false;
-        }
-        $this->_builders[$type] = $class;
-        return true;
     }
 
     /**
@@ -85,12 +66,40 @@ class Generator extends Singleton
     }
 
     /**
-     * Implement getInstance for correct code completion
-     * @return Generator
+     * @param string $type
+     * @param string $class
+     * @param bool   $overwrite
+     *
+     * @return bool $registered
      */
-    public static function getInstance()
+    public function registerBuilder($type, $class, $overwrite = false)
     {
-        return parent::getInstance();
+        if ((isset($this->_builders[$type]) || array_key_exists($type, $this->_builders)) && $overwrite == false) {
+            echo "A builder of this type has already been registered.";
+
+            return false;
+        }
+        if (!is_callable([$class, 'isGenerator']) === true || !$class::isGenerator() === true) {
+            echo "The class $class is not an implementation of the IGenerator interface." . PHP_EOL;
+
+            return false;
+        }
+        $this->_builders[$type] = $class;
+
+        return true;
+    }
+
+    /**
+     * Retrieve a list of available builders
+     *
+     * @return array
+     */
+    public function getAvailableBuilders()
+    {
+        //retrieve all available builders if not done already
+        if ($this->_init) $this->initBuilders();
+
+        return array_keys($this->_builders);
     }
 
 }

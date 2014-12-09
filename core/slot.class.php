@@ -10,17 +10,20 @@ class Slot
 
     /**
      * A pre-defined string that outlines a slot holder in the layout template
+     *
      * @var String
      */
     private $placeholder = null;
     /**
      * This variable contains the content value, when the assigned slot is executed
+     *
      * @var String
      */
     private $content = null;
 
     /**
      * Create Slot
+     *
      * @param String $name
      */
     public function __construct($name)
@@ -30,16 +33,8 @@ class Slot
     }
 
     /**
-     * Set Assigned slot value
-     * @param String $content
-     */
-    public function setContent($content)
-    {
-        $this->content = $content;
-    }
-
-    /**
      * Get Placeholder text
+     *
      * @return String
      */
     public function getPlaceholder()
@@ -47,14 +42,24 @@ class Slot
         return $this->placeholder;
     }
 
-
     /**
      * Get assigned slot value
+     *
      * @return String
      */
     public function getContent()
     {
         return $this->content;
+    }
+
+    /**
+     * Set Assigned slot value
+     *
+     * @param String $content
+     */
+    public function setContent($content)
+    {
+        $this->content = $content;
     }
 
 }

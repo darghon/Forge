@@ -1,14 +1,16 @@
 <?php
 namespace Forge\Builder;
 
-class Module extends \Forge\baseGenerator
+use Forge\baseGenerator;
+
+class Module extends baseGenerator
 {
 
     protected $app_name = null;
     protected $mod_name = null;
-    protected $actions = array();
+    protected $actions = [];
 
-    public function __construct($args = array())
+    public function __construct($args = [])
     {
         if (count($args) < 2) {
             throw new \Exception('Module generator expects at least 2 parameters, ' . count($args) . ' were given. Parameters needed: app_name, mod_name , [action], [action] ,...');
@@ -42,18 +44,19 @@ class Module extends \Forge\baseGenerator
         return $this->mod_name;
     }
 
-    public function setActions(array $actions)
-    {
-        $this->actions = $actions;
-    }
-
     public function getActions()
     {
         return $this->actions;
     }
 
+    public function setActions(array $actions)
+    {
+        $this->actions = $actions;
+    }
+
     /**
      * Public generate action. This method performs all actions required to build the wanted files
+     *
      * @return boolean $result;
      */
     public function generate()
@@ -62,9 +65,11 @@ class Module extends \Forge\baseGenerator
             //folder does not exists, so ok to proceed
             $this->generateFolderStructure();
             $this->generateDefaultFiles();
+
             return true;
         } else {
             print('Module has already been build.' . PHP_EOL);
+
             return false;
         }
     }
@@ -73,11 +78,11 @@ class Module extends \Forge\baseGenerator
     {
         print('Creating folder structure');
         flush();
-        $this->_createDirectory(array(
+        $this->_createDirectory([
             \Forge\Config::path("app") . "/" . $this->app_name . "/modules/" . $this->mod_name . "/actions",
             \Forge\Config::path("app") . "/" . $this->app_name . "/modules/" . $this->mod_name . "/templates",
             \Forge\Config::path("app") . "/" . $this->app_name . "/modules/" . $this->mod_name . "/config"
-        ), '.', 'x');
+        ], '.', 'x');
         print('DONE' . PHP_EOL);
         flush();
     }
@@ -96,18 +101,24 @@ class Module extends \Forge\baseGenerator
                 $contents = file_get_contents(\Forge\Config::path('forge') . '/templates/' . $template);
                 if (substr($file[0], 0, 5) == 'templ') {
                     foreach ($this->actions as $action) {
-                        file_put_contents($this->replaceTokens($new_file, array('action' => $action)), $this->replaceTokens($contents, array('action' => $action)));
+                        file_put_contents($this->_replaceTokens($new_file, ['action' => $action]), $this->_replaceTokens($contents, ['action' => $action]));
                         print('.');
                         flush();
                     }
                 } else {
-                    file_put_contents($this->replaceTokens($new_file), $this->replaceTokens($contents));
+                    file_put_contents($this->_replaceTokens($new_file), $this->_replaceTokens($contents));
                     print('.');
                     flush();
                 }
             }
         }
         print('DONE' . PHP_EOL);
+    }
+
+    public function __destroy()
+    {
+        unset($this->name, $this->fields, $this->location);
+        parent::__destroy();
     }
 
     protected function transformActions()
@@ -122,13 +133,8 @@ class Module extends \Forge\baseGenerator
             $actions .= sprintf("\t}" . PHP_EOL);
             $actions .= PHP_EOL;
         }
-        return $actions;
-    }
 
-    public function __destroy()
-    {
-        unset($this->name, $this->fields, $this->location);
-        parent::__destroy();
+        return $actions;
     }
 
 }

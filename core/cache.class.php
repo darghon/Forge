@@ -16,22 +16,24 @@ class Cache
         fclose($file);
     }
 
-    public static function load($name, $default = null, $bypass = false)
+    private static function checkPath()
     {
-        self::checkPath();
-        if (!$bypass && !self::enabled())
-            return $default;
-        // && filemtime(Config::path('cache').$name) > strtotime(removeHours(date('Y-m-d H:i:s'), 1))
-        if (file_exists(Config::path('cache') . '/' . $name)) {
-            include(Config::path('cache') . '/' . $name);
-            return $buffer;
-        } else {
-            return $default;
+        if (self::$folders_checked == false) {
+            //config & module cache
+            if (!file_exists(Config::path('cache'))) {
+                mkdir(Config::path('cache'));
+            }
+            //css & js cache
+            if (file_exists(Config::path('web')) && !file_exists(Config::path('webcache'))) {
+                mkdir(Config::path('webcache'));
+            }
+            self::$folders_checked = true;
         }
     }
 
     /**
      * Save a full page cache entry
+     *
      * @param type $name
      * @param type $content
      */
@@ -43,9 +45,11 @@ class Cache
 
     /**
      * Load a full page cache entry
+     *
      * @param type $name
      * @param type $default
      * @param type $bypass
+     *
      * @return type
      */
     public static function load_fpc($name, $default = null)
@@ -73,10 +77,21 @@ class Cache
             return $default;
         if (file_exists(Config::path('cache') . '/' . $name)) {
             include(Config::path('cache') . '/' . $name);
+
             return true;
         } else {
             return $default;
         }
+    }
+
+    public static function enabled()
+    {
+        if (self::$enabled === null) {
+            $settings = Config::get('settings');
+            self::$enabled = isset($settings["cache"]) ? $settings["cache"]["enabled"] : false;
+        }
+
+        return self::$enabled;
     }
 
     public static function addClassLocation($class, $location)
@@ -96,7 +111,22 @@ class Cache
 
     public static function loadClassArray()
     {
-        return self::load('classcache_list.php', array(), true);
+        return self::load('classcache_list.php', [], true);
+    }
+
+    public static function load($name, $default = null, $bypass = false)
+    {
+        self::checkPath();
+        if (!$bypass && !self::enabled())
+            return $default;
+        // && filemtime(Config::path('cache').$name) > strtotime(removeHours(date('Y-m-d H:i:s'), 1))
+        if (file_exists(Config::path('cache') . '/' . $name)) {
+            include(Config::path('cache') . '/' . $name);
+
+            return $buffer;
+        } else {
+            return $default;
+        }
     }
 
     public static function unlinkClassArray()
@@ -105,7 +135,7 @@ class Cache
         @unlink(Config::path('cache') . '/classcache_list.php');
     }
 
-    public static function getCss($css = array())
+    public static function getCss($css = [])
     {
         self::checkPath();
         $name = md5(implode('', $css));
@@ -114,42 +144,11 @@ class Cache
             /* remove comments */
             $buffer = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $buffer);
             /* remove tabs, spaces, newlines, etc. */
-            $buffer = str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), '', $buffer);
+            $buffer = str_replace(["\r\n", "\r", "\n", "\t", '  ', '    ', '    '], '', $buffer);
             file_put_contents(Config::path('webcache') . '/' . $name . '.cache.css', $buffer);
         }
+
         return Config::path('webcache_url') . $name . '.cache.css';
-    }
-
-    public static function getJs($js = array())
-    {
-        self::checkPath();
-        $name = md5(implode('', $js));
-        if (!file_exists(Config::path('webcache') . '/' . $name . '.cache.js')) {
-            $buffer = self::mergeJs($js);
-            file_put_contents(Config::path('webcache') . '/' . $name . '.cache.js', JSMin::minify($buffer));
-        }
-        return Config::path('webcache_url') . $name . '.cache.js';
-    }
-
-    public static function enabled()
-    {
-        if (self::$enabled === null) {
-            $settings = Config::get('settings');
-            self::$enabled = isset($settings["cache"]) ? $settings["cache"]["enabled"] : false;
-        }
-        return self::$enabled;
-    }
-
-    public static function enable()
-    {
-        self::$enabled = true;
-        return true;
-    }
-
-    public static function disable()
-    {
-        self::$enabled = false;
-        return true;
     }
 
     private static function mergeCss($css)
@@ -158,7 +157,20 @@ class Cache
         foreach ($css as $entry) {
             $content .= file_get_contents(Config::path('css') . '/' . $entry) . PHP_EOL;
         }
+
         return $content;
+    }
+
+    public static function getJs($js = [])
+    {
+        self::checkPath();
+        $name = md5(implode('', $js));
+        if (!file_exists(Config::path('webcache') . '/' . $name . '.cache.js')) {
+            $buffer = self::mergeJs($js);
+            file_put_contents(Config::path('webcache') . '/' . $name . '.cache.js', JSMin::minify($buffer));
+        }
+
+        return Config::path('webcache_url') . $name . '.cache.js';
     }
 
     private static function mergeJs($js)
@@ -169,22 +181,22 @@ class Cache
             $content .= fread($file, filesize(Config::path('js') . '/' . $entry)) . "\n";
             fclose($file);
         }
+
         return $content;
     }
 
-    private static function checkPath()
+    public static function enable()
     {
-        if (self::$folders_checked == false) {
-            //config & module cache
-            if (!file_exists(Config::path('cache'))) {
-                mkdir(Config::path('cache'));
-            }
-            //css & js cache
-            if (file_exists(Config::path('web')) && !file_exists(Config::path('webcache'))) {
-                mkdir(Config::path('webcache'));
-            }
-            self::$folders_checked = true;
-        }
+        self::$enabled = true;
+
+        return true;
+    }
+
+    public static function disable()
+    {
+        self::$enabled = false;
+
+        return true;
     }
 
     public static function fpc()
@@ -193,6 +205,7 @@ class Cache
             $settings = Config::get('settings');
             self::$fpc_enabled = isset($settings["full_page_cache"]) && $settings["full_page_cache"]["enabled"] == true ? $settings["full_page_cache"]["life_time"] : null;
         }
+
         return self::$fpc_enabled;
     }
 

@@ -1,14 +1,16 @@
 <?php
 namespace Forge\Builder;
 
-class Sql extends \Forge\baseGenerator
+use Forge\baseGenerator;
+
+class Sql extends baseGenerator
 {
 
     private $name = null;
     private $fields = null;
     private $links = null; /* Needed for index generations */
     private $sql = null;
-    private $index = array();
+    private $index = [];
 
     public function __construct($name = null, $fields = null)
     {
@@ -16,19 +18,14 @@ class Sql extends \Forge\baseGenerator
         $this->fields = $fields;
     }
 
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-
     public function getName()
     {
         return $this->name;
     }
 
-    public function setFields($fields)
+    public function setName($name)
     {
-        $this->fields = $fields;
+        $this->name = $name;
     }
 
     public function getFields()
@@ -36,14 +33,19 @@ class Sql extends \Forge\baseGenerator
         return $this->fields;
     }
 
-    public function setLinks($links)
+    public function setFields($fields)
     {
-        $this->links = $links;
+        $this->fields = $fields;
     }
 
     public function getLinks()
     {
         return $this->links;
+    }
+
+    public function setLinks($links)
+    {
+        $this->links = $links;
     }
 
     public function getSql()
@@ -125,6 +127,7 @@ class Sql extends \Forge\baseGenerator
         if ($field["name"] == "ID") {
             $sql .= " AUTO_INCREMENT";
         }
+
         return $sql;
     }
 

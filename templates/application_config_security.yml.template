@@ -1,13 +1,13 @@
 global:
-  is_secure: false					# Force entire application to be secure
-  cred_required: user			# Minimum credentials needed for access (global)
+  is_secure: false                  # Force entire application to be secure
+  cred_required: user               # Minimum credentials needed for access (global)
   
-  security_class: WebUser # Class which contains the secure identity of the webuser (class which extends ISecurity Interface
+  security_class: WebUser           # Class which contains the secure identity of the webuser (class which extends ISecurity Interface
     
-  auth_module: login			# Module where unauthorised requests are send to
-  auth_action: index			# Action where unauthorised requests are send to
+  auth_module: login                # Module where unauthorised requests are send to
+  auth_action: index                # Action where unauthorised requests are send to
   
-  credentials: [GUEST, USER, ADMIN]		# available credentials (these are represented using binary code. Db records should store the credential binary as data, instead of a string
+  credentials: [GUEST, USER, ADMIN] # available credentials (these are represented using binary code. Db records should store the credential binary as data, instead of a string
 
 login:
-  is_secure: false				# Allow all access to the login screen
+  is_secure: false                  # Allow all access to the login screen

@@ -18,24 +18,25 @@ class Tools
     {
         $string = str_replace("_", " ", $string);
         $tmp = str_replace(" ", "", ucwords($string));
+
         return ($upper) ? $tmp : strtolower(substr($tmp, 0, 1)) . (substr($tmp, 1));
     }
 
     /**
-     * @param $string
+     * @param        $string
      * @param string $delimiter
+     *
      * @return string
      */
     public static function camelcasetostr($string, $delimiter = '_')
     {
-        return strtolower(preg_replace_callback('/^[A-Z]?([A-Z])/', function ($match) use ($delimiter) {
-                    return $delimiter . $match;
-                }, $string));
+        return trim(strtolower(preg_replace('/([a-z])([A-Z])/', '$1'.$delimiter.'$2', $string)));
     }
 
     /**
      * This function displays a print of the given object
-     * @param Object $object
+     *
+     * @param Object  $object
      * @param Boolean $detail false
      */
     public static function dump($object, $detail = false)
@@ -47,27 +48,32 @@ class Tools
 
     /**
      * This function returnes as cleaned array without null entries
+     *
      * @param String $split
      * @param String $string
+     *
      * @return Array
      */
     public static function cleanExplode($split, $string)
     {
-        $result = array();
+        $result = [];
         $explode = explode($split, $string);
         foreach ($explode as $entry) {
             if (trim($entry) != '') {
                 $result[] = $entry;
             }
         }
+
         return $result;
     }
 
     /**
      * This function allows the user to encrypt a given string by an optional salt.
      * This function used a sha1 encryption which is one way
+     *
      * @param String $string
      * @param String $salt
+     *
      * @return String Encrypted
      */
     public static function encrypt($string, $salt = "sv4l6j6kc9uq")
@@ -77,7 +83,9 @@ class Tools
 
     /**
      * This function reverses a date
+     *
      * @param String $date
+     *
      * @return String
      */
     public static function reverseDate($date)
@@ -87,24 +95,28 @@ class Tools
 
     /**
      * This function checks if the passed argument is a valid date
+     *
      * @param String $date
+     *
      * @return Boolean
      */
     public static function is_date($date)
     {
         $stamp = strtotime($date);
         if (!is_numeric($stamp))
-            return FALSE;
+            return false;
         $month = date('m', $stamp);
         $day = date('d', $stamp);
         $year = date('Y', $stamp);
         if (checkdate($month, $day, $year))
-            return TRUE;
-        return FALSE;
+            return true;
+
+        return false;
     }
 
     /**
      * This function returns the current date/time stamp
+     *
      * @return String timestamp
      */
     public static function now()
@@ -114,7 +126,7 @@ class Tools
 
     public static function decode($param)
     {
-        $result = array();
+        $result = [];
         $pos = -1;
 
         $explode = explode(';', $param);
@@ -124,16 +136,18 @@ class Tools
             $value = substr($entry, $pos + 1, -1);
             $result[$key] = $value;
         }
+
         return $result;
     }
 
     public static function encode($param)
     {
-        $string = array();
+        $string = [];
         foreach ($param as $key => $entry) {
             if ($entry != '' && !is_numeric($key))
                 $string[] = $key . "{" . $entry . "}";
         }
+
         return implode(';', $string);
     }
 
@@ -144,6 +158,7 @@ class Tools
 
     /**
      * Public function that adds support for get_called_class function to PHP < 5.3
+     *
      * @return String $get_called_class
      */
     public static function getCaller()
@@ -164,6 +179,7 @@ class Tools
                 preg_match('/class[\s]+(.+?)[\s]+/si', $lines[$line], $matches);
             }
         } while ($matches[1] == 'parent' && $matches[1]);
+
         return $matches[1];
     }
 
@@ -179,6 +195,7 @@ class Tools
         if (empty($text)) {
             return 'n-a';
         }
+
         return $text;
     }
 
@@ -227,8 +244,8 @@ class Tools
     }
 
     public static function generateLevelUpStats(
-        array $statDivision = array('Strength' => 17, 'Constitution' => 17, 'Dexterity' => 17, 'Intelligence' => 17, 'Wisdom' => 16, 'Charisma' => 16),
-        array $_stats = array('Strength' => 0, 'Constitution' => 0, 'Dexterity' => 0, 'Intelligence' => 0, 'Wisdom' => 0, 'Charisma' => 0)
+        array $statDivision = ['Strength' => 17, 'Constitution' => 17, 'Dexterity' => 17, 'Intelligence' => 17, 'Wisdom' => 16, 'Charisma' => 16],
+        array $_stats = ['Strength' => 0, 'Constitution' => 0, 'Dexterity' => 0, 'Intelligence' => 0, 'Wisdom' => 0, 'Charisma' => 0]
     )
     {
         for ($x = 1; $x < 7; $x++) {
@@ -241,20 +258,23 @@ class Tools
                 }
             }
         }
+
         return $_stats;
     }
 
     /**
      * Merge arrays, sum their children with identical keys
+     *
      * @param array $array_1
      * @param array $array_2
      * @param array $_ (optional)
+     *
      * @return array $merged_result
      */
     public static function array_sum_recursive()
     {
         $arguments = func_get_args();
-        $result = array();
+        $result = [];
         foreach ($arguments as $arrays) {
             foreach ($arrays as $key => $value) {
                 if (!isset($result[$key])) {
@@ -263,7 +283,7 @@ class Tools
                     if (is_array($value)) {
                         if (is_array($result[$key])) $result[$key] = self::array_sum_recursive($result[$key], $value);
                         else {
-                            $result[$key] = self::array_sum_recursive(array($result[$key]), $value);
+                            $result[$key] = self::array_sum_recursive([$result[$key]], $value);
                         }
                     } else {
                         $result[$key] += $value;
@@ -271,15 +291,18 @@ class Tools
                 }
             }
         }
+
         return $result;
     }
 
     /**
      * Retrieve the stat comparison of 2 stats based on the first one. The result is multiplied by the base
      * Ex. 5 vs 10 = (5/(5+10))*100 =>
+     *
      * @param integer $_stat1
      * @param integer $_stat2
      * @param integer $base
+     *
      * @return integer
      */
     public static function getStatComparison($_stat1 = 0, $_stat2 = 0, $base = 100)

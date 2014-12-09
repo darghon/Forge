@@ -4,7 +4,7 @@ namespace Forge;
 trait EventListener
 {
 
-    protected $_eventBuffer = array();
+    protected $_eventBuffer = [];
     protected $_registered = false;
 
     public function raiseEvent(IEvent $raisedEvent)
@@ -14,17 +14,17 @@ trait EventListener
         $this->_eventBuffer[] = $raisedEvent;
     }
 
-    public function handleEventBuffer()
-    {
-        foreach ($this->_eventBuffer as $event) $event->raiseEvent();
-
-        $this->_eventBuffer = array();
-    }
-
     protected function _registerEventListener()
     {
         Forge::$_eventCollection[get_class($this)] = $this;
         $this->_registered = true;
+    }
+
+    public function handleEventBuffer()
+    {
+        foreach ($this->_eventBuffer as $event) $event->raiseEvent();
+
+        $this->_eventBuffer = [];
     }
 
 

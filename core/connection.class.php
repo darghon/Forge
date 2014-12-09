@@ -42,6 +42,11 @@ class Connection
         $this->database = $config["database"];
     }
 
+    public function getUser()
+    {
+        return $this->user;
+    }
+
     /**
      * All Standard Getters and setters, although there is no get for password, and should remain this way
      * If it would be needed, only create a private function.
@@ -51,19 +56,9 @@ class Connection
         $this->user = $user;
     }
 
-    public function getUser()
-    {
-        return $this->user;
-    }
-
     public function setPass($pass)
     {
         $this->pass = $pass;
-    }
-
-    public function setHost($host)
-    {
-        $this->host = $host;
     }
 
     public function getHost()
@@ -71,14 +66,19 @@ class Connection
         return $this->host;
     }
 
-    public function setDatabase($database)
+    public function setHost($host)
     {
-        $this->database = $database;
+        $this->host = $host;
     }
 
     public function getDatabase()
     {
         return $this->database;
+    }
+
+    public function setDatabase($database)
+    {
+        $this->database = $database;
     }
 
     /**

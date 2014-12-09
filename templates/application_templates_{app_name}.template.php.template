@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
     <head>
         <?php echo \Forge\Application::META_DATA; ?>
         <?php echo \Forge\Application::TITLE; ?>

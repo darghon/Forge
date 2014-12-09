@@ -4,9 +4,9 @@ namespace Forge;
 class LogHandler
 {
 
-    private $notices = array();
-    private $errors = array();
-    private $logs = array();
+    private $notices = [];
+    private $errors = [];
+    private $logs = [];
 
     public function __construct()
     {
@@ -30,7 +30,7 @@ class LogHandler
 
     public function & getLogByType($type)
     {
-        $result = array();
+        $result = [];
         foreach ($this->notices as &$entry) {
             if ($entry->getType() == $type) {
                 $result[] =& $entry;
@@ -46,12 +46,13 @@ class LogHandler
                 $result[] =& $entry;
             }
         }
+
         return $result;
     }
 
     public function & getAll()
     {
-        $result = array();
+        $result = [];
         foreach ($this->notices as &$entry) {
             $result[] =& $entry;
         }
@@ -61,6 +62,7 @@ class LogHandler
         foreach ($this->logs as &$entry) {
             $result[] =& $entry;
         }
+
         return $result;
     }
 

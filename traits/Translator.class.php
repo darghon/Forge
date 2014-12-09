@@ -5,6 +5,7 @@ trait Translator
 {
     /**
      * @param string $string
+     *
      * @return string $translatedString
      */
     public function __($string)

@@ -10,10 +10,14 @@ namespace Forge;
 class Forge
 {
 
-    private static $memoryhandler = null;
+    /**
+     * @var EventListener[]
+     */
+    public static $_eventCollection = [];
     //private static $findercollection = array();
     //private static $objectcollection = array();
-    private static $timercollection = array();
+    private static $memoryhandler = null;
+    private static $timercollection = [];
     private static $responsehandler = null;
     private static $databasehandler = null;
     private static $routehandler = null;
@@ -21,27 +25,20 @@ class Forge
     private static $requesthandler = null;
     private static $configurationhandler = null;
     private static $loghandler = null;
-    private static $connections = array();
+    private static $connections = [];
     private static $classBuffer = null;
-    private static $variableHolder = array();
+    private static $variableHolder = [];
     private static $environment = null;
-
-    private static $autoloaders = array('Forge::loadOnDemand');
-
+    private static $autoloaders = ['Forge::loadOnDemand'];
     private static $version = null;
-
     private static $pageincludes = 0;
-
-    /**
-     * @var EventListener[]
-     */
-    public static $_eventCollection = array();
 
     /**
      * Forge collects objects of every type.
      * This function returns a requested finder from its finder collection.
      * If the finder does not exist yet, it will initiate it, and add it to the collection
      * A reference to the finder is returned to the requester
+     *
      * @return Finder $class
      */
     public static function & getFinder($class)
@@ -50,157 +47,15 @@ class Forge
     }
 
     /**
-     * This function checks if a given Business object is already within the collection.
-     * If so, it returns a reference to the object.
-     */
-    public static function & getObject($class, $id)
-    {
-        return self::Memory()->retrieve($class, $id);
-    }
-
-    /**
      * Static function that returns an instance of the MemoryHandler Object
+     *
      * @return MemoryHandler $memory
      */
     public static function & Memory()
     {
         if (self::$memoryhandler === null) self::createMemory();
+
         return self::$memoryhandler;
-    }
-
-    /**
-     * Function that retrieves a timer from global collection
-     * @param String $tag
-     * @param boolean $start
-     * @return Timer
-     */
-    public static function & getTimer($tag, $start = true)
-    {
-        if (!isset(self::$timercollection[$tag]) || !array_key_exists($tag, self::$timercollection)) {
-            self::$timercollection[$tag] = new Timer($tag, $start);
-        }
-        return self::$timercollection[$tag];
-    }
-
-    /**
-     * Function that returns all initiated timers
-     * @return array
-     */
-    public static function &getTimers()
-    {
-        return self::$timercollection;
-    }
-
-    /**
-     * This function returns the instance of the database handler object
-     * @return DatabaseHandler
-     */
-    public static function & Database()
-    {
-        if (self::$databasehandler === null) self::createDatabase();
-        return self::$databasehandler;
-    }
-
-    /**
-     * This function returns the instance of the application handler object
-     * @return ResponseHandler
-     */
-    public static function & Response()
-    {
-        if (self::$responsehandler === null) trigger_error('No response stage handler has been specified.');
-        return self::$responsehandler;
-    }
-
-    public static function setEnvironment($environment)
-    {
-        self::$environment = $environment;
-        //set global configuration
-        Config::ApplyGlobalConfiguration();
-    }
-
-    public static function setVersion($version)
-    {
-        self::$version = $version;
-    }
-
-    public static function getVersion()
-    {
-        return self::$version;
-    }
-
-    /**
-     * This function returns the instance of the connection object
-     * @return Connection
-     */
-    public static function & Connection($index = null)
-    {
-        if ($index === null) $index = self::getDefaultConnection();
-        if (!isset(self::$connections[$index]) || self::$connections[$index] === null) self::createConnection();
-        if (isset(self::$connections[$index])) {
-            return self::$connections[$index];
-        } else {
-            throw new \Exception("Connection '" . $index . "' not found.");
-        }
-    }
-
-    /**
-     * This function returns the default connection name specified in the configuration
-     * @return String
-     */
-    public static function getDefaultConnection()
-    {
-        if (self::$environment !== null) return self::$environment;
-        $conf = Config::get("DBConfig");
-        return $conf["default_connection"];
-    }
-
-    /**
-     * This function returns the instance the of route handler object
-     * @return RouteHandler routehandler
-     */
-    public static function & Route()
-    {
-        if (self::$routehandler === null) trigger_error('No route stage handler has been specified.');
-        return self::$routehandler;
-    }
-
-    /**
-     * This function returns the instance the of translation handler object
-     * @return TranslationHandler translationhandler
-     */
-    public static function & Translate()
-    {
-        if (self::$translationhandler === null) trigger_error('No translation handler has been specified.');
-        return self::$translationhandler;
-    }
-
-    /**
-     * This function returns the instance the of request handler object
-     * @return RequestHandler requesthandler
-     */
-    public static function & Request()
-    {
-        if (self::$requesthandler === null) trigger_error('No request stage handler has been specified.');
-        return self::$requesthandler;
-    }
-
-    /**
-     * This function returns the instance fo the log handler
-     * @return LogHandler
-     */
-    public static function & Log()
-    {
-        if (self::$loghandler === null) self::createLogHandler();
-        return self::$loghandler;
-    }
-
-    /**
-     * @return ConfigurationHandler
-     */
-    public static function & Configuration()
-    {
-        if (self::$configurationhandler === null) trigger_error('No configuration stage handler has been specified.');
-        return self::$configurationhandler;
     }
 
     /**
@@ -220,6 +75,54 @@ class Forge
     }
 
     /**
+     * This function checks if a given Business object is already within the collection.
+     * If so, it returns a reference to the object.
+     */
+    public static function & getObject($class, $id)
+    {
+        return self::Memory()->retrieve($class, $id);
+    }
+
+    /**
+     * Function that retrieves a timer from global collection
+     *
+     * @param String  $tag
+     * @param boolean $start
+     *
+     * @return Timer
+     */
+    public static function & getTimer($tag, $start = true)
+    {
+        if (!isset(self::$timercollection[$tag]) || !array_key_exists($tag, self::$timercollection)) {
+            self::$timercollection[$tag] = new Timer($tag, $start);
+        }
+
+        return self::$timercollection[$tag];
+    }
+
+    /**
+     * Function that returns all initiated timers
+     *
+     * @return array
+     */
+    public static function &getTimers()
+    {
+        return self::$timercollection;
+    }
+
+    /**
+     * This function returns the instance of the database handler object
+     *
+     * @return DatabaseHandler
+     */
+    public static function & Database()
+    {
+        if (self::$databasehandler === null) self::createDatabase();
+
+        return self::$databasehandler;
+    }
+
+    /**
      * private static function that creates the database if it is not yet created
      * (Will create the connection as well if that hasn't been created)
      */
@@ -228,6 +131,64 @@ class Forge
         $dbconf = Config::get('DBConfig');
         $db = new DatabaseHandler($dbconf["prefix"]);
         self::$databasehandler =& $db;
+    }
+
+    /**
+     * This function returns the instance of the application handler object
+     *
+     * @return ResponseHandler
+     */
+    public static function & Response()
+    {
+        if (self::$responsehandler === null) trigger_error('No response stage handler has been specified.');
+
+        return self::$responsehandler;
+    }
+
+    public static function setEnvironment($environment)
+    {
+        self::$environment = $environment;
+        //set global configuration
+        Config::ApplyGlobalConfiguration();
+    }
+
+    public static function getVersion()
+    {
+        return self::$version;
+    }
+
+    public static function setVersion($version)
+    {
+        self::$version = $version;
+    }
+
+    /**
+     * This function returns the instance of the connection object
+     *
+     * @return Connection
+     */
+    public static function & Connection($index = null)
+    {
+        if ($index === null) $index = self::getDefaultConnection();
+        if (!isset(self::$connections[$index]) || self::$connections[$index] === null) self::createConnection();
+        if (isset(self::$connections[$index])) {
+            return self::$connections[$index];
+        } else {
+            throw new \Exception("Connection '" . $index . "' not found.");
+        }
+    }
+
+    /**
+     * This function returns the default connection name specified in the configuration
+     *
+     * @return String
+     */
+    public static function getDefaultConnection()
+    {
+        if (self::$environment !== null) return self::$environment;
+        $conf = Config::get("DBConfig");
+
+        return $conf["default_connection"];
     }
 
     /**
@@ -240,6 +201,73 @@ class Forge
             $conn = new Connection($entry);
             self::$connections[$key] = $conn;
         }
+    }
+
+    /**
+     * This function returns the instance the of route handler object
+     *
+     * @return RouteHandler routehandler
+     */
+    public static function & Route()
+    {
+        if (self::$routehandler === null) trigger_error('No route stage handler has been specified.');
+
+        return self::$routehandler;
+    }
+
+    /**
+     * This function returns the instance the of translation handler object
+     *
+     * @return TranslationHandler translationhandler
+     */
+    public static function & Translate()
+    {
+        if (self::$translationhandler === null) trigger_error('No translation handler has been specified.');
+
+        return self::$translationhandler;
+    }
+
+    /**
+     * This function returns the instance the of request handler object
+     *
+     * @return RequestHandler requesthandler
+     */
+    public static function & Request()
+    {
+        if (self::$requesthandler === null) trigger_error('No request stage handler has been specified.');
+
+        return self::$requesthandler;
+    }
+
+    /**
+     * This function returns the instance fo the log handler
+     *
+     * @return LogHandler
+     */
+    public static function & Log()
+    {
+        if (self::$loghandler === null) self::createLogHandler();
+
+        return self::$loghandler;
+    }
+
+    /**
+     * private static function that create the loghandler if it is not yet created
+     */
+    private static function createLogHandler()
+    {
+        $lh = new LogHandler();
+        self::$loghandler =& $lh;
+    }
+
+    /**
+     * @return ConfigurationHandler
+     */
+    public static function & Configuration()
+    {
+        if (self::$configurationhandler === null) trigger_error('No configuration stage handler has been specified.');
+
+        return self::$configurationhandler;
     }
 
     /**
@@ -275,16 +303,8 @@ class Forge
     }
 
     /**
-     * private static function that create the loghandler if it is not yet created
-     */
-    private static function createLogHandler()
-    {
-        $lh = new LogHandler();
-        self::$loghandler =& $lh;
-    }
-
-    /**
      * Set a configurationhandler object in forge
+     *
      * @param ConfigurationHandler $ch
      */
     public static function registerConfigurationHandler(&$ch)
@@ -314,41 +334,21 @@ class Forge
         foreach (self::$_eventCollection as $collection) $collection->handleEventBuffer();
     }
 
-    public static function & setVariableHolder($key, &$value)
-    {
-        self::$variableHolder[$key] = &$value;
-        return self::$variableHolder[$key];
-    }
-
     public static function & getVariableHolder($key)
     {
         $def = false;
         if (!array_key_exists($key, self::$variableHolder)) {
             return $def;
         }
+
         return self::$variableHolder[$key];
     }
 
-    /**
-     * Attempt to load a class location from cache, if this procedure fails,
-     * the cache file is dropped and re-initialised.
-     * @param $class
-     */
-    private static function loadFromCache($class)
+    public static function & setVariableHolder($key, &$value)
     {
-        if (self::$classBuffer === null) {
-            //load buffer
-            self::$classBuffer = Cache::loadClassArray();
-        }
-        if (isset(self::$classBuffer[$class]) || array_key_exists($class, self::$classBuffer)) {
-            //check if file exists, if not, delete 'corrupt' buffer file
-            if (file_exists(self::$classBuffer[$class])) {
-                include(self::$classBuffer[$class]);
-                self::$pageincludes++;
-            } else {
-                Cache::unlinkClassArray();
-            }
-        }
+        self::$variableHolder[$key] = &$value;
+
+        return self::$variableHolder[$key];
     }
 
     /**
@@ -396,11 +396,35 @@ class Forge
         if ($location !== null) {
             Cache::addClassLocation($class, $location);
             self::$classBuffer[$class] = $location;
+
             return true;
         } else {
             throw new \Exception('Can not locate class ' . $class);
         }
 
+    }
+
+    /**
+     * Attempt to load a class location from cache, if this procedure fails,
+     * the cache file is dropped and re-initialised.
+     *
+     * @param $class
+     */
+    private static function loadFromCache($class)
+    {
+        if (self::$classBuffer === null) {
+            //load buffer
+            self::$classBuffer = Cache::loadClassArray();
+        }
+        if (isset(self::$classBuffer[$class]) || array_key_exists($class, self::$classBuffer)) {
+            //check if file exists, if not, delete 'corrupt' buffer file
+            if (file_exists(self::$classBuffer[$class])) {
+                include(self::$classBuffer[$class]);
+                self::$pageincludes++;
+            } else {
+                Cache::unlinkClassArray();
+            }
+        }
     }
 
     public static function registerAutoLoader($loader = null)
@@ -413,7 +437,7 @@ class Forge
     public static function unregisterAutoLoader($loader)
     {
         if (in_array($loader, self::$autoloaders)) {
-            self::$autoloaders = array_diff(self::$autoloaders, array($loader));
+            self::$autoloaders = array_diff(self::$autoloaders, [$loader]);
             spl_autoload_unregister($loader);
         }
     }

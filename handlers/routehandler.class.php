@@ -7,10 +7,10 @@ class RouteHandler implements IStage
     private $application = null;
     private $module = null;
     private $action = null;
-    private $param = array();
+    private $param = [];
     private $curr_url = null;
-    private $routes = array();
-    private $route_hooks = array();
+    private $routes = [];
+    private $route_hooks = [];
 
     public function __construct()
     {
@@ -22,6 +22,37 @@ class RouteHandler implements IStage
         $this->loadCurrentUrl();
         $this->loadDefaults();
         $this->loadRoutingRules();
+    }
+
+    private function loadCurrentUrl()
+    {
+        //clear any php pages from url, they shouldn't even be there...
+        $this->curr_url = preg_replace("/\/[^\/\.]*\.php/", "", $_SERVER["REQUEST_URI"]);
+        if (Config::path("sub_dir") != "/") {
+            $this->curr_url = str_replace(Config::path("sub_dir"), "", $this->curr_url);
+        }
+        if ($this->curr_url == "") $this->curr_url = "/";
+    }
+
+    private function loadDefaults()
+    {
+        $settings = Config::get('settings');
+        $this->application = isset($settings['default_application']) ? $settings['default_application'] : null;
+        $this->module = isset($settings['default_module']) ? $settings['default_module'] : null;
+        $this->action = isset($settings['default_action']) ? $settings['default_action'] : null;
+        $this->route_hooks = [
+            'routing_service'   => isset($settings['routing_service']) ? $settings['routing_service'] : null,
+            'routing_component' => isset($settings['routing_component']) ? $settings['routing_component'] : null
+        ];
+    }
+
+    private function loadRoutingRules()
+    {
+        $rules = Config::get("routing");
+        //apply rules
+        foreach ($rules as $rule_name => $rule) {
+            $this->routes[$rule_name] = new RoutingRule($rule);
+        }
     }
 
     public function deploy()
@@ -45,35 +76,55 @@ class RouteHandler implements IStage
         }
     }
 
-    private function loadCurrentUrl()
+    private function processUri(RoutingRule &$route)
     {
-        //clear any php pages from url, they shouldn't even be there...
-        $this->curr_url = preg_replace("/\/[^\/\.]*\.php/", "", $_SERVER["REQUEST_URI"]);
-        if (Config::path("sub_dir") != "/") {
-            $this->curr_url = str_replace(Config::path("sub_dir"), "", $this->curr_url);
+        $request_url = Tools::cleanExplode('/', $this->curr_url);
+        $rule_url = Tools::cleanExplode('/', $route->getRawUrl());
+        $url_key = null;
+        //set all routing params
+        $attributes = $route->getAttributes();
+        foreach ($attributes as $key => $value) {
+            $this->setParam($key, $value);
         }
-        if ($this->curr_url == "") $this->curr_url = "/";
+        foreach ($request_url as $index => $request_part) {
+            if ((isset($rule_url[$index]) || array_key_exists($index, $rule_url)) && $rule_url[$index] != '*') {
+                //also exists in raw url, see if it's a parameter, if so, register the param. ignore otherwise
+                if (preg_match("/\{\{([^\}]*)\}\}/", $rule_url[$index], $variable) != 0) {
+                    list($key, $default) = explode(':', $variable[1]) + [null, null];
+                    $this->setParam($key, $request_part);
+                    unset($match);
+                }
+            } else {
+                //additional things should be paired as variables
+                if ($url_key === null) {
+                    $url_key = $request_part;
+                } else {
+                    $this->setParam($url_key, $request_part);
+                    $url_key = null;
+                }
+
+            }
+        }
     }
 
-    private function loadDefaults()
+    private function setParam($key, $value)
     {
-        $settings = Config::get('settings');
-        $this->application = isset($settings['default_application']) ? $settings['default_application'] : null;
-        $this->module = isset($settings['default_module']) ? $settings['default_module'] : null;
-        $this->action = isset($settings['default_action']) ? $settings['default_action'] : null;
-        $this->route_hooks = array(
-            'routing_service' => isset($settings['routing_service']) ? $settings['routing_service'] : null,
-            'routing_component' => isset($settings['routing_component']) ? $settings['routing_component'] : null
-        );
-    }
-
-    private function loadRoutingRules()
-    {
-        $rules = Config::get("routing");
-        //apply rules
-        foreach ($rules as $rule_name => $rule) {
-            $this->routes[$rule_name] = new RoutingRule($rule);
+        switch ($key) {
+            case 'application':
+                $this->application = $value;
+                break;
+            case 'module':
+                $this->module = $value;
+                break;
+            case 'action':
+                $this->action = $value;
+                break;
+            default:
+                $this->param[$key] = $value;
+                break;
         }
+        //register param in request
+        Request::setParameter($key, $value);
     }
 
     public function getApplication()
@@ -101,45 +152,15 @@ class RouteHandler implements IStage
         return $this->curr_url;
     }
 
-    private function processUri(RoutingRule &$route)
+    public function link($text, $link, $param = [], $linkparam = [])
     {
-        $request_url = Tools::cleanExplode('/', $this->curr_url);
-        $rule_url = Tools::cleanExplode('/', $route->getRawUrl());
-        $url_key = null;
-        //set all routing params
-        $attributes = $route->getAttributes();
-        foreach ($attributes as $key => $value) {
-            $this->setParam($key, $value);
+        $return = "<a href='" . $this->url($link, $param) . "'";
+        foreach ($linkparam as $key => $par) {
+            $return .= " " . $key . "=\"" . $par . "\"";
         }
-        foreach ($request_url as $index => $request_part) {
-            if ((isset($rule_url[$index]) || array_key_exists($index, $rule_url)) && $rule_url[$index] != '*') {
-                //also exists in raw url, see if it's a parameter, if so, register the param. ignore otherwise
-                if (preg_match("/\{\{([^\}]*)\}\}/", $rule_url[$index], $variable) != 0) {
-                    list($key, $default) = explode(':', $variable[1]) + array(null, null);
-                    $this->setParam($key, $request_part);
-                    unset($match);
-                }
-            } else {
-                //additional things should be paired as variables
-                if ($url_key === null) {
-                    $url_key = $request_part;
-                } else {
-                    $this->setParam($url_key, $request_part);
-                    $url_key = null;
-                }
+        $return .= ">" . $text . "</a>";
 
-            }
-        }
-    }
-
-    public function url_from_rule($rule, $param = array())
-    {
-        if (isset($this->routes[$rule])) {
-            $rule = $this->routes[$rule];
-        } else {
-            return null;
-        }
-        return Config::path('url') . '/' . $rule->buildUrl($param) . (isset($param['#']) ? '#' . $param['#'] : '');
+        return $return;
     }
 
     /**
@@ -147,11 +168,13 @@ class RouteHandler implements IStage
      * a true url,
      * a reference to a module/action or
      * a rule name
+     *
      * @param String $for
-     * @param Array $param
+     * @param Array  $param
+     *
      * @return String url
      */
-    public function url($for, $param = array())
+    public function url($for, $param = [])
     {
         //First check what type of url is passed
         if (substr($for, 0, 7) == "http://" || $for == 'javascript:;') { //valid link
@@ -166,7 +189,7 @@ class RouteHandler implements IStage
         }
 
         //now the complex stuff, $for now must be app/module/action, fill in all attributes starting for the last one
-        $vars = array();
+        $vars = [];
 
         $vars["action"] = !empty($uri) ? array_pop($uri) : $this->action; //set action to vars array
         $vars["module"] = !empty($uri) ? array_pop($uri) : $this->module; //set module to vars array
@@ -205,52 +228,36 @@ class RouteHandler implements IStage
         //return the result
         $build_url = Config::path('url') . $best_rule->buildUrl($vars);
         if (substr($build_url, -1) != '/') $build_url .= "/";
+
         return $build_url . (isset($hash) ? '#' . $hash : '');
     }
 
-    public function link($text, $link, $param = array(), $linkparam = array())
+    public function url_from_rule($rule, $param = [])
     {
-        $return = "<a href='" . $this->url($link, $param) . "'";
-        foreach ($linkparam as $key => $par) {
-            $return .= " " . $key . "=\"" . $par . "\"";
+        if (isset($this->routes[$rule])) {
+            $rule = $this->routes[$rule];
+        } else {
+            return null;
         }
-        $return .= ">" . $text . "</a>";
-        return $return;
-    }
 
-    private function setParam($key, $value)
-    {
-        switch ($key) {
-            case 'application':
-                $this->application = $value;
-                break;
-            case 'module':
-                $this->module = $value;
-                break;
-            case 'action':
-                $this->action = $value;
-                break;
-            default:
-                $this->param[$key] = $value;
-                break;
-        }
-        //register param in request
-        Request::setParameter($key, $value);
+        return Config::path('url') . '/' . $rule->buildUrl($param) . (isset($param['#']) ? '#' . $param['#'] : '');
     }
 
     /**
      * Arrange routing rules to most accurate first
+     *
      * @param Array $rules
      */
     private function getBestRule($rules)
     {
         if (count($rules) == 1) return $rules[key($rules)];
-        $result = array();
+        $result = [];
         foreach ($rules as $key => $rule) {
             $result[$key] = $rule->getAttrInUrl();
         }
         asort($result);
         reset($result);
+
         return $rules[key($result)];
     }
 

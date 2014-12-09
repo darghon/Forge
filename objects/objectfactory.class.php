@@ -13,11 +13,13 @@ class ObjectFactory
     /**
      * Static called function that creates the object requested with any data
      * arguments that have been passed
+     *
      * @param IObject $businesslayer_object
-     * @param Array $arguments
+     * @param Array   $arguments
+     *
      * @return BusinessLayer $object
      */
-    public static function & build($type, $args = array())
+    public static function & build($type, $args = [])
     {
         $default = false;
         $business = new $type();
@@ -38,8 +40,10 @@ class ObjectFactory
                 $data->state(DataLayer::STATE_LOADED);
             }
             $business->_set("data", $data);
+
             return Forge::add($business);
         }
+
         return $default;
     }
 

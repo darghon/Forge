@@ -13,12 +13,13 @@ class ResponseHandler implements IStage
 
     protected $content_buffer = null;
     protected $main_buffer = null;
-    protected $slots = array();
+    protected $slots = [];
     protected $app = null;
     protected $mod = null;
     protected $act = null;
     /**
      * Object reference to the global configuration handler
+     *
      * @var ConfigurationHandler
      */
     protected $configuration = null;
@@ -53,6 +54,7 @@ class ResponseHandler implements IStage
                 echo $content;
                 if (Debug::enabled()) Debug::stop();
                 unset($content);
+
                 return true;
             }
 
@@ -98,45 +100,43 @@ class ResponseHandler implements IStage
 
         //echo content
         echo $this->content_buffer;
+
         return true;
     }
 
-    public function loadMain()
+    private function deployService($app, $mod, $act, $param)
     {
-        echo $this->main_buffer;
-    }
+        if (Debug::enabled()) Debug::addTimer($mod . '/' . $act);
 
-    public function loadComponent($mod, $act, $param)
-    {
-        $this->renderComponent($this->configuration->getApp(), $mod, $act, $param);
-    }
-
-    public function defineSlot($slot_name)
-    {
-        $this->slots[$slot_name] = new Slot($slot_name);
-        //set placeholder
-        echo $this->slots[$slot_name]->getPlaceholder();
-    }
-
-    public function assignSlot($slot_name, $mod, $act, $param = array())
-    {
-        $slot_specs["module"] = $mod;
-        $slot_specs["action"] = $act;
-        $slot_specs["param"] = $param;
-
-        $this->assigned_slots[$slot_name] = $slot_specs;
-    }
-
-    public function assignSlotValue($slot_name, $value)
-    {
-        $this->assigned_slots[$slot_name] = $value;
-    }
-
-    protected function renderMain()
-    {
-        $this->ob_dump_to($this->content_buffer);
-        $this->render($this->configuration->getApp(), $this->configuration->getMod(), $this->configuration->getAct(), $this->configuration->getVariables());
-        $this->ob_dump_to($this->main_buffer);
+        $service_class = $mod . "Service";
+        //require needed file (once)
+        if (file_exists(Config::path("app") . "/" . $app . "/modules/" . $mod . "/actions/service.class.php")) {
+            require_once(Config::path("app") . "/" . $app . "/modules/" . $mod . "/actions/service.class.php");
+            $service = new $service_class();
+            if (method_exists($service, "preService")) $service->preService();
+            if (method_exists($service, $act)) {
+                //make sure json headers are sent
+                header('Cache-Control: no-cache, must-revalidate');
+                header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+                header('Content-type: application/json');
+                //load service
+                if (Debug::enabled()) Debug::addTimer($mod . '-service');
+                $service->{$act}($param);
+                if (Debug::enabled()) Debug::stopTimer($mod . '-service');
+            } else {
+                ob_end_clean();
+                echo '<h1>404 - Service does not exist!</h1>';
+                Tools::dump($this->configuration);
+                exit;
+            }
+            if (method_exists($service, "postService")) $service->postService();
+        } else {
+            ob_end_clean();
+            echo '<h1>404 - Service does not exist!</h1>';
+            Tools::dump($this->configuration);
+            exit;
+        }
+        if (Debug::enabled()) Debug::stopTimer($mod . '/' . $act);
     }
 
     protected function renderComponent($app, $mod, $act, $param)
@@ -163,6 +163,24 @@ class ResponseHandler implements IStage
             echo "Component not found.";
         }
         Debug::stopTimer($mod . '/' . $act);
+    }
+
+    protected function renderMain()
+    {
+        $this->ob_dump_to($this->content_buffer);
+        $this->render($this->configuration->getApp(), $this->configuration->getMod(), $this->configuration->getAct(), $this->configuration->getVariables());
+        $this->ob_dump_to($this->main_buffer);
+    }
+
+    protected function ob_dump_to(&$var, $end = false)
+    {
+        if (!$end) {
+            $var .= ob_get_contents();
+            ob_clean();
+        } else {
+            $var .= ob_get_contents();
+            ob_end_clean();
+        }
     }
 
     private function render($app, $mod, $act, $param)
@@ -201,52 +219,6 @@ class ResponseHandler implements IStage
         if (Debug::enabled()) Debug::stopTimer($mod . '/' . $act);
     }
 
-    private function deployService($app, $mod, $act, $param)
-    {
-        if (Debug::enabled()) Debug::addTimer($mod . '/' . $act);
-
-        $service_class = $mod . "Service";
-        //require needed file (once)
-        if (file_exists(Config::path("app") . "/" . $app . "/modules/" . $mod . "/actions/service.class.php")) {
-            require_once(Config::path("app") . "/" . $app . "/modules/" . $mod . "/actions/service.class.php");
-            $service = new $service_class();
-            if (method_exists($service, "preService")) $service->preService();
-            if (method_exists($service, $act)) {
-                //make sure json headers are sent
-                header('Cache-Control: no-cache, must-revalidate');
-                header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-                header('Content-type: application/json');
-                //load service
-                if (Debug::enabled()) Debug::addTimer($mod . '-service');
-                $service->{$act}($param);
-                if (Debug::enabled()) Debug::stopTimer($mod . '-service');
-            } else {
-                ob_end_clean();
-                echo '<h1>404 - Service does not exist!</h1>';
-                Tools::dump($this->configuration);
-                exit;
-            }
-            if (method_exists($service, "postService")) $service->postService();
-        } else {
-            ob_end_clean();
-            echo '<h1>404 - Service does not exist!</h1>';
-            Tools::dump($this->configuration);
-            exit;
-        }
-        if (Debug::enabled()) Debug::stopTimer($mod . '/' . $act);
-    }
-
-    protected function ob_dump_to(&$var, $end = false)
-    {
-        if (!$end) {
-            $var .= ob_get_contents();
-            ob_clean();
-        } else {
-            $var .= ob_get_contents();
-            ob_end_clean();
-        }
-    }
-
     protected function adjustHead()
     {
         $this->renderBase();
@@ -254,6 +226,71 @@ class ResponseHandler implements IStage
         $this->renderTitle();
         $this->renderCss();
         $this->renderJs();
+    }
+
+    /**
+     * Protected function to render the base tag for head
+     */
+    protected function renderBase()
+    {
+        $base = sprintf('<base href="%s" />', $this->configuration->getBase());
+        $this->content_buffer = str_replace(Application::BASE_URL, $base . PHP_EOL, $this->content_buffer);
+    }
+
+    protected function renderMeta()
+    {
+        $meta = [];
+        $metas = $this->configuration->getMeta();
+        foreach ($metas as $name => $value) {
+            if ($name == "Content-Type") { //special
+                $meta[] = sprintf('<meta http-equiv="Content-Type" content="%s" />', $value);
+            } else {
+                $meta[] = sprintf('<meta name="%s" content="%s" />', $name, ((is_array($value)) ? implode(" ", $value) : $value));
+            }
+        }
+        $this->content_buffer = str_replace(Application::META_DATA, implode("\n", $meta) . PHP_EOL, $this->content_buffer);
+    }
+
+    protected function renderTitle()
+    {
+        $title = sprintf('<title>%s</title>', $this->configuration->getTitle());
+        $this->content_buffer = str_replace(Application::TITLE, $title . PHP_EOL, $this->content_buffer);
+    }
+
+    protected function renderCss()
+    {
+        $css = [];
+        if (Cache::enabled() && file_exists(Config::path('css') . '/' . Cache::getCss($this->configuration->getCss()))) {
+            $css[] = sprintf('<link href="%s" rel="stylesheet" type="text/css" />', Cache::getCss($this->configuration->getCss()));
+        } else {
+            $css_list = $this->configuration->getCss();
+            foreach ($css_list as $value) {
+                if (!file_exists(Config::path('css') . '/' . $value)) {
+                    Debug::Error('FILE NOT FOUND', sprintf('Tried to include "%s" but file does not exist!', Config::path('css') . '/' . $value));
+                    continue;
+                }
+                $css[] = sprintf('<link href="%s" rel="stylesheet" type="text/css" />', Config::path('css_url') . $value);
+            }
+        }
+        $this->content_buffer = str_replace(Application::CSS, implode("\n", $css) . PHP_EOL, $this->content_buffer);
+    }
+
+    protected function renderJs()
+    {
+        $js = [];
+        if (Cache::enabled() && file_exists(Config::path('js') . '/' . Cache::getJs($this->configuration->getJs()))) {
+            $js[] = sprintf('<script language="javascript" type="text/javascript" src="%s"></script>', Cache::getCss($this->configuration->getJs()));
+        } else {
+            $js_list = $this->configuration->getJs();
+            foreach ($js_list as $value) {
+                if (!file_exists(Config::path('js') . '/' . $value)) {
+                    Debug::Error('FILE NOT FOUND', sprintf('Tried to include "%s" but file does not exist!', Config::path('js') . '/' . $value));
+                    continue;
+                }
+                $js[] = sprintf('<script language="javascript" type="text/javascript" src="%s"></script>', Config::path('js_url') . $value);
+            }
+        }
+        $this->content_buffer = str_replace(Application::JS, implode("\n", $js) . PHP_EOL, $this->content_buffer);
     }
 
     protected function applySlots()
@@ -301,69 +338,35 @@ class ResponseHandler implements IStage
         }
     }
 
-    /**
-     * Protected function to render the base tag for head
-     */
-    protected function renderBase()
+    public function loadMain()
     {
-        $base = sprintf('<base href="%s" />', $this->configuration->getBase());
-        $this->content_buffer = str_replace(Application::BASE_URL, $base . PHP_EOL, $this->content_buffer);
+        echo $this->main_buffer;
     }
 
-    protected function renderMeta()
+    public function loadComponent($mod, $act, $param)
     {
-        $meta = array();
-        $metas = $this->configuration->getMeta();
-        foreach ($metas as $name => $value) {
-            if ($name == "Content-Type") { //special
-                $meta[] = sprintf('<meta http-equiv="Content-Type" content="%s" />', $value);
-            } else {
-                $meta[] = sprintf('<meta name="%s" content="%s" />', $name, ((is_array($value)) ? implode(" ", $value) : $value));
-            }
-        }
-        $this->content_buffer = str_replace(Application::META_DATA, implode("\n", $meta) . PHP_EOL, $this->content_buffer);
+        $this->renderComponent($this->configuration->getApp(), $mod, $act, $param);
     }
 
-    protected function renderTitle()
+    public function defineSlot($slot_name)
     {
-        $title = sprintf('<title>%s</title>', $this->configuration->getTitle());
-        $this->content_buffer = str_replace(Application::TITLE, $title . PHP_EOL, $this->content_buffer);
+        $this->slots[$slot_name] = new Slot($slot_name);
+        //set placeholder
+        echo $this->slots[$slot_name]->getPlaceholder();
     }
 
-    protected function renderCss()
+    public function assignSlot($slot_name, $mod, $act, $param = [])
     {
-        $css = array();
-        if (Cache::enabled() && file_exists(Config::path('css') . '/' . Cache::getCss($this->configuration->getCss()))) {
-            $css[] = sprintf('<link href="%s" rel="stylesheet" type="text/css" />', Cache::getCss($this->configuration->getCss()));
-        } else {
-            $css_list = $this->configuration->getCss();
-            foreach ($css_list as $value) {
-                if (!file_exists(Config::path('css') . '/' . $value)) {
-                    Debug::Error('FILE NOT FOUND', sprintf('Tried to include "%s" but file does not exist!', Config::path('css') . '/' . $value));
-                    continue;
-                }
-                $css[] = sprintf('<link href="%s" rel="stylesheet" type="text/css" />', Config::path('css_url') . $value);
-            }
-        }
-        $this->content_buffer = str_replace(Application::CSS, implode("\n", $css) . PHP_EOL, $this->content_buffer);
+        $slot_specs["module"] = $mod;
+        $slot_specs["action"] = $act;
+        $slot_specs["param"] = $param;
+
+        $this->assigned_slots[$slot_name] = $slot_specs;
     }
 
-    protected function renderJs()
+    public function assignSlotValue($slot_name, $value)
     {
-        $js = array();
-        if (Cache::enabled() && file_exists(Config::path('js') . '/' . Cache::getJs($this->configuration->getJs()))) {
-            $js[] = sprintf('<script language="javascript" type="text/javascript" src="%s"></script>', Cache::getCss($this->configuration->getJs()));
-        } else {
-            $js_list = $this->configuration->getJs();
-            foreach ($js_list as $value) {
-                if (!file_exists(Config::path('js') . '/' . $value)) {
-                    Debug::Error('FILE NOT FOUND', sprintf('Tried to include "%s" but file does not exist!', Config::path('js') . '/' . $value));
-                    continue;
-                }
-                $js[] = sprintf('<script language="javascript" type="text/javascript" src="%s"></script>', Config::path('js_url') . $value);
-            }
-        }
-        $this->content_buffer = str_replace(Application::JS, implode("\n", $js) . PHP_EOL, $this->content_buffer);
+        $this->assigned_slots[$slot_name] = $value;
     }
 
     public function __destroy()

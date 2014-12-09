@@ -3,6 +3,7 @@ namespace Forge;
 
 /**
  * Interface ICommand
+ *
  * @package Forge
  */
 interface ICommand

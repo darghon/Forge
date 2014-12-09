@@ -16,9 +16,9 @@ class Database extends \Forge\ObjectGenerator
     protected $environment = null;
     protected $overwrite = false;
 
-    public function __construct($args = array())
+    public function __construct($args = [])
     {
-        list($this->environment, $this->overwrite) = $args + array(null, false);
+        list($this->environment, $this->overwrite) = $args + [null, false];
         if ($this->environment !== null) \Forge\Forge::setEnvironment($this->environment);
         if (strtolower($this->overwrite) === 'true') {
             $this->overwrite = true;
@@ -30,6 +30,7 @@ class Database extends \Forge\ObjectGenerator
 
     /**
      * Public generate action. This method performs all actions required to build the wanted files
+     *
      * @return boolean $result;
      */
     public function generate()
@@ -41,7 +42,7 @@ class Database extends \Forge\ObjectGenerator
             flush();
 
             list($fields, $links, $translation) = $this->processTable($table_name, $table);
-            \Forge\Generator::getInstance()->build('databasetable', array($table_name, $fields, $links, $translation, $this->overwrite));
+            \Forge\Generator::getInstance()->build('databasetable', [$table_name, $fields, $links, $translation, $this->overwrite]);
             echo " DONE!" . PHP_EOL;
             flush();
         }

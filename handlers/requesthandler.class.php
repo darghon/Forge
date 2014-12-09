@@ -12,9 +12,9 @@ class RequestHandler implements IStage
     protected $user_agent = null;
     protected $session_id = null;
     protected $referrer = null;
-    protected $post_vars = array();
-    protected $get_vars = array();
-    protected $files_vars = array();
+    protected $post_vars = [];
+    protected $get_vars = [];
+    protected $files_vars = [];
 
     public function initialize()
     {
@@ -24,6 +24,37 @@ class RequestHandler implements IStage
         $this->parseGet();
         $this->parsePost();
         $this->parseFiles();
+    }
+
+    protected function retrieveData()
+    {
+        $this->method = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') ? 'AJAX' : $_SERVER["REQUEST_METHOD"];
+        $this->user_ip = $_SERVER['REMOTE_ADDR'];
+        $this->user_agent = $_SERVER['HTTP_USER_AGENT'];
+        $this->referrer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null;
+        $this->session_id = isset($_REQUEST['phpsessid']) ? $_REQUEST['phpsessid'] : (isset($_COOKIE['PHPSESSID']) ? $_COOKIE['PHPSESSID'] : null);
+        if (isset($_COOKIE) && (isset($_COOKIE['language']) || array_key_exists('language', $_COOKIE))) Session::language($_COOKIE['language']);
+    }
+
+    protected function parseGet()
+    {
+        foreach ($_GET as $key => $entry) {
+            $this->get_vars[$key] = $entry;
+        }
+    }
+
+    protected function parsePost()
+    {
+        foreach ($_POST as $key => $entry) {
+            $this->post_vars[$key] = $entry;
+        }
+    }
+
+    protected function parseFiles()
+    {
+        foreach ($_FILES as $key => $entry) {
+            $this->files_vars[$key] = $entry;
+        }
     }
 
     public function deploy()
@@ -60,6 +91,7 @@ class RequestHandler implements IStage
     public function getParameter($key, $default = null)
     {
         $tmp = array_merge($this->get_vars, $this->post_vars);
+
         return isset($tmp[$key]) ? $tmp[$key] : $default;
     }
 
@@ -105,37 +137,6 @@ class RequestHandler implements IStage
     public function getReferrer()
     {
         return $this->referrer;
-    }
-
-    protected function retrieveData()
-    {
-        $this->method = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') ? 'AJAX' : $_SERVER["REQUEST_METHOD"];
-        $this->user_ip = $_SERVER['REMOTE_ADDR'];
-        $this->user_agent = $_SERVER['HTTP_USER_AGENT'];
-        $this->referrer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null;
-        $this->session_id = isset($_REQUEST['phpsessid']) ? $_REQUEST['phpsessid'] : (isset($_COOKIE['PHPSESSID']) ? $_COOKIE['PHPSESSID'] : null);
-        if (isset($_COOKIE) && (isset($_COOKIE['language']) || array_key_exists('language', $_COOKIE))) Session::language($_COOKIE['language']);
-    }
-
-    protected function parseGet()
-    {
-        foreach ($_GET as $key => $entry) {
-            $this->get_vars[$key] = $entry;
-        }
-    }
-
-    protected function parsePost()
-    {
-        foreach ($_POST as $key => $entry) {
-            $this->post_vars[$key] = $entry;
-        }
-    }
-
-    protected function parseFiles()
-    {
-        foreach ($_FILES as $key => $entry) {
-            $this->files_vars[$key] = $entry;
-        }
     }
 
 }

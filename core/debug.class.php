@@ -10,7 +10,18 @@ class Debug
     {
         self::addTimer('global');
         self::add('MEM_USE', 'Initial: ' . number_format(memory_get_usage() / 1024) . ' kb');
+
         return (self::$enabled = true);
+    }
+
+    public static function addTimer($tag, $start = true)
+    {
+        Forge::getTimer($tag, $start);
+    }
+
+    public static function add($type, $mess)
+    {
+        Forge::Log()->addLog($type, $mess);
     }
 
     public static function stop()
@@ -18,7 +29,13 @@ class Debug
         self::add('MEM_USE', 'Peak: ' . number_format(memory_get_peak_usage() / 1024) . ' kb');
         self::add('MEM_USE', 'End: ' . number_format(memory_get_usage() / 1024) . ' kb');
         self::stopTimer('global');
+
         return (self::$enabled = false);
+    }
+
+    public static function stopTimer($tag)
+    {
+        Forge::getTimer($tag)->stop();
     }
 
     public static function enabled()
@@ -26,19 +43,9 @@ class Debug
         return self::$enabled;
     }
 
-    public static function Notice($type, $mess)
-    {
-        Forge::Log()->addNotice($type, $mess);
-    }
-
     public static function Error($type, $mess)
     {
         Forge::Log()->addError($type, $mess);
-    }
-
-    public static function add($type, $mess)
-    {
-        Forge::Log()->addLog($type, $mess);
     }
 
     public static function & getLogByType($type)
@@ -51,19 +58,9 @@ class Debug
         return Forge::Log()->getAll();
     }
 
-    public static function addTimer($tag, $start = true)
-    {
-        Forge::getTimer($tag, $start);
-    }
-
     public static function startTimer($tag)
     {
         Forge::getTimer($tag)->start();
-    }
-
-    public static function stopTimer($tag)
-    {
-        Forge::getTimer($tag)->stop();
     }
 
     public static function showTimer($tag, $dur = 3)
@@ -74,17 +71,6 @@ class Debug
     public static function & getTimers()
     {
         return Forge::getTimers();
-    }
-
-    public static function & getAlarmingTimers($from = 0.1)
-    {
-        $collection = &Forge::getTimers();
-        $return = array();
-        foreach ($collection as &$entry) {
-            if ($entry->getDuration() >= $from)
-                $return[] = &$entry;
-        }
-        return $return;
     }
 
     public static function placeDebugHolder()
@@ -150,7 +136,13 @@ class Debug
         $errlog->setErrorFile(addslashes($errfile));
         $errlog->setErrLine($errline);
         $errlog->persist();
+
         return true;
+    }
+
+    public static function Notice($type, $mess)
+    {
+        Forge::Log()->addNotice($type, $mess);
     }
 
     public static function registerCrash()
@@ -211,6 +203,18 @@ class Debug
             $log->setRank(max(1, (int)(10 - (int)($timer->getDuration(4) * 10))));
             $log->persist();
         }
+    }
+
+    public static function & getAlarmingTimers($from = 0.1)
+    {
+        $collection = &Forge::getTimers();
+        $return = [];
+        foreach ($collection as &$entry) {
+            if ($entry->getDuration() >= $from)
+                $return[] = &$entry;
+        }
+
+        return $return;
     }
 
 }

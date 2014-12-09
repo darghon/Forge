@@ -21,12 +21,14 @@ class MemoryHandler
     const MODE_APC = 2;
     /**
      * Lifetime set for object on the memcache server.
+     *
      * @var Integer $timeout
      */
     protected $timeout = 30;
     /**
      * Global array that contains all business objects of the request
      * This array will only be used in MODE_REGISTRY and is not shared between sessions
+     *
      * @var Array $objectcollection
      */
     protected $objectcollection = null;
@@ -38,16 +40,19 @@ class MemoryHandler
     /**
      * Memcached Connection object
      * This object will only be used in MODE_MEMCACHE and is shared between sessions
+     *
      * @var Memcache
      */
     protected $memcache = null;
     /**
      * Mode of the MemoryHandler
+     *
      * @var Integer
      */
     protected $mode = self::MODE_MEMCACHE;
     /**
      * Flag that specifies if a connection to a MEMCACHED server has been made or not.
+     *
      * @var Boolean
      */
     protected $connected = false;
@@ -69,6 +74,24 @@ class MemoryHandler
     }
 
     /**
+     * Public function that registers the passed host and optional port to the memcached server.
+     *
+     * @param String  $host
+     * @param Integer $port = 11211
+     */
+    public function addServer($host, $port = 11211)
+    {
+        if ($this->mode != self::MODE_MEMCACHE) return false;
+        if ($this->memcache->addServer($host, $port) === true) {
+            $this->connected = true;
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Public function that registered the added connection data to the memcache object
      */
     public function addServers(array $server_array)
@@ -83,37 +106,81 @@ class MemoryHandler
     }
 
     /**
-     * Public function that registers the passed host and optional port to the memcached server.
-     * @param String $host
-     * @param Integer $port = 11211
+     * Public function that retrieves an object of the specified class, and optional id.
+     *
+     * @param String  $class_name
+     * @param Integer $id optional
+     *
+     * @return Object|null $class
      */
-    public function addServer($host, $port = 11211)
+    public function & retrieve($class, $id = null)
     {
-        if ($this->mode != self::MODE_MEMCACHE) return false;
-        if ($this->memcache->addServer($host, $port) === true) {
-            $this->connected = true;
-            return true;
+        if ($this->mode == self::MODE_MEMCACHE) return $this->retrieve_memory($class, $id);
+        if ($this->mode == self::MODE_REGISTRY) return $this->retrieve_registry($class, $id);
+
+        return null;
+    }
+
+    /**
+     * Internal function that retrieves the requested object from the memcache server
+     *
+     * @param String  $class_name
+     * @param Integer $id optional
+     *
+     * @return Object $class
+     */
+    private function & retrieve_memory($class, $id = null)
+    {
+        if ($class::is_a('Finder')) {
+            $obj = $this->memcache->get($this->generateKey($class));
+            if ($obj === false) {
+                return $this->register(new $class);
+            }
+
+            return $obj;
         } else {
-            return false;
+            $obj = $this->memcache->get($this->generateKey($class, $id));
+
+            return $obj;
+        }
+    }
+
+    /**
+     * Internal function that returns a unique key for each object
+     *
+     * @param String  $class
+     * @param Integer $id optional
+     */
+    private function generateKey($class, $id = null)
+    {
+        if ($id !== null) {
+            return Tools::encrypt($class . $id, 'm3m');
+        } else {
+            return Tools::encrypt($class, 'm3m');
         }
     }
 
     /**
      * Public function that registers an object in the specified container (by mode)
      * This function will return a reference to the object rather than the object itself.
+     *
      * @param Object $object
+     *
      * @return Object|null $object_ref
      */
     public function & register($object)
     {
         if ($this->mode == self::MODE_MEMCACHE) return $this->register_memory($object);
         if ($this->mode == self::MODE_REGISTRY) return $this->register_registry($object);
+
         return null;
     }
 
     /**
      * Internal method to store an object in the registry_mode
+     *
      * @param Object $object
+     *
      * @return Object $object_ref
      */
     private function & register_memory($object)
@@ -122,12 +189,15 @@ class MemoryHandler
         $id = is_a($object, 'Finder') ? null : $object->getID();
         $this->memcache->set($this->generateKey($class, $id), $object, 0, $this->timeout);
         $obj = &$this->memcache->get($this->generateKey($class, $id));
+
         return $obj;
     }
 
     /**
      * Internal method to store an object in the memcached server.
+     *
      * @param Object $object
+     *
      * @return Object $object_ref
      */
     private function & register_registry($object)
@@ -137,6 +207,7 @@ class MemoryHandler
             if (!isset($this->findercollection[$class]) || !array_key_exists($class, $this->findercollection)) {
                 $this->findercollection[$class] = $object;
             }
+
             return $this->findercollection[$class];
         } else {
             if (isset($this->objectcollection[$class]) || array_key_exists($class, $this->objectcollection)) {
@@ -145,29 +216,19 @@ class MemoryHandler
                 }
             } else {
                 //If no previous object of this type is stored, the collection is created, and the object is added
-                $this->objectcollection[$class] = array($object->getID() => $object);
+                $this->objectcollection[$class] = [$object->getID() => $object];
             }
+
             return $this->objectcollection[$class][$object->getID()];
         }
     }
 
     /**
-     * Public function that retrieves an object of the specified class, and optional id.
-     * @param String $class_name
-     * @param Integer $id optional
-     * @return Object|null $class
-     */
-    public function & retrieve($class, $id = null)
-    {
-        if ($this->mode == self::MODE_MEMCACHE) return $this->retrieve_memory($class, $id);
-        if ($this->mode == self::MODE_REGISTRY) return $this->retrieve_registry($class, $id);
-        return null;
-    }
-
-    /**
      * Internal function that retrieves a requested object from the registry_mode
-     * @param String $class_name
+     *
+     * @param String  $class_name
      * @param Integer $id optional
+     *
      * @return Object $class
      */
     private function & retrieve_registry($class, $id = null)
@@ -177,6 +238,7 @@ class MemoryHandler
                 $finder = new $class;
                 $this->findercollection[$class] =& $finder;
             }
+
             return $this->findercollection[$class];
         } else {
             //Set a default variable to be returned if needed (object expected in referenced return)
@@ -187,6 +249,7 @@ class MemoryHandler
                 if (isset($this->objectcollection[$class][$id]) || array_key_exists($id, $this->objectcollection[$class])) {
                     return $this->objectcollection[$class][$id];
                 }
+
                 return $objdef;
             } else {
                 return $objdef;
@@ -195,36 +258,19 @@ class MemoryHandler
     }
 
     /**
-     * Internal function that retrieves the requested object from the memcache server
-     * @param String $class_name
-     * @param Integer $id optional
-     * @return Object $class
-     */
-    private function & retrieve_memory($class, $id = null)
-    {
-        if ($class::is_a('Finder')) {
-            $obj = $this->memcache->get($this->generateKey($class));
-            if ($obj === false) {
-                return $this->register(new $class);
-            }
-            return $obj;
-        } else {
-            $obj = $this->memcache->get($this->generateKey($class, $id));
-            return $obj;
-        }
-    }
-
-    /**
-     * Public function that updates the passed object, if a old_id is passed, the old entry of this object will be removed from the collection
-     * This function will return a reference of the passed object
-     * @param Object $object
+     * Public function that updates the passed object, if a old_id is passed, the old entry of this object will be
+     * removed from the collection This function will return a reference of the passed object
+     *
+     * @param Object  $object
      * @param Integer $old_id
+     *
      * @return Object|null $reference
      */
     public function & update($object, $old_id = null)
     {
         if ($this->mode == self::MODE_MEMCACHE) return $this->update_memory($object, $old_id);
         if ($this->mode == self::MODE_REGISTRY) return $this->update_registry($object, $old_id);
+
         return null;
     }
 
@@ -236,6 +282,7 @@ class MemoryHandler
             $this->memcache->delete($this->generateKey($class, $old_id));
         }
         $this->memcache->replace($this->generateKey($class, $id));
+
         return $this->memcache->get($this->generateKey($class, $id));
     }
 
@@ -244,6 +291,7 @@ class MemoryHandler
         $class = get_class($object);
         if (is_a($object, 'Finder') === true) {
             $this->findercollection[$class] = $object;
+
             return $this->findercollection[$class];
         } else {
             if ($old_id !== null && isset($this->objectcollection[$class]) && isset($this->objectcollection[$class][$old_id])) unset($this->objectcollection[$class][$old_id]);
@@ -251,8 +299,9 @@ class MemoryHandler
                 $this->objectcollection[$class][$object->getID()] = $object;
             } else {
                 //If no previous object of this type is stored, the collection is created, and the object is added
-                $this->objectcollection[$class] = array($object->getID() => $object);
+                $this->objectcollection[$class] = [$object->getID() => $object];
             }
+
             return $this->objectcollection[$class][$object->getID()];
         }
     }
@@ -265,6 +314,7 @@ class MemoryHandler
         if ($this->memcache !== null) {
             $return = $this->memcache->getStats();
             $this->memcache->flush();
+
             return $return;
         } else {
             return 'memcache not loaded';
@@ -272,7 +322,18 @@ class MemoryHandler
     }
 
     /**
+     * Public function that retrieves the mode of the memory handler
+     *
+     * @return Integer $mode;
+     */
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
+    /**
      * Public function that sets the mode of the memory handler
+     *
      * @param Integer $mode
      */
     public function setMode($mode = self::MODE_MEMCACHE)
@@ -282,31 +343,8 @@ class MemoryHandler
             $this->memcache = new Memcache;
         } else {
             $this->memcache = null;
-            $this->objectcollection = array();
-            $this->findercollection = array();
-        }
-    }
-
-    /**
-     * Public function that retrieves the mode of the memory handler
-     * @return Integer $mode;
-     */
-    public function getMode()
-    {
-        return $this->mode;
-    }
-
-    /**
-     * Internal function that returns a unique key for each object
-     * @param String $class
-     * @param Integer $id optional
-     */
-    private function generateKey($class, $id = null)
-    {
-        if ($id !== null) {
-            return Tools::encrypt($class . $id, 'm3m');
-        } else {
-            return Tools::encrypt($class, 'm3m');
+            $this->objectcollection = [];
+            $this->findercollection = [];
         }
     }
 

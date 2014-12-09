@@ -1,21 +1,23 @@
 <?php
 namespace Forge\Builder;
 
-class DatabaseTable extends \Forge\baseGenerator
+use Forge\baseGenerator;
+
+class DatabaseTable extends baseGenerator
 {
 
     protected $name = null;
     protected $fields = null;
     protected $links = null; /* Needed for index generations */
     protected $sql = null;
-    protected $index = array();
+    protected $index = [];
     protected $translate = null;
     protected $multi_lang = false;
     protected $overwrite = false;
 
-    public function __construct($args = array())
+    public function __construct($args = [])
     {
-        list($this->name, $this->fields, $this->links, $this->translate, $this->overwrite) = $args + array(null, array(), array(), array(), false);
+        list($this->name, $this->fields, $this->links, $this->translate, $this->overwrite) = $args + [null, [], [], [], false];
         if (is_array($this->translate) && !empty($this->translate))
             $this->multi_lang = true;
 
@@ -24,19 +26,14 @@ class DatabaseTable extends \Forge\baseGenerator
         }
     }
 
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-
     public function getName()
     {
         return $this->name;
     }
 
-    public function setFields($fields)
+    public function setName($name)
     {
-        $this->fields = $fields;
+        $this->name = $name;
     }
 
     public function getFields()
@@ -44,14 +41,19 @@ class DatabaseTable extends \Forge\baseGenerator
         return $this->fields;
     }
 
-    public function setLinks($links)
+    public function setFields($fields)
     {
-        $this->links = $links;
+        $this->fields = $fields;
     }
 
     public function getLinks()
     {
         return $this->links;
+    }
+
+    public function setLinks($links)
+    {
+        $this->links = $links;
     }
 
     public function getSql()
@@ -90,7 +92,7 @@ class DatabaseTable extends \Forge\baseGenerator
 
         if (is_array($this->translate) && !empty($this->translate)) {
             //register the translation handlers
-            \Forge\Generator::getInstance()->build('databasetable', array($this->name . '_i18n', $this->translate, array(), array(), $this->overwrite));
+            \Forge\Generator::getInstance()->build('databasetable', [$this->name . '_i18n', $this->translate, [], [], $this->overwrite]);
         }
     }
 
@@ -146,6 +148,7 @@ class DatabaseTable extends \Forge\baseGenerator
         if ($field["name"] == "ID") {
             $sql .= " AUTO_INCREMENT";
         }
+
         return $sql;
     }
 

@@ -4,7 +4,6 @@ namespace Forge\Builder;
 use Forge\baseGenerator;
 use Forge\Config;
 use Forge\Generator;
-use Forge\TableDefinition;
 use Forge\Tools;
 
 /**
@@ -16,66 +15,110 @@ use Forge\Tools;
  * @package Forge\Builder
  * @author  Gerry Van Bael
  */
-class BusinessLayer extends baseGenerator
+class BusinessLayerOld extends baseGenerator
 {
-    /** @var TableDefinition */
-    protected $_tableDefinition;
-    /** @var string */
-    protected $_location;
-    /** @var string */
-    protected $_objectTemplates;
+
+    protected $name = null;
+    protected $fields = null;
+    protected $links = null;
+    protected $translate = null;
+    protected $extends = null;
+    protected $implements = null;
+    protected $location = null;
+    protected $multi_lang = false;
 
     public function __construct($args = [])
     {
-        list($this->_tableDefinition) = $args + [null];
-        $this->_location = Config::path('objects') . '/business/';
-        $this->_objectTemplates = $this->_getTemplatesByType('objects');
+        list($this->name, $this->fields, $this->links, $this->translate, $this->extends, $this->implements) = $args + [null, [], [], [], null, null];
+        $this->location = Config::path('objects') . '/business/';
+        if (is_array($this->translate) && !empty($this->translate))
+            $this->multi_lang = true;
+        if ($this->extends == null || $this->extends == '~') $this->extends = '\Forge\BusinessLayer';
+        else {
+            if (!class_exists($this->extends)) throw new \InvalidArgumentException('Trying to extend a class in ' . $this->name . ' that does not exist(' . $this->extends . ').');
+            else {
+                $test = $this->extends;
+                if (!$test::is_a('Forge\\BusinessLayer')) throw new \InvalidArgumentException('Trying to extend a class in ' . $this->name . ' that does not extend BusinessLayer(' . $this->extends . ').');
+                unset($test);
+            }
+        }
+        if ($this->implements == null || $this->implements == '~') $this->implements = '';
+        else {
+            if (is_array($this->implements)) {
+                foreach ($this->implements as $imp) {
+                    if (!interface_exists($imp)) throw new \InvalidArgumentException('Trying to implement a interface in ' . $this->name . ' that does not exist(' . $imp . ').');
+                }
+            } else if (!interface_exists($this->implements)) throw new \InvalidArgumentException('Trying to implement a interface in ' . $this->name . ' that does not exist(' . $this->implements . ').');
+
+            $this->implements = ' implements ' . (is_array($this->implements) ? implode(', ', $this->implements) : $this->implements);
+        }
+    }
+
+    public function getFields()
+    {
+        return $this->fields;
+    }
+
+    public function setFields($fields)
+    {
+        $this->fields = $fields;
+    }
+
+    public function getLinks()
+    {
+        return $this->links;
+    }
+
+    public function setLinks($links)
+    {
+        $this->links = $links;
+    }
+
+    public function addTranslator($opt = true)
+    {
+        $this->multi_lang = $opt;
+    }
+
+    public function getExtends()
+    {
+        return $this->extends;
+    }
+
+    public function setExtends($extends)
+    {
+        $this->extends = $extends;
     }
 
     public function generate()
     {
-        foreach ($this->_objectTemplates as $path => $template) {
-            $contents = file_get_contents(Config::path('forge') . '/templates/' . $path);
-            $template = new \Forge\TemplateHandler($contents);
-            $template->setTemplateVariables($this->_createTokenMap());
+        //generate base
+        $file = fopen($this->location . "base/base" . $this->name . ".class.php", "w");
+        $this->writeBaseContent($file);
+        fclose($file);
+        echo ".";
+        flush();
+        chmod($this->location . "base/base" . $this->name . ".class.php", 0777);
+        echo ".";
+        flush();
+        unset($file);
 
-            $template->generateTemplate();
+        //genarate class is not exist (need to preserve user code)
+        if (!file_exists($this->location . $this->name . ".class.php")) {
+            $file = fopen($this->location . $this->name . ".class.php", "w");
+            $this->writeClassContent($file);
+            fclose($file);
+            echo ".";
+            flush();
+            chmod($this->location . $this->name . ".class.php", 0777);
+            echo ".";
+            flush();
+            unset($file);
+        }
 
-            //$this->_replaceTokens($contents, $this->_createTokenMap());
+        if (is_array($this->translate) && !empty($this->translate)) {
+            //register the translation handlers
+            Generator::getInstance()->build('businesslayer', [$this->name . '_i18n', $this->translate, $this->linkThis(), []]);
         }
-        die();
-    }
-
-    protected function _createTokenMap()
-    {
-        $columns = [];
-        foreach($this->_tableDefinition->getColumns() as $column) {
-            $columns[] = [
-                'column_name' => Tools::strtocamelcase($column->getName(), true),
-                'column_type' => $column->getType(),
-                'raw_column_name' => Tools::camelcasetostr($column->getName()),
-                'raw' => $column->getName()
-            ];
-        }
-        $links = [];
-        foreach($this->_tableDefinition->getLinks() as $link) {
-            $links[] = [
-                'link_name' => Tools::strtocamelcase($link->getLinkName(),true),
-                'link_result' => $link->getToObject(),
-                'link_object' => str_replace('[]','',$link->getToObject()),
-                'raw_link_name' => Tools::camelcasetostr($link->getLinkName()),
-                'raw' => $link->getLinkName()
-            ];
-        }
-        $extends = $this->_tableDefinition->getExtends();
-        $implements = $this->_tableDefinition->getImplements();
-        return [
-            'object' => $this->_tableDefinition->getTableName(),
-            'columns' => $columns,
-            'links' => $links,
-            'extends' => $extends["Business"],
-            'implements' => !empty($implements["Business"]) ? 'implements '.implode(', ',$implements['Business']) : ''
-        ];
     }
 
     private function writeBaseContent($file)
@@ -244,6 +287,11 @@ class BusinessLayer extends baseGenerator
         return $this->name;
     }
 
+    public function setName($name)
+    {
+        $this->name = $name;
+    }
+
     private function writeClassContent($file)
     {
         fwrite($file, "<?php" . PHP_EOL);
@@ -269,11 +317,6 @@ class BusinessLayer extends baseGenerator
                 "local"  => $this->name . "ID"
             ]
         ];
-    }
-
-    public function setName($name)
-    {
-        $this->name = $name;
     }
 
     public function __destroy()

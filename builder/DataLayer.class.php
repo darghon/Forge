@@ -1,7 +1,9 @@
 <?php
 namespace Forge\Builder;
 
-class DataLayer extends \Forge\baseGenerator
+use Forge\baseGenerator;
+
+class DataLayer extends baseGenerator
 {
 
     protected $name = null;
@@ -12,9 +14,9 @@ class DataLayer extends \Forge\baseGenerator
     protected $location = null;
     protected $multi_lang = false;
 
-    public function __construct($args = array())
+    public function __construct($args = [])
     {
-        list($this->name, $this->fields, $this->translate, $this->extends, $this->implements) = $args + array(null, array(), array(), null, null);
+        list($this->name, $this->fields, $this->translate, $this->extends, $this->implements) = $args + [null, [], [], null, null];
         $this->location = \Forge\Config::path('objects') . '/data/';
         if (is_array($this->translate) && !empty($this->translate))
             $this->multi_lang = true;
@@ -39,19 +41,14 @@ class DataLayer extends \Forge\baseGenerator
         }
     }
 
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-
     public function getName()
     {
         return $this->name;
     }
 
-    public function setFields($fields)
+    public function setName($name)
     {
-        $this->fields = $fields;
+        $this->name = $name;
     }
 
     public function getFields()
@@ -59,19 +56,24 @@ class DataLayer extends \Forge\baseGenerator
         return $this->fields;
     }
 
+    public function setFields($fields)
+    {
+        $this->fields = $fields;
+    }
+
     public function addTranslator($opt = true)
     {
         $this->multi_lang = $opt;
     }
 
-    public function setExtends($extends)
-    {
-        $this->extends = $extends;
-    }
-
     public function getExtends()
     {
         return $this->extends;
+    }
+
+    public function setExtends($extends)
+    {
+        $this->extends = $extends;
     }
 
     public function generate()
@@ -103,7 +105,7 @@ class DataLayer extends \Forge\baseGenerator
 
         if (is_array($this->translate) && !empty($this->translate)) {
             //register the translation handlers
-            \Forge\Generator::getInstance()->build('datalayer', array($this->name . '_i18n', $this->translate, array()));
+            \Forge\Generator::getInstance()->build('datalayer', [$this->name . '_i18n', $this->translate, []]);
         }
 
     }
@@ -141,7 +143,7 @@ class DataLayer extends \Forge\baseGenerator
             //validate type
             fwrite($file, "\t\t\t\t'type' => '" . $field["type"] . "'," . PHP_EOL);
             //validate default
-            fwrite($file, "\t\t\t\t'default' => " . $this->getDefault($field) . "," . PHP_EOL);
+            fwrite($file, "\t\t\t\t'default' => " . $this->_getDefault($field) . "," . PHP_EOL);
             fwrite($file, "\t\t\t)," . PHP_EOL);
         }
         fwrite($file, "\t\t);" . PHP_EOL);

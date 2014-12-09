@@ -12,9 +12,11 @@ abstract class Components extends Actions
                 ${$key} = $value;
             }
             require($filepath);
+
             return true;
         } else {
             trigger_error('Cannot locate template ' . $filepath);
+
             return false;
         }
     }

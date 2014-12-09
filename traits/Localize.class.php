@@ -14,13 +14,13 @@ trait Localize
         if ($this->_initializedLocale == false) $this->_initUserLocale();
     }
 
-    /**
-     * @param null $dateFormat
-     */
-    public function setDateFormat($dateFormat)
+    protected function _initUserLocale()
     {
-        $this->_dateFormat = $dateFormat;
-        return $this;
+        $this->_userLanguage = Forge::Translate()->getActiveLanguage();
+        $this->_dateFormat = Forge::Translate()->getDateFormat();
+        $this->_timeZone = Forge::Translate()->getTimeZone();
+        $this->_numberFormat = Forge::Translate()->getNumberFormat();
+        $this->_initializedLocale = true;
     }
 
     /**
@@ -29,15 +29,17 @@ trait Localize
     public function getDateFormat()
     {
         if ($this->_initializedLocale == false) $this->_initUserLocale();
+
         return $this->_dateFormat;
     }
 
     /**
-     * @param null $numberFormat
+     * @param null $dateFormat
      */
-    public function setNumberFormat($numberFormat)
+    public function setDateFormat($dateFormat)
     {
-        $this->_numberFormat = $numberFormat;
+        $this->_dateFormat = $dateFormat;
+
         return $this;
     }
 
@@ -47,15 +49,17 @@ trait Localize
     public function getNumberFormat()
     {
         if ($this->_initializedLocale == false) $this->_initUserLocale();
+
         return $this->_numberFormat;
     }
 
     /**
-     * @param null $timeZone
+     * @param null $numberFormat
      */
-    public function setTimeZone($timeZone)
+    public function setNumberFormat($numberFormat)
     {
-        $this->_timeZone = $timeZone;
+        $this->_numberFormat = $numberFormat;
+
         return $this;
     }
 
@@ -65,15 +69,17 @@ trait Localize
     public function getTimeZone()
     {
         if ($this->_initializedLocale == false) $this->_initUserLocale();
+
         return $this->_timeZone;
     }
 
-    protected function _initUserLocale()
+    /**
+     * @param null $timeZone
+     */
+    public function setTimeZone($timeZone)
     {
-        $this->_userLanguage = Forge::Translate()->getActiveLanguage();
-        $this->_dateFormat = Forge::Translate()->getDateFormat();
-        $this->_timeZone = Forge::Translate()->getTimeZone();
-        $this->_numberFormat = Forge::Translate()->getNumberFormat();
-        $this->_initializedLocale = true;
+        $this->_timeZone = $timeZone;
+
+        return $this;
     }
 }

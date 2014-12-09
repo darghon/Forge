@@ -1,7 +1,9 @@
 <?php
 namespace Forge\Event;
 
-class MissingTranslationEvent implements \Forge\IEvent
+use Forge\IEvent;
+
+class MissingTranslationEvent implements IEvent
 {
 
     /**
@@ -11,6 +13,7 @@ class MissingTranslationEvent implements \Forge\IEvent
 
     /**
      * Initiate the event class with a context (object that triggered the event)
+     *
      * @param null|\Forge\TranslationHandler $context
      */
     public function __construct($context = null)
@@ -22,6 +25,7 @@ class MissingTranslationEvent implements \Forge\IEvent
 
     /**
      * Run the event in question
+     *
      * @return bool $success
      */
     public function raiseEvent()
@@ -45,10 +49,11 @@ eof
      */
     protected function _getTranslations()
     {
-        $translations = array();
+        $translations = [];
         $allTranslations = $this->_context->getTranslations();
         ksort($allTranslations);
         foreach ($allTranslations as $key => $value) $translations[] = sprintf("\t'%s' => '%s'", addslashes($key), addslashes($value));
+
         return implode(',' . PHP_EOL, $translations);
     }
 

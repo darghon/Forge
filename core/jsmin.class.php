@@ -3,32 +3,24 @@ namespace Forge;
 
 /**
  * jsmin.php - PHP implementation of Douglas Crockford's JSMin.
- *
  * This is pretty much a direct port of jsmin.c to PHP with just a few
  * PHP-specific performance tweaks. Also, whereas jsmin.c reads from stdin and
  * outputs to stdout, this library accepts a string as input and returns another
  * string as output.
- *
  * PHP 5 or higher is required.
- *
  * Permission is hereby granted to use this version of the library under the
  * same terms as jsmin.c, which has the following license:
- *
  * --
  * Copyright (c) 2002 Douglas Crockford  (www.crockford.com)
- *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
  * of the Software, and to permit persons to whom the Software is furnished to do
  * so, subject to the following conditions:
- *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
  * The Software shall be used for Good, not Evil.
- *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -38,13 +30,13 @@ namespace Forge;
  * SOFTWARE.
  * --
  *
- * @package JSMin
- * @author Ryan Grove <ryan@wonko.com>
+ * @package   JSMin
+ * @author    Ryan Grove <ryan@wonko.com>
  * @copyright 2002 Douglas Crockford <douglas@crockford.com> (jsmin.c)
  * @copyright 2008 Ryan Grove <ryan@wonko.com> (PHP port)
- * @license http://opensource.org/licenses/mit-license.php MIT License
- * @version 1.1.1 (2008-03-02)
- * @link https://github.com/rgrove/jsmin-php/
+ * @license   http://opensource.org/licenses/mit-license.php MIT License
+ * @version   1.1.1 (2008-03-02)
+ * @link      https://github.com/rgrove/jsmin-php/
  */
 class JSMin
 {
@@ -65,22 +57,6 @@ class JSMin
     // -- Public Static Methods --------------------------------------------------
 
     /**
-     * Minify Javascript
-     *
-     * @uses __construct()
-     * @uses min()
-     * @param string $js Javascript to be minified
-     * @return string
-     */
-    public static function minify($js)
-    {
-        $jsmin = new JSMin($js);
-        return $jsmin->min();
-    }
-
-    // -- Public Instance Methods ------------------------------------------------
-
-    /**
      * Constructor
      *
      * @param string $input Javascript to be minified
@@ -91,24 +67,130 @@ class JSMin
         $this->inputLength = strlen($this->input);
     }
 
+    // -- Public Instance Methods ------------------------------------------------
+
+    /**
+     * Minify Javascript
+     *
+     * @uses __construct()
+     * @uses min()
+     *
+     * @param string $js Javascript to be minified
+     *
+     * @return string
+     */
+    public static function minify($js)
+    {
+        $jsmin = new JSMin($js);
+
+        return $jsmin->min();
+    }
+
     // -- Protected Instance Methods ---------------------------------------------
 
     /**
-     * Action -- do something! What to do is determined by the $command argument.
+     * Perform minification, return result
      *
+     * @uses action()
+     * @uses isAlphaNum()
+     * @return string
+     */
+    protected function min()
+    {
+        $this->a = "\n";
+        $this->action(self::ACTION_DELETE_A_B);
+
+        while ($this->a !== null) {
+            switch ($this->a) {
+                case ' ':
+                    if ($this->isAlphaNum($this->b)) {
+                        $this->action(self::ACTION_KEEP_A);
+                    } else {
+                        $this->action(self::ACTION_DELETE_A);
+                    }
+                    break;
+
+                case "\n":
+                    switch ($this->b) {
+                        case '{':
+                        case '[':
+                        case '(':
+                        case '+':
+                        case '-':
+                            $this->action(self::ACTION_KEEP_A);
+                            break;
+
+                        case ' ':
+                            $this->action(self::ACTION_DELETE_A_B);
+                            break;
+
+                        default:
+                            if ($this->isAlphaNum($this->b)) {
+                                $this->action(self::ACTION_KEEP_A);
+                            } else {
+                                $this->action(self::ACTION_DELETE_A);
+                            }
+                    }
+                    break;
+
+                default:
+                    switch ($this->b) {
+                        case ' ':
+                            if ($this->isAlphaNum($this->a)) {
+                                $this->action(self::ACTION_KEEP_A);
+                                break;
+                            }
+
+                            $this->action(self::ACTION_DELETE_A_B);
+                            break;
+
+                        case "\n":
+                            switch ($this->a) {
+                                case '}':
+                                case ']':
+                                case ')':
+                                case '+':
+                                case '-':
+                                case '"':
+                                case "'":
+                                    $this->action(self::ACTION_KEEP_A);
+                                    break;
+
+                                default:
+                                    if ($this->isAlphaNum($this->a)) {
+                                        $this->action(self::ACTION_KEEP_A);
+                                    } else {
+                                        $this->action(self::ACTION_DELETE_A_B);
+                                    }
+                            }
+                            break;
+
+                        default:
+                            $this->action(self::ACTION_KEEP_A);
+                            break;
+                    }
+            }
+        }
+
+        return $this->output;
+    }
+
+    /**
+     * Action -- do something! What to do is determined by the $command argument.
      * action treats a string as a single character. Wow!
      * action recognizes a regular expression if it is preceded by ( or , or =.
      *
-     * @uses next()
-     * @uses get()
+     * @uses   next()
+     * @uses   get()
      * @throws JSMinException If parser errors are found:
      *         - Unterminated string literal
      *         - Unterminated regular expression set in regex literal
      *         - Unterminated regular expression literal
+     *
      * @param int $command One of class constants:
-     *      ACTION_KEEP_A      Output A. Copy B to A. Get the next B.
-     *      ACTION_DELETE_A    Copy B to A. Get the next B. (Delete A).
-     *      ACTION_DELETE_A_B  Get the next B. (Delete B).
+     *                     ACTION_KEEP_A      Output A. Copy B to A. Get the next B.
+     *                     ACTION_DELETE_A    Copy B to A. Get the next B. (Delete A).
+     *                     ACTION_DELETE_A_B  Get the next B. (Delete B).
      */
     protected function action($command)
     {
@@ -221,103 +303,6 @@ class JSMin
     }
 
     /**
-     * Is $c a letter, digit, underscore, dollar sign, or non-ASCII character.
-     *
-     * @return bool
-     */
-    protected function isAlphaNum($c)
-    {
-        return ord($c) > 126 || $c === '\\' || preg_match('/^[\w\$]$/', $c) === 1;
-    }
-
-    /**
-     * Perform minification, return result
-     *
-     * @uses action()
-     * @uses isAlphaNum()
-     * @return string
-     */
-    protected function min()
-    {
-        $this->a = "\n";
-        $this->action(self::ACTION_DELETE_A_B);
-
-        while ($this->a !== null) {
-            switch ($this->a) {
-                case ' ':
-                    if ($this->isAlphaNum($this->b)) {
-                        $this->action(self::ACTION_KEEP_A);
-                    } else {
-                        $this->action(self::ACTION_DELETE_A);
-                    }
-                    break;
-
-                case "\n":
-                    switch ($this->b) {
-                        case '{':
-                        case '[':
-                        case '(':
-                        case '+':
-                        case '-':
-                            $this->action(self::ACTION_KEEP_A);
-                            break;
-
-                        case ' ':
-                            $this->action(self::ACTION_DELETE_A_B);
-                            break;
-
-                        default:
-                            if ($this->isAlphaNum($this->b)) {
-                                $this->action(self::ACTION_KEEP_A);
-                            } else {
-                                $this->action(self::ACTION_DELETE_A);
-                            }
-                    }
-                    break;
-
-                default:
-                    switch ($this->b) {
-                        case ' ':
-                            if ($this->isAlphaNum($this->a)) {
-                                $this->action(self::ACTION_KEEP_A);
-                                break;
-                            }
-
-                            $this->action(self::ACTION_DELETE_A_B);
-                            break;
-
-                        case "\n":
-                            switch ($this->a) {
-                                case '}':
-                                case ']':
-                                case ')':
-                                case '+':
-                                case '-':
-                                case '"':
-                                case "'":
-                                    $this->action(self::ACTION_KEEP_A);
-                                    break;
-
-                                default:
-                                    if ($this->isAlphaNum($this->a)) {
-                                        $this->action(self::ACTION_KEEP_A);
-                                    } else {
-                                        $this->action(self::ACTION_DELETE_A_B);
-                                    }
-                            }
-                            break;
-
-                        default:
-                            $this->action(self::ACTION_KEEP_A);
-                            break;
-                    }
-            }
-        }
-
-        return $this->output;
-    }
-
-    /**
      * Get the next character, skipping over comments. peek() is used to see
      *  if a '/' is followed by a '/' or '*'.
      *
@@ -349,6 +334,7 @@ class JSMin
                             case '*':
                                 if ($this->peek() === '/') {
                                     $this->get();
+
                                     return ' ';
                                 }
                                 break;
@@ -375,7 +361,18 @@ class JSMin
     protected function peek()
     {
         $this->lookAhead = $this->get();
+
         return $this->lookAhead;
+    }
+
+    /**
+     * Is $c a letter, digit, underscore, dollar sign, or non-ASCII character.
+     *
+     * @return bool
+     */
+    protected function isAlphaNum($c)
+    {
+        return ord($c) > 126 || $c === '\\' || preg_match('/^[\w\$]$/', $c) === 1;
     }
 
 }
