@@ -34,16 +34,15 @@ class BusinessLayer extends baseGenerator
 
     public function generate()
     {
-        foreach ($this->_objectTemplates as $path => $template) {
+        foreach ($this->_objectTemplates as $path => $targetPath) {
             $contents = file_get_contents(Config::path('forge') . '/templates/' . $path);
             $template = new \Forge\TemplateHandler($contents);
             $template->setTemplateVariables($this->_createTokenMap());
 
             $template->generateTemplate();
+            $template->writeFile($this->_location.$targetPath, strpos($targetPath, 'base{object}') > -1 ? true : false);
 
-            //$this->_replaceTokens($contents, $this->_createTokenMap());
         }
-        die();
     }
 
     protected function _createTokenMap()

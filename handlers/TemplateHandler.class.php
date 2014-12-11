@@ -11,6 +11,8 @@ class TemplateHandler
     protected $_templateVariables;
     /** @var array */
     protected $_templateBlocks;
+    /** @var string */
+    protected $_generatedContent;
 
     /**
      * @param null|string $content
@@ -25,8 +27,7 @@ class TemplateHandler
         //split blocks from content
         $this->_parseTemplate();
         //replace tokens in content
-        echo $this->_replaceTokens();
-
+        $this->_generatedContent = $this->_replaceTokens();
     }
 
     protected function _parseTemplate()
@@ -35,9 +36,6 @@ class TemplateHandler
         $blockBuffer = [];
         $blockIdentifiers = [0 => 'global'];
         $currentLevel = 0;
-        $ifBuffer = [];
-        $ifConditions = [];
-        $currentIfLevel = -1;
         foreach ($lines as $line) {
             if (!isset($blockBuffer[$currentLevel])) $blockBuffer[$currentLevel] = '';
             if (preg_match_all('|{{([^:\}]*)(:([^\}]*))?}}|', $line, $function)) {
@@ -51,7 +49,8 @@ class TemplateHandler
                             break;
                         case 'ENDBLOCK': /* End Current Block */
                             $identifier = $blockIdentifiers[$currentLevel];
-                            $blockBuffer[$currentLevel] .= substr($line, 0, strpos($line, $function[0][$index]) - 1);
+                            $blockBuffer[$currentLevel] .= substr($line, 0, max(0, strpos($line, $function[0][$index]) - 1));
+                            $this->_templateBlocks[$identifier] = $blockBuffer[$currentLevel];
                             $currentLevel--;
                             $blockBuffer[$currentLevel] .= '{BLOCK_' . $identifier . '}' . substr($line, strpos($line, $function[0][$index]) + strlen($function[0][$index])) . PHP_EOL;
                             break;
@@ -80,9 +79,7 @@ class TemplateHandler
                 $blockBuffer[$currentLevel] .= $line . PHP_EOL;
             }
         }
-        foreach ($blockIdentifiers as $key => $value) {
-            $this->_templateBlocks[$value] = $blockBuffer[$key];
-        }
+        $this->_templateBlocks['global'] = $blockBuffer[0];
     }
 
     /**
@@ -91,35 +88,55 @@ class TemplateHandler
     protected function _replaceTokens()
     {
         $result = '';
-        $templateBlocks = array_reverse($this->_templateBlocks);
-        foreach($templateBlocks as $key => $block) {
-            if($key !== 'global') {
-                preg_match_all('|{(.*)}|U', $block, $tokens);
+        foreach ($this->_templateBlocks as $key => $block) {
+            if ($key !== 'global') {
+                preg_match_all('|{.*}|U', $block, $tokens);
                 if (!is_array($tokens[0])) return $block;
-                $tokens[0] = array_unique($tokens[0]); //replace each type of token just once, no need to repeat the process
+                $tokens = array_unique($tokens[0]); //replace each type of token just once, no need to repeat the process
                 $content = '';
-                foreach($this->_templateVariables[$key] as $tokenMap) {
+                foreach ($this->_templateVariables[$key] as $tokenMap) {
                     $_block = $block;
-                    foreach ($tokenMap as $token) {
-                        $_block = str_replace($token, $this->_templateVariables[$key][substr($token,1,-1)], $_block);
+                    foreach ($tokens as $token) {
+                        $_block = str_replace($token, $tokenMap[substr($token, 1, -1)], $_block);
                     }
                     $content .= $_block;
                 }
-                echo "Added key '".'BLOCK_'.$key."'";
-                $this->_templateVariables['BLOCK_'.$key] = $content;
-            }
-            else{
-                preg_match_all('|{(.*)}|U', $block, $tokens);
+                $this->_templateVariables['BLOCK_' . $key] = $content;
+            } else {
+                preg_match_all('|{.*}|U', $block, $tokens);
                 if (!is_array($tokens[0])) return $block;
-                $tokens[0] = array_unique($tokens[0]); //replace each type of token just once, no need to repeat the process
-                foreach ($tokens[0] as $token) {
-                    $block = str_replace($token, $this->_templateVariables[substr($token,1,-1)], $block);
+                $tokens = array_unique($tokens[0]); //replace each type of token just once, no need to repeat the process
+                foreach ($tokens as $token) {
+                    $block = str_replace($token, $this->_templateVariables[substr($token, 1, -1)], $block);
                 }
                 $result = $block;
             }
         }
         return $result;
 
+    }
+
+    /**
+     * @param string $filename
+     * @param bool   $overwrite
+     *
+     * @return bool|int
+     * @throws \Exception
+     */
+    public function writeFile($filename, $overwrite = false)
+    {
+
+        if (is_null($this->_generatedContent)) throw new \Exception($this->__('Unable to generate file, no generated content found.'));
+        if (preg_match_all('|{.*}|U', $filename, $tokens)) {
+            $tokens = array_unique($tokens[0]); //replace each type of token just once, no need to repeat the process
+            foreach ($tokens as $token) {
+                $filename = str_replace($token, $this->_templateVariables[substr($token, 1, -1)], $filename);
+            }
+        }
+        if ($overwrite || !file_exists($filename)) {
+            return file_put_contents($this->_generatedContent, $filename);
+        }
+        return true;
     }
 
     /**
