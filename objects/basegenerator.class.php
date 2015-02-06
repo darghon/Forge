@@ -150,15 +150,31 @@ abstract class baseGenerator implements IGenerator
 
         $resultList = [];
 
+        $types = explode('/',$type);
+
         foreach ($templates as $template) {
             $file = explode('_', $template);
-            if ($type === null || $file[0] == $type) {
+            if ($type === null || $this->_validateFileName($file, $types)) {
                 if ($type !== null) array_splice($file, 0, 1);
-                $resultList[$template] = implode('/', $file);
+                $resultList[$template] = preg_replace('|.template$|','',implode('/', $file));
             }
         }
 
         return $resultList;
+    }
+
+    /**
+     * @param array $file
+     * @param array $types
+     *
+     * @return bool
+     */
+    protected function _validateFileName($file, $types) {
+        foreach($types as $index => $type) {
+            if(!isset($file[$index])|| $file[$index] != $type) return false;
+        }
+
+        return true;
     }
 
 }

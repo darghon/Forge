@@ -86,7 +86,7 @@ abstract class DataLayer
     /**
      * Magic Get function which transforms any database datetimes to correct objects
      *
-     * @param string $attributename
+     * @param string $key
      *
      * @return mixed
      */
@@ -110,8 +110,10 @@ abstract class DataLayer
     /**
      * Magic function to set a variable, first it gets checked of rules, and then it'll be added if all is ok
      *
-     * @param $key
-     * @param $val
+     * @param string $key
+     * @param mixed $val
+     *
+     * @return bool
      */
     public function __set($key, $val)
     {
@@ -121,7 +123,7 @@ abstract class DataLayer
             else $this->$key = $val;
         } else {
             if (isset($rules['length']['min']) && !is_object($val) && strlen((string)$val) < $rules['length']['min']) throw new \InvalidArgumentException(sprintf('Passed value is to short for %s->%s. Value needs to be at least %s characters long. "%s" was passed (%s long).', get_class($this), $key, $rules['length']['min'], (string)$val, strlen($val)));
-            if (isset($rules['length']['max']) && !is_object($val) && strlen((string)$val) > $rules['length']['max']) throw new \InvalidArgumentException(sprintf('Passed value is to long for %s->%s. Value can not be longer than %s characters. "%s" was passed (%s long).', get_class($this), $key, $rules['length']['max'], (string)$val, strlen($val)));
+            if (isset($rules['length']['max']) && $rules['length']['max'] > 0 && !is_object($val) && strlen((string)$val) > $rules['length']['max']) throw new \InvalidArgumentException(sprintf('Passed value is to long for %s->%s. Value can not be longer than %s characters. "%s" was passed (%s long).', get_class($this), $key, $rules['length']['max'], (string)$val, strlen($val)));
 
             switch ($rules['type']) {
                 case ObjectGenerator::FIELD_TYPE_STRING:

@@ -8,9 +8,9 @@ class TableDefinition
     /** @var string */
     protected $_tableName;
     /** @var ColumnDefinition[] */
-    protected $_columns;
+    protected $_columns = [];
     /** @var array */
-    protected $_links;
+    protected $_links = [];
     /** @var array */
     protected $_validFieldTypes = [
         ColumnDefinition::TYPE_STRING,
@@ -55,6 +55,7 @@ class TableDefinition
     {
         foreach ($definitions as $definitionType => $definition) {
             switch ($definitionType) {
+                case 'Behaviors': break;
                 case 'Columns':
                     $this->_parseColumns($definition);
                     break;
@@ -107,7 +108,7 @@ class TableDefinition
     protected function _parseLinks($definitions = [])
     {
         foreach($definitions as $link_name => $link_definition) {
-            $link = new LinkDefinition($link_name, $link_definition);
+            $link = new LinkDefinition($link_name, Tools::strtocamelcase($this->_tableName,true), $link_definition);
             $link->setFromObject($this->getTableName());
             $this->_links[] = $link;
             unset($link);

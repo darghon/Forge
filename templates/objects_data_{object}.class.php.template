@@ -1,0 +1,17 @@
+<?php
+namespace Data;
+
+/**
+ * Custom Data class
+ * --------------------
+ * {object} is a generated data class. This class is a data entity of the object. Normally this file should not
+ * be used and all state changes to this class should be done through the business object.
+ * It is possible to add custom functions to this file, as once it's generated, it will never be overwritten.
+ * This class extends base{object} which extends Forge\DataLayer by default.
+ *
+ * @author Gerry Van Bael
+ */
+class {object} extends base{object}
+{
+
+}

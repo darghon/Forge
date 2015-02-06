@@ -1,0 +1,42 @@
+<?php
+namespace Data;
+
+/**
+ * Base Data class
+ * --------------------
+ * base{object} is a generated base data class.
+ * It is not possible to add custom functions to this file, as each time it's generated, it will be overwritten.
+ * This class extends Forge\DataLayer by default.
+ *
+ * @author Gerry Van Bael
+{{BLOCK: properties}}
+ * @property {attribute_type} ${attribute_name}
+{{ENDBLOCK}}
+ */
+abstract class base{object} extends {extends} {implements}
+{
+{{BLOCK: attributes}}
+    /** @var {attribute_type} */
+    protected ${attribute_name} = null;
+{{ENDBLOCK}}
+
+    /**
+     * Object rules, returns a list of validation rules for this data object.
+     *
+     * @return array($rules)
+     */
+    protected function _rules()
+    {
+        return [
+{{BLOCK: attribute_rules}}
+            '{attribute_name}'             => [
+                'allowNull' => {attribute_allow_null},
+                'length'    => ['min' => {attribute_length_min}, 'max' => {attribute_length_max}],
+                'type'      => '{attribute_type}',
+                'default'   => {attribute_default},
+            ],
+{{ENDBLOCK}}
+        ];
+    }
+
+}

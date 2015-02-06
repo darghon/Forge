@@ -44,12 +44,14 @@ class TemplateHandler
                         case 'BLOCK': /* New Block */
                             $blockBuffer[$currentLevel] .= substr($line, 0, max(0, strpos($line, $function[0][$index]) - 1));
                             $currentLevel++;
-                            $blockBuffer[$currentLevel] = substr($line, strpos($line, $function[0][$index]) + strlen($function[0][$index])) . PHP_EOL;
+                            $after = substr($line, strpos($line, $function[0][$index]) + strlen($function[0][$index]));
+                            $blockBuffer[$currentLevel] = $after != '' ? $after . PHP_EOL : '';
                             $blockIdentifiers[$currentLevel] = trim($function[3][$index]);
                             break;
                         case 'ENDBLOCK': /* End Current Block */
                             $identifier = $blockIdentifiers[$currentLevel];
-                            $blockBuffer[$currentLevel] .= substr($line, 0, max(0, strpos($line, $function[0][$index]) - 1));
+                            $before = substr($line, 0, max(0, strpos($line, $function[0][$index]) - 1));
+                            if($before != '') $blockBuffer[$currentLevel] .= $before;
                             $this->_templateBlocks[$identifier] = $blockBuffer[$currentLevel];
                             $currentLevel--;
                             $blockBuffer[$currentLevel] .= '{BLOCK_' . $identifier . '}' . substr($line, strpos($line, $function[0][$index]) + strlen($function[0][$index])) . PHP_EOL;
@@ -125,7 +127,7 @@ class TemplateHandler
      */
     public function writeFile($filename, $overwrite = false)
     {
-
+        if(!file_exists(dirname($filename))) mkdir(dirname($filename), 0664, true);
         if (is_null($this->_generatedContent)) throw new \Exception($this->__('Unable to generate file, no generated content found.'));
         if (preg_match_all('|{.*}|U', $filename, $tokens)) {
             $tokens = array_unique($tokens[0]); //replace each type of token just once, no need to repeat the process
@@ -134,7 +136,8 @@ class TemplateHandler
             }
         }
         if ($overwrite || !file_exists($filename)) {
-            return file_put_contents($this->_generatedContent, $filename);
+            echo '.';
+            return file_put_contents($filename,$this->_generatedContent);
         }
         return true;
     }

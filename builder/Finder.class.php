@@ -2,43 +2,83 @@
 namespace Forge\Builder;
 
 use Forge\baseGenerator;
+use Forge\Config;
+use Forge\TableDefinition;
+use Forge\TemplateHandler;
+use Forge\Tools;
 
+/**
+ * Forge Finder Builder
+ * --------------------
+ * This class generates the base en custom finder class based on a defined object from the yml configuration.
+ * It automatically detects links between objects and tries to add as many helper function for selection based on
+ * foreign keys as it can detect.
+ *
+ * @author Gerry Van Bael
+ * @package Forge\Builder
+ */
 class Finder extends baseGenerator
 {
-
-    protected $name = null;
-    protected $fields = null;
-    protected $translate = null;
-    protected $extends = null;
-    protected $implements = null;
-    protected $location = null;
-    protected $multi_lang = false;
+    /** @var TableDefinition */
+    protected $_tableDefinition;
+    /** @var string */
+    protected $_location;
+    /** @var string */
+    protected $_objectTemplates;
 
     public function __construct($args = [])
     {
-        list($this->name, $this->fields, $this->translate, $this->extends, $this->implements) = $args + [null, [], [], null, null];
-        $this->location = \Forge\Config::path('objects') . '/finders/';
-        if (is_array($this->translate) && !empty($this->translate))
-            $this->multi_lang = true;
-        if ($this->extends == null || $this->extends == '~') $this->extends = '\Forge\Finder';
-        else {
-            if (!class_exists($this->extends)) trigger_error('Trying to extend a class in ' . $this->name . ' that does not exist(' . $this->extends . ').');
+        list($this->_tableDefinition) = $args + [null];
+        $this->_location = Config::path('objects').DIRECTORY_SEPARATOR;
+        $this->_objectTemplates = $this->_getTemplatesByType('objects/finder');
+    }
+
+    public function generate()
+    {
+        foreach ($this->_objectTemplates as $path => $targetPath) {
+            $contents = file_get_contents(Config::path('forge') . '/templates/' . $path);
+            $template = new TemplateHandler($contents);
+            $template->setTemplateVariables($this->_createTokenMap());
+
+            $template->generateTemplate();
+            $template->writeFile($this->_location . $targetPath, strpos($targetPath, 'base{object}') > -1 ? true : false);
+
+        }
+    }
+
+    protected function _createTokenMap()
+    {
+        $oneToOne = [];
+        $oneToMany = [];
+        foreach ($this->_tableDefinition->getLinks() as $link) {
+            if (substr($link->getToObject(), -2) != '[]') {
+                $oneToOne[] = [
+                    'raw_local_key' => $link->getLocalForeignKey(),
+                    'local_key'     => Tools::strtocamelcase($link->getLocalForeignKey(), true),
+                    'object'        => $link->getToObject(),
+                    'raw_target_key'=> $link->getTargetForeignKey()
+                ];
+            }
             else {
-                $test = $this->extends;
-                if (!$test::is_a('Forge\\Finder')) trigger_error('Trying to extend a class in ' . $this->name . ' that does not extend Finder(' . $this->extends . ').');
-                unset($test);
+                $oneToMany[] = [
+                    'raw_local_key' => $link->getLocalForeignKey(),
+                    'local_key' => Tools::strtocamelcase($link->getLocalForeignKey(),true),
+                    'object' => substr($link->getToObject(), 0, -2),
+                    'raw_target_key'=> $link->getTargetForeignKey()
+                ];
             }
         }
-        if ($this->implements == null || $this->implements == '~') $this->implements = '';
-        else {
-            if (is_array($this->implements)) {
-                foreach ($this->implements as $imp) {
-                    if (!interface_exists($imp)) throw new \InvalidArgumentException('Trying to implement a interface in ' . $this->name . ' that does not exist(' . $imp . ').');
-                }
-            } else if (!interface_exists($this->implements)) throw new \InvalidArgumentException('Trying to implement a interface in ' . $this->name . ' that does not exist(' . $this->implements . ').');
 
-            $this->implements = ' implements ' . (is_array($this->implements) ? implode(', ', $this->implements) : $this->implements);
-        }
+        $extends = $this->_tableDefinition->getExtends();
+        $implements = $this->_tableDefinition->getImplements();
+
+        return [
+            'object' => $this->_tableDefinition->getTableName(),
+            'oneToOne'  => $oneToOne,
+            'oneToMany' => $oneToMany,
+            'extends'    => $extends["Finder"],
+            'implements' => !empty($implements["Finder"]) ? 'implements ' . implode(', ', $implements['Finder']) : ''
+        ];
     }
 
     public function getName()
@@ -51,125 +91,8 @@ class Finder extends baseGenerator
         $this->name = $name;
     }
 
-    public function getFields()
-    {
-        return $this->fields;
-    }
-
-    public function setFields($fields)
-    {
-        $this->fields = $fields;
-    }
-
-    public function getExtends()
-    {
-        return $this->extends;
-    }
-
-    public function setExtends($extends)
-    {
-        $this->extends = $extends;
-    }
-
-    public function generate()
-    {
-        //generate base
-        $file = fopen($this->location . "base/base" . $this->name . ".class.php", "w");
-        $this->writeBaseContent($file);
-        fclose($file);
-        echo ".";
-        flush();
-        chmod($this->location . "base/base" . $this->name . ".class.php", 0777);
-        echo ".";
-        flush();
-        unset($file);
-
-        //generate class is not exist (need to preserve user code)
-        if (!file_exists($this->location . $this->name . ".class.php")) {
-            $file = fopen($this->location . $this->name . ".class.php", "w");
-            $this->writeClassContent($file);
-            fclose($file);
-            echo ".";
-            flush();
-            chmod($this->location . $this->name . ".class.php", 0777);
-            echo ".";
-            flush();
-            unset($file);
-        }
-
-        if (is_array($this->translate) && !empty($this->translate)) {
-            //register the translation handlers
-            \Forge\Generator::getInstance()->build('finder', [$this->name . '_i18n', $this->translate, []]);
-        }
-    }
-
-    private function writeBaseContent($file)
-    {
-        fwrite($file, "<?php " . PHP_EOL);
-        fwrite($file, "namespace Finder;" . PHP_EOL);
-        fwrite($file, "abstract class base" . $this->name . " extends " . $this->extends . "{" . PHP_EOL);
-        fwrite($file, PHP_EOL);
-        foreach ($this->fields as $field) {
-            if (substr($field['name'], -2) == 'ID' && $field['name'] != 'ID') {
-                fwrite($file, "\t/**" . PHP_EOL);
-                fwrite($file, "\t * Lazy loading function that retrieves the selected " . $field["name"] . "" . PHP_EOL);
-                fwrite($file, "\t * @return " . substr($field["name"], 0, -2) . " " . PHP_EOL);
-                fwrite($file, "\t */" . PHP_EOL);
-                fwrite($file, "\tpublic function & by" . $field['name'] . "(\$" . $field['name'] . ", \$page = false,\$pagesize = 20){" . PHP_EOL);
-                fwrite($file, "\t\t\$return = array();" . PHP_EOL);
-                fwrite($file, "\t\t\$this->db->setQuery(\"SELECT * FROM \".\$this->db->getPrefix().\"" . $this->name . " WHERE _deletedAt IS NULL AND " . $field['name'] . " = '\".$" . $field['name'] . ".\"' \".(\$page !== false ? \" Limit \".((\$page-1)*\$pagesize).\",\".\$pagesize : \"\").\";\");" . PHP_EOL);
-                fwrite($file, "\t\t\$this->db->execute();" . PHP_EOL);
-                fwrite($file, "\t\tif(\$this->db->hasRecords()){" . PHP_EOL);
-                fwrite($file, "\t\t\twhile(\$row = \$this->db->getRecord()){" . PHP_EOL);
-                fwrite($file, "\t\t\t\t\$return[] = &\$this->createObject(\$row);" . PHP_EOL);
-                fwrite($file, "\t\t\t}" . PHP_EOL);
-                fwrite($file, "\t\t}" . PHP_EOL);
-                fwrite($file, "\t\treturn \$return;" . PHP_EOL);
-                fwrite($file, "\t}" . PHP_EOL);
-                fwrite($file, PHP_EOL);
-            }
-        }
-        if (strpos($this->name, "_i18n") >= -1) {
-            fwrite($file, "\t/**" . PHP_EOL);
-            fwrite($file, "\t * Language loader for " . str_replace('_i18n', '', $this->name) . PHP_EOL);
-            fwrite($file, "\t * @return " . $this->name . " " . PHP_EOL);
-            fwrite($file, "\t */" . PHP_EOL);
-            fwrite($file, "\tpublic function & getTranslationByID(\$id, \$lang){" . PHP_EOL);
-            fwrite($file, "\t\t\$def = false;" . PHP_EOL);
-            fwrite($file, "\t\t\$this->db->setQuery(\"SELECT * FROM \".\$this->db->getPrefix().\"" . $this->name . " WHERE " . str_replace("_i18n", "", $this->name) . "ID = '\".\$id.\"' And Lang = '\".\$lang.\"';\");" . PHP_EOL);
-            fwrite($file, "\t\t\$this->db->execute();" . PHP_EOL);
-            fwrite($file, "\t\tif(\$this->db->hasRecords()){" . PHP_EOL);
-            fwrite($file, "\t\t\t\$row = \$this->db->getRecord();" . PHP_EOL);
-            fwrite($file, "\t\t\treturn \$this->createObject(\$row);" . PHP_EOL);
-            fwrite($file, "\t\t}" . PHP_EOL);
-            fwrite($file, "\t\telse{" . PHP_EOL);
-            fwrite($file, "\t\t\treturn \$def;" . PHP_EOL);
-            fwrite($file, "\t\t}" . PHP_EOL);
-            fwrite($file, "\t}" . PHP_EOL);
-            fwrite($file, PHP_EOL);
-        }
-        fwrite($file, "\tpublic function validate(){" . PHP_EOL);
-        fwrite($file, "\t\treturn true;" . PHP_EOL);
-        fwrite($file, "\t}" . PHP_EOL);
-        fwrite($file, PHP_EOL);
-        fwrite($file, "}" . PHP_EOL);
-    }
-
-    private function writeClassContent($file)
-    {
-        fwrite($file, "<?php" . PHP_EOL);
-        fwrite($file, "namespace Finder;" . PHP_EOL);
-        fwrite($file, "\tclass " . $this->name . " extends base" . $this->name . "{" . PHP_EOL);
-        fwrite($file, "" . PHP_EOL);
-        fwrite($file, "\t}" . PHP_EOL);
-    }
-
     public function __destroy()
     {
-        foreach ($this as $key => $value) {
-            unset($this->$key);
-        }
-        unset($this);
+        unset($this->_tableDefinition, $this->_objectTemplates, $this->_location);
     }
-
 }

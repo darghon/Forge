@@ -29,10 +29,11 @@ class Objects extends ObjectGenerator
         $schema = $dbschema->loadSchema()->getTableDefinitions();
 
         foreach ($schema as $table_name => &$table) {
+            echo "Building: ".$table->getTableName().' ';
 
             Generator::getInstance()->build('businesslayer', [$table]);
-            Generator::getInstance()->build('datalayer', [$table_name, $fields, $translation, $extends['Data'], $implements['Data']]);
-            Generator::getInstance()->build('finder', [$table_name, $fields, $translation, $extends['Finder'], $implements['Finder']]);
+            Generator::getInstance()->build('finder', [$table]);
+            Generator::getInstance()->build('datalayer', [$table]);
 
             echo " DONE!" . PHP_EOL;
             flush();

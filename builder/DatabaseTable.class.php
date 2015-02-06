@@ -2,6 +2,8 @@
 namespace Forge\Builder;
 
 use Forge\baseGenerator;
+use Forge\Forge;
+use Forge\Generator;
 
 class DatabaseTable extends baseGenerator
 {
@@ -21,8 +23,8 @@ class DatabaseTable extends baseGenerator
         if (is_array($this->translate) && !empty($this->translate))
             $this->multi_lang = true;
 
-        if (\Forge\Forge::Connection() == null) {
-            trigger_error('No database connection has been specified.');
+        if (Forge::Connection() == null) {
+            throw new \Exception('No database connection has been specified.');
         }
     }
 
@@ -58,13 +60,11 @@ class DatabaseTable extends baseGenerator
 
     public function getSql()
     {
-        //if($this->sql == null){ $this->generate(); }
         return $this->sql;
     }
 
     public function generate()
     {
-
         $db = &\Forge\Database::getDB();
 
         if ($this->overwrite === true) {
@@ -92,10 +92,9 @@ class DatabaseTable extends baseGenerator
 
         if (is_array($this->translate) && !empty($this->translate)) {
             //register the translation handlers
-            \Forge\Generator::getInstance()->build('databasetable', [$this->name . '_i18n', $this->translate, [], [], $this->overwrite]);
+            Generator::getInstance()->build('databasetable', [$this->name . '_i18n', $this->translate, [], [], $this->overwrite]);
         }
     }
-
 
     private function parseField($field)
     {

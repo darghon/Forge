@@ -61,8 +61,9 @@ class DatabaseSchema
         $translationAdded = false;
         //check if all Object types are valid
         while (list($table_name, $table_definition) = each($this->_working_schema)) {
-            //check the columns definitions, if type is a collection of other objects, link tables may be added as well
-            if (isset($table_definition['Behaviors'])) $this->_validateBehaviors($table_definition['Behaviors'], $table_name, $table_definition);
+            if (!isset($table_definition['Behaviors'])) $table_definition['Behaviors'] = [];
+                //check the columns definitions, if type is a collection of other objects, link tables may be added as well
+            $this->_validateBehaviors($table_definition['Behaviors'], $table_name, $table_definition);
             if (isset($table_definition['Columns'])) $this->_validateColumns($table_definition['Columns'], $table_name, $table_definition);
             if (isset($table_definition['Translation']) && !$translationAdded){
                 $translationAdded = true;
@@ -76,19 +77,23 @@ class DatabaseSchema
      * @param array  $behaviors
      * @param string $table_name
      * @param array  $table_definition
+     *
+     * @throws \Exception
      */
-    protected function _validateBehaviors($behaviors, $table_name, &$table_definition)
+    protected function _validateBehaviors($behaviors, $table_name, $table_definition)
     {
         /** @var Apply global config to each table **/
         $columns = $table_definition['Columns'];
-        $table_definition['Columns'] = ['Id'  => ['Type' => 'Integer', 'Length' => '10', 'Null' => false]];
+        $table_definition['Columns']['id'] = ['Type' => 'Integer', 'Length' => '10', 'Null' => false];
         foreach($columns as $key => $column) $table_definition['Columns'][$key] = $column;
-        $table_definition['Columns'] = ['_recordVersion'  => ['Type' => 'Integer', 'Length' => '10', 'Null' => false, 'Default' => 0]];
-        $table_definition['Columns'] = ['_deletedAt'  => ['Type' => 'Datetime', 'Length' => '20']];
+        $table_definition['Columns']['_recordVersion'] = ['Type' => 'Integer', 'Length' => '10', 'Null' => false, 'Default' => 0];
+        $table_definition['Columns']['_deletedAt'] = ['Type' => 'Datetime', 'Length' => '20'];
+
+        $this->_working_schema[$table_name] = $table_definition;
 
         foreach ($behaviors as $behavior) {
 
-            trigger_error('Behavior: ' . $behavior . ' not recognised' . PHP_EOL);
+            throw new \Exception('Behavior: ' . $behavior . ' not recognised' . PHP_EOL);
         }
     }
 
@@ -115,8 +120,11 @@ class DatabaseSchema
                         throw new \Exception(sprintf($this->__('Unable to add field %s to table %s with type %s: Type does not exist'), $field_name, $table_name, $type));
                     }
                     else{
-                        $this->_addLink($table_name, $field_name, Tools::camelcasetostr($field_name).'_id', $type);
-                        $this->_addLink($type, $table_name, Tools::camelcasetostr($table_name).'_id', $table_name);
+                        //rename current column to foreign key
+                        $this->_working_schema[$table_name]['Columns'][Tools::camelcasetostr($field_name).'_id'] = 'integer';
+                        unset($this->_working_schema[$table_name]['Columns'][$field_name]);
+                        $this->_addLink($table_name, Tools::strtocamelcase($field_name, true), Tools::camelcasetostr($field_name).'_id', $type);
+                        $this->_addLink($type, $table_name.'s', 'id', $table_name.'[]');
                     }
                 }
             }
@@ -144,7 +152,7 @@ class DatabaseSchema
         unset($this->_working_schema[$table_name]['Columns'][$field_name]);
 
         //add links
-        $this->_addLink($table_name, $field_name, 'id', $type, $new_table_name);
+        $this->_addLink($table_name, Tools::strtocamelcase($field_name, true), 'id', $type, $new_table_name);
         $this->_addLink(substr($type, 0, -2), $table_name . 's', 'id', $table_name . '[]', $new_table_name);
     }
 

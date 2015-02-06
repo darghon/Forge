@@ -1,17 +1,18 @@
 <?php
 
 /**
- * Forge Business class
+ * Base Business class
  * --------------------
  * base{object} is a generated base businesslayer class.
  * It is not possible to add custom functions to this file, as each time it's generated, it will be overwritten.
  * This class extends Forge\BusinessLayer by default.
  *
  * @author Gerry Van Bael
+ *
+ * @property \Data\{object} $data
  */
 abstract class base{object} extends {extends} {implements}
 {
-
 {{BLOCK: columns}}
     /**
      * Public get function that retrieves the {column_name}
@@ -35,7 +36,6 @@ abstract class base{object} extends {extends} {implements}
         $this->data->{raw_column_name} = ${raw_column_name};
         return $this;
     }
-
 {{ENDBLOCK}}
 {{BLOCK: links}}
     /**
@@ -45,9 +45,8 @@ abstract class base{object} extends {extends} {implements}
      */
     public function & get{link_name}()
     {
-        return {link_object}::Find($this->data->{raw_link_name});
+        return {link_object}::Find($this->data->{link_local_key});
     }
-
 {{ENDBLOCK}}
     /**
      * Public Destructor, unset every used variable

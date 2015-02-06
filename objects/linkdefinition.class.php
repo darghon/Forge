@@ -22,13 +22,18 @@ class LinkDefinition
     protected $_targetForeignKey;
     /** @var string */
     protected $_linkTableTargetForeignKey;
+
     /**
      * @param null|string $linkName
+     * @param null        $fromObject
      * @param array       $definitions
+     *
+     * @throws \Exception
      */
-    public function __construct($linkName = null, $definitions = [])
+    public function __construct($linkName = null, $fromObject = null, $definitions = [])
     {
         if (!is_null($linkName)) $this->_linkName = $linkName;
+        if (!is_null($fromObject)) $this->_fromObject = $fromObject;
         if (!empty($definitions)) $this->buildFromDefinitions($definitions);
     }
 
@@ -47,7 +52,7 @@ class LinkDefinition
                 case 'target':
                     if(preg_match('/^([^\.]*)(\.(.*))?$/', $definition, $matches)){
                         if(isset($matches[1])) $this->_toObject = $matches[1];
-                        if(isset($matches[3])) $this->_targetForeignKey = $matches[3];
+                        $this->_targetForeignKey = isset($matches[3]) ? $matches[3] : 'id';
                     }
                     else{
                         throw new \Exception(sprintf($this->__('Unable to parse link target: %s'),$definition));
@@ -57,8 +62,8 @@ class LinkDefinition
                 case 'link':
                     if(preg_match('/^([^\[]*)(\[([^,]*),([^\]]*)\])?$/', $definition, $matches)){
                         if(isset($matches[1])) $this->_linkTable = $matches[1];
-                        if(isset($matches[3])) $this->_linkTableLocalForeignKey = $matches[3];
-                        if(isset($matches[4])) $this->_linkTableTargetForeignKey = $matches[4];
+                        $this->_linkTableLocalForeignKey = isset($matches[3]) ? $matches[3] : Tools::camelcasetostr($this->_fromObject).'_id';
+                        $this->_linkTableTargetForeignKey = isset($matches[4]) ? $matches[4] : Tools::camelcasetostr($this->_toObject).'_id';
                     }
                     else{
                         throw new \Exception(sprintf($this->__('Unable to parse link table: %s'),$definition));

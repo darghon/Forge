@@ -2,170 +2,123 @@
 namespace Forge\Builder;
 
 use Forge\baseGenerator;
+use Forge\Config;
+use Forge\TableDefinition;
+use Forge\TemplateHandler;
+use Forge\Tools;
 
+/**
+ * Forge DataLayer Builder
+ * --------------------
+ * This class generates the base and custom data class based on a defined object from the yml configuration.
+ * This class contains rules and definitions of the defined attributes.
+ *
+ * @author  Gerry Van Bael
+ * @package Forge\Builder
+ */
 class DataLayer extends baseGenerator
 {
-
-    protected $name = null;
-    protected $fields = null;
-    protected $translate = null;
-    protected $extends = null;
-    protected $implements = null;
-    protected $location = null;
-    protected $multi_lang = false;
+    /** @var TableDefinition */
+    protected $_tableDefinition;
+    /** @var string */
+    protected $_location;
+    /** @var string */
+    protected $_objectTemplates;
 
     public function __construct($args = [])
     {
-        list($this->name, $this->fields, $this->translate, $this->extends, $this->implements) = $args + [null, [], [], null, null];
-        $this->location = \Forge\Config::path('objects') . '/data/';
-        if (is_array($this->translate) && !empty($this->translate))
-            $this->multi_lang = true;
-        if ($this->extends == null || $this->extends == '~') $this->extends = '\Forge\DataLayer';
-        else {
-            if (!class_exists($this->extends)) trigger_error('Trying to extend a class in ' . $this->name . ' that does not exist(' . $this->extends . ').');
-            else {
-                $test = $this->extends;
-                if (!$test::is_a('Forge\\DataLayer')) trigger_error('Trying to extend a class in ' . $this->name . ' that does not extend DataLayer(' . $this->extends . ').');
-                unset($test);
-            }
-        }
-        if ($this->implements == null || $this->implements == '~') $this->implements = '';
-        else {
-            if (is_array($this->implements)) {
-                foreach ($this->implements as $imp) {
-                    if (!interface_exists($imp)) throw new \InvalidArgumentException('Trying to implement a interface in ' . $this->name . ' that does not exist(' . $imp . ').');
-                }
-            } else if (!interface_exists($this->implements)) throw new \InvalidArgumentException('Trying to implement a interface in ' . $this->name . ' that does not exist(' . $this->implements . ').');
+        list($this->_tableDefinition) = $args + [null];
+        $this->_location = Config::path('objects').DIRECTORY_SEPARATOR;
+        $this->_objectTemplates = $this->_getTemplatesByType('objects/data');
+    }
 
-            $this->implements = ' implements ' . (is_array($this->implements) ? implode(', ', $this->implements) : $this->implements);
+    /**
+     * @throws \Exception
+     */
+    public function generate()
+    {
+        foreach ($this->_objectTemplates as $path => $targetPath) {
+            $contents = file_get_contents(Config::path('forge') . '/templates/' . $path);
+            $template = new TemplateHandler($contents);
+            $template->setTemplateVariables($this->_createTokenMap());
+
+            $template->generateTemplate();
+            $template->writeFile($this->_location . $targetPath, strpos($targetPath, 'base{object}') > -1 ? true : false);
+
         }
     }
 
+    /**
+     * @return array
+     */
+    protected function _createTokenMap()
+    {
+        $attributes = [];
+        foreach ($this->_tableDefinition->getColumns() as $columnName => $column) {
+            $attributes[] = [
+                'attribute_type'       => $column->getType(),
+                'attribute_name'       => Tools::camelcasetostr($column->getName()),
+                'attribute_allow_null' => $column->getNull() ? 'true' : 'false',
+                'attribute_length_min' => 0,
+                'attribute_length_max' => $column->getLength(),
+                'attribute_default'    => $this->_convertToString($column->getDefault())
+            ];
+        }
+
+
+        $extends = $this->_tableDefinition->getExtends();
+        $implements = $this->_tableDefinition->getImplements();
+
+        return [
+            'object'          => $this->_tableDefinition->getTableName(),
+            'properties'      => $attributes,
+            'attributes'      => $attributes,
+            'attribute_rules' => $attributes,
+            'extends'         => $extends["Data"],
+            'implements'      => !empty($implements["Data"]) ? 'implements ' . implode(', ', $implements['Data']) : ''
+        ];
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return string
+     */
+    protected function _convertToString($value)
+    {
+        switch ($value) {
+            case null:
+                return 'null';
+            case true:
+                return 'true';
+            case false:
+                return 'false';
+            default:
+                return '\'' . addslashes($value) . '\'';
+        }
+    }
+
+    /**
+     * @return string
+     */
     public function getName()
     {
         return $this->name;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return $this
+     */
     public function setName($name)
     {
         $this->name = $name;
-    }
-
-    public function getFields()
-    {
-        return $this->fields;
-    }
-
-    public function setFields($fields)
-    {
-        $this->fields = $fields;
-    }
-
-    public function addTranslator($opt = true)
-    {
-        $this->multi_lang = $opt;
-    }
-
-    public function getExtends()
-    {
-        return $this->extends;
-    }
-
-    public function setExtends($extends)
-    {
-        $this->extends = $extends;
-    }
-
-    public function generate()
-    {
-
-        //generate base
-        $file = fopen($this->location . "base/base" . $this->name . ".class.php", "w");
-        $this->writeBaseContent($file);
-        fclose($file);
-        echo ".";
-        flush();
-        chmod($this->location . "base/base" . $this->name . ".class.php", 0777);
-        echo ".";
-        flush();
-        unset($file);
-
-        //generate class is not exist (need to preserve user code)
-        if (!file_exists($this->location . $this->name . ".class.php")) {
-            $file = fopen($this->location . $this->name . ".class.php", "w");
-            $this->writeClassContent($file);
-            fclose($file);
-            echo ".";
-            flush();
-            chmod($this->location . $this->name . ".class.php", 0777);
-            echo ".";
-            flush();
-            unset($file);
-        }
-
-        if (is_array($this->translate) && !empty($this->translate)) {
-            //register the translation handlers
-            \Forge\Generator::getInstance()->build('datalayer', [$this->name . '_i18n', $this->translate, []]);
-        }
-
-    }
-
-    private function writeBaseContent($file)
-    {
-        fwrite($file, "<?php " . PHP_EOL);
-        fwrite($file, "namespace Data;" . PHP_EOL);
-        fwrite($file, "abstract class base" . $this->name . " extends " . $this->extends . $this->implements . "{" . PHP_EOL);
-        fwrite($file, "" . PHP_EOL);
-        foreach ($this->fields as $field) {
-            fwrite($file, "\tprotected \$" . $field["name"] . " = null;" . PHP_EOL);
-        }
-        fwrite($file, "" . PHP_EOL);
-        fwrite($file, "\t/**" . PHP_EOL);
-        fwrite($file, "\t * Object rules, returns a list of validation rules for this data object." . PHP_EOL);
-        fwrite($file, "\t * @return array(\$rules) " . PHP_EOL);
-        fwrite($file, "\t */" . PHP_EOL);
-        fwrite($file, "\tprotected function _rules(){" . PHP_EOL);
-        fwrite($file, "\t\treturn array(" . PHP_EOL);
-        foreach ($this->fields as $field) {
-            fwrite($file, "\t\t\t'" . $field["name"] . "' => array(" . PHP_EOL);
-            //Validate null value
-            fwrite($file, "\t\t\t\t'allowNull' => " . ($field["null"] == true ? 'true' : 'false') . "," . PHP_EOL);
-            //Validate length
-            if ($field["length"] > 0) {
-                fwrite($file, "\t\t\t\t'length' => array('min' => 0, 'max' => ");
-                if ($field["type"] == \Forge\ObjectGenerator::FIELD_TYPE_FLOAT) {
-                    fwrite($file, (array_sum(explode(".", $field["length"])) + 1));
-                } else {
-                    fwrite($file, $field["length"]);
-                }
-                fwrite($file, ")," . PHP_EOL);
-            }
-            //validate type
-            fwrite($file, "\t\t\t\t'type' => '" . $field["type"] . "'," . PHP_EOL);
-            //validate default
-            fwrite($file, "\t\t\t\t'default' => " . $this->_getDefault($field) . "," . PHP_EOL);
-            fwrite($file, "\t\t\t)," . PHP_EOL);
-        }
-        fwrite($file, "\t\t);" . PHP_EOL);
-        fwrite($file, "\t}" . PHP_EOL);
-        fwrite($file, "" . PHP_EOL);
-        fwrite($file, "}" . PHP_EOL);
-        fwrite($file, "?>");
-    }
-
-    private function writeClassContent($file)
-    {
-        fwrite($file, "<?php" . PHP_EOL);
-        fwrite($file, "namespace Data;" . PHP_EOL);
-        fwrite($file, "\tclass " . $this->name . " extends base" . $this->name . "{" . PHP_EOL);
-        fwrite($file, "" . PHP_EOL);
-        fwrite($file, "\t}" . PHP_EOL);
-        fwrite($file, "?>" . PHP_EOL);
+        return $this;
     }
 
     public function __destroy()
     {
-        unset($this->name, $this->fields, $this->location);
+        unset($this->_tableDefinition, $this->_objectTemplates, $this->_location);
     }
-
 }

@@ -1,0 +1,72 @@
+<?php
+namespace Finder;
+
+use Forge\Finder;
+use Forge\Query;
+
+/**
+ * Base Finder class
+ * --------------------
+ * base{object} is a generated base finder class.
+ * It is not possible to add custom functions to this file, as each time it's generated, it will be overwritten.
+ * This class extends Forge\Finder by default.
+ *
+ * @author Gerry Van Bael
+ */
+abstract class base{object} extends {extends} {implements}
+{
+{{BLOCK: oneToOne}}
+    /**
+     * @param int ${raw_local_key}
+     *
+     * @return \{object}
+     */
+    public function & by{local_key}(${raw_local_key})
+    {
+        $def = false;
+        $this->getDb()->setQuery(Query::build()->select()->from($this->getTableName())->where(
+            [
+                '{raw_target_key}' => ${raw_local_key},
+                '_deletedAt' => null
+            ]
+        ));
+        $this->getDb()->execute();
+        if ($this->getDb()->hasRecords()) {
+            $row = $this->getDb()->getRecord();
+
+            return $this->createObject($row);
+        } else {
+            return $def;
+        }
+    }
+{{ENDBLOCK}}
+{{BLOCK: oneToMany}}
+    /**
+     * @param int      ${raw_local_key}
+     * @param int|bool $page
+     * @param int      $pagesize
+     *
+     * @return \{object}[]
+     */
+    public function & by{local_key}(${raw_local_key}, $page = false, $pagesize = 20)
+    {
+        $return = [];
+        $query = Query::build()->select()->from($this->getTableName())->where(
+            [
+                '{raw_target_key}' => ${raw_local_key},
+                '_deletedAt' => null
+            ]
+        );
+        if ($page !== false) $query->limit($page, $pagesize);
+        $this->getDb()->setQuery($query);
+        $this->getDb()->execute();
+        if ($this->getDb()->hasRecords()) {
+            while ($row = $this->getDb()->getRecord()) {
+                $return[] = &$this->createObject($row);
+            }
+        }
+
+        return $return;
+    }
+{{ENDBLOCK}}
+}
