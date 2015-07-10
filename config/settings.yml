@@ -1,0 +1,8 @@
+# version of the framework
+framework:
+  version: 1.3.0
+# dependencies of the component
+dependencies: -
+# Mark component as bootable
+bootable: true
+bootclass: \Forge\ForgeConfigurator

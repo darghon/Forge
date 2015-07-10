@@ -1,0 +1,5 @@
+# All paths are reference from the component base
+global:
+  Forge:
+    -*
+    Builder: builder/*

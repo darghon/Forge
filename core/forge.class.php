@@ -26,7 +26,7 @@ class Forge
     private static $variableHolder = array();
     private static $environment = null;
 
-    private static $autoloaders = array('Forge::loadOnDemand');
+    private static $autoloaders = ['Forge::loadOnDemand'];
 
     private static $version = null;
 
@@ -377,29 +377,29 @@ class Forge
         $paths = $namespaces[$namespace];
 
         $location = null;
-        foreach ($paths as $path) {
-            //check identical filename
-            if (file_exists(Config::path("root") . "/" . $path . "/" . $classname . ".class.php")) {
-                $location = Config::path("root") . "/" . $path . "/" . $classname . ".class.php";
-                include(Config::path("root") . "/" . $path . "/" . $classname . ".class.php");
-                self::$pageincludes++;
-                break;
-            }
-            //check lowercase filename
-            if (file_exists(Config::path("root") . "/" . $path . "/" . strtolower($classname) . ".class.php")) {
-                $location = Config::path("root") . "/" . $path . "/" . strtolower($classname) . ".class.php";
-                include(Config::path("root") . "/" . $path . "/" . strtolower($classname) . ".class.php");
-                self::$pageincludes++;
-                break;
-            }
-        }
-        if ($location !== null) {
-            Cache::addClassLocation($class, $location);
-            self::$classBuffer[$class] = $location;
-            return true;
-        } else {
-            throw new \Exception('Can not locate class ' . $class);
-        }
+		foreach($paths as $path){
+			//check identical filename
+			if(file_exists(Config::path("root")."/".$path."/".$classname.".class.php")){
+				$location = Config::path("root")."/".$path."/".$classname.".class.php";
+				include(Config::path("root")."/".$path."/".$classname.".class.php");
+				self::$pageincludes ++;
+				break;
+			}
+			//check lowercase filename
+			if(file_exists(Config::path("root")."/".$path."/".strtolower($classname).".class.php")){
+				$location = Config::path("root")."/".$path."/".strtolower($classname).".class.php";
+				include(Config::path("root")."/".$path."/".strtolower($classname).".class.php");
+				self::$pageincludes ++;
+				break;
+			}
+		}
+		if($location !== null){
+			Cache::addClassLocation($class, $location);
+			self::$classBuffer[$class] = $location;
+			return true;
+		}
+		
+	}
 
     }
 
@@ -425,4 +425,4 @@ class Forge
 
 }
 
-spl_autoload_register("Forge\\Forge::loadOnDemand");
+spl_autoload_register("Forge\\Forge::loadOnDemand",true,true);

@@ -1,13 +1,23 @@
 <?php
 namespace Forge\Builder;
 
+/**
+ * Class Admin
+ * @package Forge\Builder
+ */
 class Admin extends \Forge\baseGenerator
 {
-
+    /** @var string  */
     private $name = null;
+    /** @var array */
     private $fields = null;
+    /** @var null|string  */
     private $location = null;
 
+    /**
+     * @param null|string $name
+     * @param null|array $fields
+     */
     public function __construct($name = null, $fields = null)
     {
         $this->name = $name;
@@ -15,21 +25,33 @@ class Admin extends \Forge\baseGenerator
         $this->location = \Forge\Config::path("shared") . "/objects/admin";
     }
 
+    /**
+     * @param $name
+     */
     public function setName($name)
     {
         $this->name = $name;
     }
 
+    /**
+     * @return null|string
+     */
     public function getName()
     {
         return $this->name;
     }
 
+    /**
+     * @param $fields
+     */
     public function setFields($fields)
     {
         $this->fields = $fields;
     }
 
+    /**
+     * @return array|null
+     */
     public function getFields()
     {
         return $this->fields;
@@ -112,18 +134,7 @@ class Admin extends \Forge\baseGenerator
             fwrite($file, "\t\t\t\t<div class=\"fieldname\">" . $field["name"] . ":</div>\n");
             switch ($field["type"]) {
                 case "integer":
-                    /*if(substr($field["name"],-2) == "ID" && $field["name"] != "ID"){ //foreign key
-                      fwrite($file,"\t\t\t\t<div class=\"fieldinput\">\n");
-                      fwrite($file,"\t\t\t\t\t<select id=\"".strtolower($this->name."_".$field["name"])."\" name=\"".strtolower($this->name)."[".$field["name"]."]\">\n");
-                      fwrite($file,"\t\t\t\t\t\t<?php foreach(Database::Find(\"".substr($field["name"],0,-2)."\")->all() as \$entry): ?>\n");
-                      fwrite($file,"\t\t\t\t\t\t<option value=\"<?php echo \$entry->getID(); ?>\"><?php echo \$entry; ?></option>\n");
-                      fwrite($file,"\t\t\t\t\t\t<?php endforeach; ?>\n");
-                      fwrite($file,"\t\t\t\t\t</select>\n");
-                      fwrite($file,"\t\t\t\t</div>\n");
-                    }
-                    else{*/
                     fwrite($file, "\t\t\t\t<div class=\"fieldinput\"><input type=\"text\" id=\"" . strtolower($field["name"]) . "\" name=\"" . strtolower($this->name) . "[" . $field["name"] . "]\" /></div>\n");
-                    //}
                     break;
                 case "string":
                     if ($field["length"] == 0) {

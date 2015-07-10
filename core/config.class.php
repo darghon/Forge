@@ -31,16 +31,11 @@ class Config
     public static function get($name, $path = null)
     {
         $fullPath = (is_null($path) ? Config::path('root') . '/config/' : $path) . strtolower($name) . '.yml';
-
         //quickcheck if it's already loaded
-        if (isset(self::$configurations[$fullPath])) {
-            return self::$configurations[$fullPath];
-        }
+        if (isset(self::$configurations[$fullPath])) return self::$configurations[$fullPath];
 
         //cache config files to read them faster
-        if (!file_exists($fullPath)) {
-            return array();
-        }
+		if (!file_exists($fullPath)) return [];
 
         self::$configurations[$fullPath] = YAML::load($fullPath, true);
         return self::$configurations[$fullPath];
@@ -214,12 +209,12 @@ class Config
         $namespaces = self::get('Namespaces');
         if (empty($namespaces)) {
             //Default Namespaces
-            $namespaces = array('Global' => array('Forge' => array('ext/forge/*', 'Builder' => 'ext/forge/builder')));
+            $namespaces = ['global' => ['Forge' => ['ext/forge/*', 'Builder' => 'ext/forge/builder']]];
         }
-        if (!isset($namespaces['Global'])) {
+        if(!isset($namespaces['global'])){
             throw new \Exception('No global namespace definition was found.');
         }
-        self::parseNamespace('\\', $namespaces['Global'], self::$namespaces);
+        self::parseNamespace('\\',$namespaces['global'], self::$namespaces);
     }
 
     /**
@@ -231,12 +226,12 @@ class Config
     protected static function parseNamespace($name, $rules, &$collection)
     {
         $parsedRules = array();
-        foreach (is_array($rules) ? $rules : array($rules) as $key => $rule) {
-            if (!is_numeric($key)) self::parseNamespace($name . $key . '\\', $rule, $collection);
-            else {
-                if (substr($rule, -2) == '/*') { //detect all subfolders as well
-                    $parsedRules = array_merge($parsedRules, self::detectSubFolders(substr($rule, 0, -2)));
-                    $rule = substr($rule, 0, -2);
+        foreach(is_array($rules) ? $rules : [$rules] as $key => $rule){
+            if(!is_numeric($key)) self::parseNamespace($name.$key.'\\', $rule, $collection);
+            else{
+                if(substr($rule,-2) == '/*'){ //detect all subfolders as well
+                    $parsedRules = array_merge($parsedRules, self::detectSubFolders(substr($rule,0,-2)));
+                    $rule = substr($rule,0,-2);
                 }
                 $parsedRules[] = str_replace(array('\\', '/'), DIRECTORY_SEPARATOR, $rule);
             }
@@ -274,8 +269,8 @@ class Config
         Debug::start();
 
         if ((isset($settings['register_error']) || array_key_exists('register_error', $settings)) && $settings['register_error'] == true) {
-            //set_error_handler("Debug::registerError");
-            //register_shutdown_function("Debug::registerCrash");
+            set_error_handler("Debug::registerError");
+            register_shutdown_function("Debug::registerCrash");
         }
     }
 

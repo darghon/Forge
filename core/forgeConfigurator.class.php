@@ -5,7 +5,7 @@ namespace Forge;
  * Public class that does the basic configuration when starting a project.
  * This class will load all defined stages, and make sure that the right output is generated.
  */
-abstract class ForgeConfigurator
+class ForgeConfigurator implements IBootable
 {
 
     /**
@@ -13,6 +13,10 @@ abstract class ForgeConfigurator
      */
     private final function __construct()
     {
+    }
+
+    public static function boot(){
+
     }
 
     /**
