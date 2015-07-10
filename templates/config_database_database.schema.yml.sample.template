@@ -1,0 +1,44 @@
+######################################################################################
+# Full listing of options that can be used when defining one or multiple objects.
+#
+# Adding the prefix "*" to a ObjectName will turn it into a rule which can be applied to other objects
+# Those rules can be applied by adding it to the Behaviors list
+# the *global ObjectName will always be applied to all objects, unless !*global is added to behaviors
+#
+######################################################################################
+#
+# ObjectName:                               ## Name of the object/table
+#   Behaviors: [SoftDelete,Transactional]   ## Definition of added behaviors for the object, this may add columns or additional tables -- Optional
+#   Columns:                                ## Definition of all columns
+#     field_name: field_type                ## If 1 value is added to the field name, it's expected to be the data type
+#     field_name2:
+#       Type: field_type                    ## Setting the type of the field
+#       Length: field_length                ## Setting the allowed length of the field  -- Optional
+#       Null: allow_null                    ## Setting if null is a valid value or not  -- Optional
+#       Default: default_value              ## Setting the default value of the field   -- Optional
+#     field_name3: OtherObjectName          ## Data type of a field can be a defined object/table, automatic links and foreign keys are generated
+#     field_name4: AnotherObjectName[]      ## By adding [] to the data type, you mark it as a list of this type
+#   Translate:                              ## Definition of all columns that are translatable -- Optional
+#     -field_name
+#     -field_name2
+#   Links:                                  ## Definition of all links to other objects/tables, when other objects are used as data types, these will get generated automatically -- Optional
+#     LinkName:                             ## Name of the link, will be exposed with getLinkName()
+#       Local: foreign_key_name             ## Field name that is used for the link from the local object/table -- Optional (Default: primary key)
+#       Target: OtherObjectName             ## Object/table that is referenced by this link
+#     OtherLinkName:
+#       Local: foreign_key_name
+#       Target: AnotherObjectName[]         ## By adding [] to the reference object, you mark it as a list of this type
+#     AnotherLinkName:
+#       Local: foreign_key_name
+#       Target: AnotherObjectName.foreign_key_name_target   ## By adding .field_name to the reference object, you mark that field as the field used for the link -- Optional (Default: LocalObjectName_ID)
+#       Link: ObjectNameOtherObjectName[foreign_key_name, foreign_key_name_target]  ## Name a link table that represents a many_to_many link, this takes 2 optional arguments representing the link with the local object, and the link with the target object -- Optional (Default: primary keys of local and target, and local_ID and target_ID in link table)
+#   Implements:                             ## Definition of interfaces that the generator needs to add to the base of the created objects -- Optional
+#     Business: [SomeBusinessInterface, AnotherBusinessInterface]   ## Interface(s) that need to be added to the businesslayer
+#     Finder: SomeFinderInterface           ## Interface(s) that need to be added to the finder
+#     Data: SomeDataInterface               ## Interface(s) that need to be added to the datalayer
+#   Extends:                                ## Definition of the class that the generated base class needs to extend. this class in itself needs to extend the core layer -- Optional
+#     Business: SomeBusinessExtendingClass  ## Class that is extended by the baseBusinessObject, needs to extend Forge\Businesslayer
+#     Finder: SomeFinderExtendingClass      ## Class that is extended by the baseFinderObject, needs to extend Forge\Finder
+#     Data: SomeDataExtendingClass          ## Class that is extended by the baseDataObject, needs to extend Forge\Datalayer
+#
+#
