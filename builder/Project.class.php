@@ -1,6 +1,8 @@
 <?php
 namespace Forge\Builder;
 
+use Forge\Config;
+
 /**
  * Generator that builds the folder structure of the framework.
  * When this object is called to generate, it will check if the
@@ -12,6 +14,8 @@ namespace Forge\Builder;
  */
 class Project extends \Forge\baseGenerator
 {
+
+    protected $_location;
 
     /**
      * Public constructor that receives an in this case empty parameter array.
@@ -69,15 +73,15 @@ class Project extends \Forge\baseGenerator
         print('Creating default files');
         flush();
         $templates = $this->_getTemplatesByType();
-        foreach ($templates as $template) {
-            $file = explode('_', $template);
-            if ($file[0] == 'config' || $file[0] == 'public' || $file[0] == 'lib' || substr($file[0], 0, 9) == '.htaccess') {
-                $root = count($file) == 1 ? 'root' : implode('', array_splice($file, 0, 1));
+        foreach ($templates as $path => $targetPath) {
+            $file = explode('_', $path);
+            if (in_array($file[0],['config','public','lib']) || substr($file[0], 0, 9) == '.htaccess') {
+                $this->_location = ($file[0] !== 'lib' ? \Forge\Config::path('root') : Config::path('shared')) . '/';
 
-                $new_file = implode('/', $file);
-                copy(\Forge\Config::path('forge') . '/templates/' . $template, \Forge\Config::path($root) . '/' . substr($new_file, 0, strlen($new_file) - 9));
-                print('.');
-                flush();
+                $contents = file_get_contents(Config::path('forge') . '/templates/' . $path);
+                $template = new \Forge\TemplateHandler($contents);
+                $template->generateTemplate();
+                $template->writeFile($this->_location . $targetPath, true);
             }
         }
         print('DONE' . PHP_EOL);
