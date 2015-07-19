@@ -86,12 +86,14 @@ class DataLayer extends baseGenerator
      */
     protected function _convertToString($value)
     {
-        switch ($value) {
-            case null:
+        switch (true) {
+            case $value === 0:
+                return '0';
+            case $value === null:
                 return 'null';
-            case true:
+            case $value === true:
                 return 'true';
-            case false:
+            case $value === false:
                 return 'false';
             default:
                 return '\'' . addslashes($value) . '\'';

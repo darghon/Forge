@@ -26,7 +26,7 @@ class ObjectFactory
         if (isset($args['ID'])) {
             $ob = &Forge::getObject($type, $args['ID']);
             //if found && still valid
-            if ($ob instanceOf $type && (!isset($args['_recordVersion']) || (isset($args['_recordVersion']) && $args['_recordVersion'] <= $ob->getRecordVersion()))) {
+            if ($ob instanceOf $type && (!isset($args['_record_version']) || (isset($args['_record_version']) && $args['_record_version'] <= $ob->getRecordVersion()))) {
                 return $ob;
             }
         }

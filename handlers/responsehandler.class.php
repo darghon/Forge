@@ -207,6 +207,7 @@ class ResponseHandler implements IStage
                 exit;
             }
             if (method_exists($action, "postActions")) $action->postActions();
+            //Todo: Move rendering of the template to a render function in the actions class
             if (Debug::enabled()) Debug::addTimer($mod . '-template');
             $action->loadTemplate($this->configuration->getApp(), $mod, $act);
             if (Debug::enabled()) Debug::stopTimer($mod . '-template');
@@ -338,9 +339,13 @@ class ResponseHandler implements IStage
         }
     }
 
+    /**
+     * @return bool
+     */
     public function loadMain()
     {
         echo $this->main_buffer;
+        return true;
     }
 
     public function loadComponent($mod, $act, $param)

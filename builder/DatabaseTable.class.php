@@ -78,7 +78,7 @@ class DatabaseTable extends baseGenerator
         foreach ($this->fields as $field) {
             $this->sql .= $this->parseField($field) . ", ";
         }
-        $this->sql .= "PRIMARY KEY(ID)) ";
+        $this->sql .= "PRIMARY KEY(id)) ";
         $this->sql .= "ENGINE = INNODB; ";
 
         $db->setQuery($this->sql);
@@ -144,7 +144,7 @@ class DatabaseTable extends baseGenerator
         if ($field["null"] == false) {
             $sql .= " NOT NULL";
         }
-        if ($field["name"] == "ID") {
+        if ($field["name"] == "id") {
             $sql .= " AUTO_INCREMENT";
         }
 

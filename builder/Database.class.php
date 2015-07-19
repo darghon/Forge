@@ -1,5 +1,7 @@
 <?php
 namespace Forge\Builder;
+use Forge\DatabaseSchema;
+use Forge\Config;
 
 /**
  * Generator that builds the folder structure of a new application.
@@ -30,7 +32,7 @@ class Database extends \Forge\ObjectGenerator
 
     /**
      * Public generate action. This method performs all actions required to build the wanted files
-     *
+     * Todo: Change to use Schema object instead
      * @return boolean $result;
      */
     public function generate()
@@ -42,7 +44,7 @@ class Database extends \Forge\ObjectGenerator
             flush();
 
             list($fields, $links, $translation) = $this->processTable($table_name, $table);
-            \Forge\Generator::getInstance()->build('databasetable', [$table_name, $fields, $links, $translation, $this->overwrite]);
+            \Forge\Generator::getInstance()->build('databasetable',[\Forge\Tools::camelcasetostr($table_name), $fields, $links, $translation, $this->overwrite]);
             echo " DONE!" . PHP_EOL;
             flush();
         }

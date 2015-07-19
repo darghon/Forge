@@ -143,6 +143,7 @@ class DatabaseHandler
 
     private function showError()
     {
+        $string = 'Default: %s -> %s';
         //Check application mode to display the error
         switch (Config::getMode()) {
             case Config::CLI:
@@ -153,6 +154,7 @@ class DatabaseHandler
 						<p>The following statement raised an error: %s</p>
 						<p>Error: %s</p>';
                 break;
+            default: var_dump(Config::getMode());
         }
         throw new \Exception(printf($string, $this->query, mysqli_error($this->_getConnection())));
     }

@@ -9,6 +9,7 @@ class RouteHandler implements IStage
     private $action = null;
     private $param = [];
     private $curr_url = null;
+    /** @var RoutingRule[] */
     private $routes = [];
     private $route_hooks = [];
 

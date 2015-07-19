@@ -355,7 +355,7 @@ abstract class DataLayer
             if (isset($definition['allowNull']) && $definition['allowNull'] == false && is_null($this->$field)) $this->_errors[] = "Null is not allowed for " . get_class($this) . '->' . $field;
             if (isset($definition['length'])) {
                 if (isset($definition['length']['min']) && !is_object($this->$field) && $definition['length']['min'] > strlen((string)($this->$field))) $this->_errors[] = "Value for " . get_class($this) . '->' . $field . " is to short, needs to be at least " . $definition['length']['min'] . " long";
-                if (isset($definition['length']['max']) && !is_object($this->$field) && $definition['length']['max'] < strlen((string)($this->$field))) $this->_errors[] = "Value for " . get_class($this) . '->' . $field . " is to long, may to be a maximum of " . $definition['length']['max'] . " long";
+                if (isset($definition['length']['max']) && $definition['length']['max'] > 0 && !is_object($this->$field) && $definition['length']['max'] < strlen((string)($this->$field))) $this->_errors[] = "Value for " . get_class($this) . '->' . $field . " is to long, may to be a maximum of " . $definition['length']['max'] . " long";
             }
         }
 

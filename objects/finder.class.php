@@ -71,13 +71,13 @@ abstract class Finder
     public function & byID($id)
     {
         $def = false;
-        $return = Forge::getObject(array_pop(explode('\\', get_class($this))), $id);
+        $list = explode('\\', get_class($this));
+        $return = &Forge::getObject(array_pop($list), $id);
         if ($return === false) {
-            $this->getDb()->setQuery(Query::build()->select()->from($this->getTableName())->where('ID', $id));
+            $this->getDb()->setQuery(Query::build()->select()->from($this->getTableName())->where('id', $id));
             $this->getDb()->execute();
             if ($this->getDb()->hasRecords()) {
                 $row = $this->getDb()->getRecord();
-
                 return $this->createObject($row);
             } else {
                 return $def;
@@ -92,7 +92,7 @@ abstract class Finder
      */
     public function getTableName()
     {
-        return $this->getDb()->getPrefix() . $this->_getClassName();
+        return $this->getDb()->getPrefix() . Tools::camelcasetostr($this->_getClassName());
     }
 
     /**
@@ -124,7 +124,7 @@ abstract class Finder
     public function & all($page = false, $pagesize = 20)
     {
         $return = [];
-        $query = \Forge\Query::build()->select()->from($this->getTableName())->where('_deletedAt', null);
+        $query = \Forge\Query::build()->select()->from($this->getTableName())->where('_deleted_at', null);
         if ($page !== false) $query->limit($page, $pagesize);
         $this->getDb()->setQuery($query);
         $this->getDb()->execute();
@@ -155,7 +155,7 @@ abstract class Finder
     protected function _pages($pagesize = 20)
     {
         $this->getDb()
-             ->setQuery(Query::build()->select(['num' => 'COUNT(ID)'])->from($this->getTableName())->where('_deletedAt IS NULL'))
+             ->setQuery(Query::build()->select(['num' => 'COUNT(id)'])->from($this->getTableName())->where('_deleted_at IS NULL'))
              ->execute();
         $row = &$this->getDb()->getRecord();
 
@@ -193,22 +193,23 @@ abstract class Finder
         //create a persistance object
         //This object will only form the needed sql statement
         $sql = new Persister($this->getDb()->getPrefix());
-
         if (get_class($obj) == 'Data\\' . $this->_getClassName() && $this->validate() && $obj->validate()) {
             $this->getDb()->setQuery($sql->getSql($obj));
             if ($this->getDb()->execute()) {
                 if ($sql->getMethod() == 'Insert') {
-                    $obj->ID = $this->getDb()->getLastInsertID();
+                    $obj->id = $this->getDb()->getLastInsertID();
                     //alter state
                     $obj->state(DataLayer::STATE_LOADED);
                 } else {
                     if ($this->getDb()->getAffectedRows() == 0)
                         throw new \Exception("Update failed: " . $sql->getSql($obj));
-                    $obj->_recordVersion++;
+                    $obj->_record_version++;
                 }
             }
+        } else {
+            var_dump($obj->getErrors());
+            die();
         }
-
         return true;
     }
 
@@ -240,11 +241,11 @@ abstract class Finder
         if (get_class($obj) == 'Data\\' . $this->_getClassName()) {
             return $this->getDb()
                         ->setQuery(
-                            sprintf('UPDATE %s SET _deletedAt = %s WHERE ID = "%s" AND _recordVersion <= "%s";',
+                            sprintf('UPDATE %s SET _deleted_at = %s WHERE id = "%s" AND _record_version <= "%s";',
                                 $this->getTableName(),
                                 time(),
-                                $obj->ID,
-                                $obj->_recordVersion
+                                $obj->id,
+                                $obj->_record_version
                             )
                         )
                         ->execute();

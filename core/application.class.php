@@ -27,10 +27,12 @@ class Application
 
     /**
      * Load and display the main request
+     *
+     * @return bool
      */
     public static function loadMain()
     {
-        Forge::Response()->loadMain();
+        return Forge::Response()->loadMain();
     }
 
     /**

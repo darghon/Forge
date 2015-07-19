@@ -50,12 +50,13 @@ class Finder extends baseGenerator
     {
         $oneToOne = [];
         $oneToMany = [];
+
         foreach ($this->_tableDefinition->getLinks() as $link) {
-            if (substr($link->getToObject(), -2) != '[]') {
+            if (substr($link->getToObject(), -2) == '[]') {
                 $oneToOne[] = [
                     'raw_local_key' => $link->getLocalForeignKey(),
                     'local_key'     => Tools::strtocamelcase($link->getLocalForeignKey(), true),
-                    'object'        => $link->getToObject(),
+                    'object' => substr($link->getToObject(), 0, -2),
                     'raw_target_key'=> $link->getTargetForeignKey()
                 ];
             }
@@ -63,7 +64,7 @@ class Finder extends baseGenerator
                 $oneToMany[] = [
                     'raw_local_key' => $link->getLocalForeignKey(),
                     'local_key' => Tools::strtocamelcase($link->getLocalForeignKey(),true),
-                    'object' => substr($link->getToObject(), 0, -2),
+                    'object'        => $link->getFromObject(),
                     'raw_target_key'=> $link->getTargetForeignKey()
                 ];
             }

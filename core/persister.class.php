@@ -42,18 +42,18 @@ class Persister
     private function createInsertStatement()
     {
         $this->method = "Insert";
-        $this->sql = "Insert into ";
+        $this->sql = "INSERT INTO ";
         $this->sql .= $this->pref . $this->getTableName();
         $tmpsql = [];
         foreach ($this->fields as $key => $field) {
-            if ($key == 'ID') continue;
+            if ($key == 'id') continue;
             $tmpsql[] = "`" . $key . "`";
         }
         $this->sql .= "(" . implode(",", $tmpsql) . ")";
-        $this->sql .= " values(";
+        $this->sql .= " VALUES(";
         $tmpsql = [];
         foreach ($this->fields as $key => $field) {
-            if ($key == 'ID') continue;
+            if ($key == 'id') continue;
             if ($this->object->$key === null) $tmpsql [] = "null";
             else $tmpsql[] = "'" . $this->getValue($this->object, $key) . "'";
         }
@@ -63,7 +63,7 @@ class Persister
 
     protected function getTableName()
     {
-        return substr(get_class($this->object), strrpos(get_class($this->object), '\\') + 1);
+        return Tools::camelcasetostr(substr(get_class($this->object), strrpos(get_class($this->object), '\\') + 1));
     }
 
     protected function getValue($object, $key)
@@ -85,19 +85,19 @@ class Persister
     private function createUpdateStatement()
     {
         $this->method = "Update";
-        $this->sql = "Update ";
+        $this->sql = "UPDATE ";
         //get table name from tag (tag: DUser)
         $this->sql .= $this->pref . $this->getTableName();
         $tmpsql = [];
         foreach ($this->fields as $key => $field) {
             if (!$field) continue; //If field is false, then do nothing, go to next field
-            if ($key == "_recordVersion" || $key == "ID") continue; //always skip record version and ID
+            if ($key == "_record_version" || $key == "ID") continue; //always skip record version and ID
             $tmpsql[] = "`" . $key . "`" . " = " . ($this->object->$key === null ? "null" : "'" . $this->getValue($this->object, $key) . "'");
         }
         if (count($tmpsql) > 0) {
-            $tmpsql[] = "_recordVersion='" . (int)($this->object->_recordVersion + 1) . "'";
-            $this->sql .= " Set " . implode(", ", $tmpsql);
-            $this->sql .= " where ID=\"" . $this->object->ID . "\" and _recordVersion <= \"" . $this->object->_recordVersion . "\";";
+            $tmpsql[] = "_record_version='" . (int)($this->object->_record_version + 1) . "'";
+            $this->sql .= " SET " . implode(", ", $tmpsql);
+            $this->sql .= " WHERE id=\"" . $this->object->id . "\" and _record_version <= \"" . $this->object->_record_version . "\";";
         } else {
             $this->sql = ""; //no statement if no fields where updated
         }

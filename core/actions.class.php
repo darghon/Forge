@@ -70,28 +70,40 @@ abstract class Actions
     public function loadTemplate($app, $mod, $act)
     {
         $filepath = Config::path("app") . "/" . $app . "/modules/" . $mod . "/templates/" . (($this->static_template != null) ? $this->static_template : $act) . ".template.php";
-        if (file_exists($filepath)) {
-            foreach ($this as $key => $value) {
-                ${$key} = $value;
-            }
-            require($filepath);
 
-            return true;
-        } else {
-            return false;
-        }
+        return $this->_renderTemplate($filepath);
     }
 
     /**
      * Specific hook to load a generated CRUD interface
      *
-     * @param String $object_type
+     * @param string $object
      *
-     * @return Boolean $success
+     * @return bool $success
+     *
      */
     public function loadAdminTemplate($object)
     {
         $filepath = Config::path("objects") . "/admin/" . $object . "/templates/index.template.php";
+
+        return $this->_renderTemplate($filepath);
+    }
+
+    /**
+     * @return RequestHandler
+     */
+    public function getRequest()
+    {
+        return Forge::Request();
+    }
+
+    /**
+     * @param string $filepath
+     *
+     * @return bool
+     */
+    protected function _renderTemplate($filepath)
+    {
         if (file_exists($filepath)) {
             foreach ($this as $key => $value) {
                 ${$key} = $value;

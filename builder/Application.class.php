@@ -20,6 +20,7 @@ class Application extends baseGenerator
     use Translator;
     /** @var null|string */
     protected $app_name = null;
+    protected $_location = null;
 
     /**
      * Public constructor that receives array of parameters, this class requires 1 argument,
@@ -35,6 +36,7 @@ class Application extends baseGenerator
             throw new \Exception($this->__('No application name was passed.'));
         }
         $this->app_name = Tools::slugify($args[0]);
+        $this->_location = Config::path('app') . '/' . $this->app_name . '/';
     }
 
     /**
@@ -85,12 +87,13 @@ class Application extends baseGenerator
         print('Creating default files');
         flush();
         $templates = $this->_getTemplatesByType('application');
-        foreach ($templates as $path => $template) {
-            $fileName = substr(Config::path('app') . '/' . $this->app_name . '/' . $template, 0, strlen($template) - 9);
-            $contents = file_get_contents($path);
-            file_put_contents($this->_replaceTokens($fileName), $this->_replaceTokens($contents));
-            print('.');
-            flush();
+        foreach ($templates as $path => $targetPath) {
+            $contents = file_get_contents(Config::path('forge') . '/templates/' . $path);
+            $template = new \Forge\TemplateHandler($contents);
+            $template->setTemplateVariables($this->_createTokenMap());
+
+            $template->generateTemplate();
+            $template->writeFile($this->_location . $targetPath);
         }
         print('DONE' . PHP_EOL);
     }
@@ -98,5 +101,12 @@ class Application extends baseGenerator
     public function __destroy()
     {
         unset($this);
+    }
+
+    protected function _createTokenMap()
+    {
+        return [
+            'app_name' => $this->app_name
+        ];
     }
 }

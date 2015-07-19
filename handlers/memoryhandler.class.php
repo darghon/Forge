@@ -115,10 +115,11 @@ class MemoryHandler
      */
     public function & retrieve($class, $id = null)
     {
+        $def = null;
         if ($this->mode == self::MODE_MEMCACHE) return $this->retrieve_memory($class, $id);
         if ($this->mode == self::MODE_REGISTRY) return $this->retrieve_registry($class, $id);
 
-        return null;
+        return $def;
     }
 
     /**

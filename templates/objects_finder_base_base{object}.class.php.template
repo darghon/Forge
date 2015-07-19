@@ -26,8 +26,8 @@ abstract class base{object} extends {extends} {implements}
         $def = false;
         $this->getDb()->setQuery(Query::build()->select()->from($this->getTableName())->where(
             [
-                '{raw_target_key}' => ${raw_local_key},
-                '_deletedAt' => null
+                '{raw_local_key}' => ${raw_local_key},
+                '_deleted_at' => null
             ]
         ));
         $this->getDb()->execute();
@@ -53,8 +53,8 @@ abstract class base{object} extends {extends} {implements}
         $return = [];
         $query = Query::build()->select()->from($this->getTableName())->where(
             [
-                '{raw_target_key}' => ${raw_local_key},
-                '_deletedAt' => null
+                '{raw_local_key}' => ${raw_local_key},
+                '_deleted_at' => null
             ]
         );
         if ($page !== false) $query->limit($page, $pagesize);

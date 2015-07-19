@@ -3,22 +3,20 @@ namespace Forge;
 
 class Config
 {
-    /**
-     * Command line interface
-     */
-
+    /** Command line interface */
     const CLI = 'CLI';
-    /**
-     * Web interface
-     */
+    /** Web interface */
     const WEB = 'WEB';
+
     public static $namespaces = null;
-    private static $configurations = [];
-    private static $paths = [];
-    private static $mode = self::WEB;
-    private static $default_language = null;
-    private static $available_languages = [];
-    private static $project_name = 'default_project';
+    protected static $_configurations = [];
+    protected static $_paths = [];
+    protected static $_mode = self::WEB;
+    protected static $default_language = null;
+    protected static $available_languages = [];
+    protected static $_projectName = 'default_project';
+    protected static $_loadedAddons = [];
+
 
     /**
      * Namespace retrieval for framework paths
@@ -61,8 +59,8 @@ class Config
         $fullPath = (is_null($path) ? Config::path('root') . '/config/' : $path) . strtolower($name) . '.yml';
 
         //quickcheck if it's already loaded
-        if (isset(self::$configurations[$fullPath])) {
-            return self::$configurations[$fullPath];
+        if (isset(self::$_configurations[$fullPath])) {
+            return self::$_configurations[$fullPath];
         }
 
         //cache config files to read them faster
@@ -70,9 +68,9 @@ class Config
             return [];
         }
 
-        self::$configurations[$fullPath] = YAML::load($fullPath, true);
+        self::$_configurations[$fullPath] = YAML::load($fullPath, true);
 
-        return self::$configurations[$fullPath];
+        return self::$_configurations[$fullPath];
     }
 
     /**
@@ -84,7 +82,7 @@ class Config
      */
     public static function path($name)
     {
-        if (isset(self::$paths[$name])) return self::$paths[$name];
+        if (isset(self::$_paths[$name])) return self::$_paths[$name];
         throw new \InvalidArgumentException('Specified path: "' . $name . '" is not defined.');
     }
 
@@ -112,6 +110,17 @@ class Config
             $parsedRules = array_diff($parsedRules, $collection[$name . $key . '\\']);
         }
         $collection[$name] = isset($collection[$name]) ? array_merge($collection[$name], $parsedRules) : $parsedRules;
+
+        $keys = array_keys($collection);
+        foreach($keys as $key) {
+            if($key === $name) continue; //skip current key
+            if (strpos($name,$key) > -1) {
+                $collection[$key] = array_diff($collection[$key], $collection[$name]);
+            }
+            elseif (strpos($key, $name) > -1) {
+                $collection[$name] = array_diff($collection[$name], $collection[$key]);
+            }
+        }
     }
 
     /**
@@ -190,7 +199,7 @@ class Config
     public static function registerPath($name, $path)
     {
         $names = explode('|', $name);
-        foreach ($names as $name) self::$paths[$name] = $path;
+        foreach ($names as $name) self::$_paths[$name] = $path;
     }
 
     /**
@@ -202,7 +211,7 @@ class Config
         $settings = self::get('settings');
 
         if (isset($settings['project_name']) || array_key_exists('project_name', $settings))
-            self::$project_name = $settings['project_name'];
+            self::$_projectName = $settings['project_name'];
         //Adjust Debug
         if (isset($settings['debug']) || array_key_exists('debug', $settings))
             self::applyDebugOptions($settings['debug']);
@@ -225,6 +234,7 @@ class Config
         //Adjust MultiLingual
         if (isset($settings['multilingual']) || array_key_exists('multilingual', $settings))
             self::applyMultiLingual($settings['multilingual']);
+
         unset($settings);
     }
 
@@ -276,6 +286,7 @@ class Config
                     self::updateAutoloaderNamespaces($namespace['Global']);
                 }
             }
+            self::$_loadedAddons[$addon] = $config;
         }
     }
 
@@ -287,17 +298,32 @@ class Config
 
     public static function getMode()
     {
-        return self::$mode;
+        return self::$_mode;
     }
 
-    public static function setMode($mode = Self::WEB)
+    public static function setMode($_mode = Self::WEB)
     {
-        self::$mode = $mode;
+        self::$_mode = $_mode;
     }
 
     public static function & getConfiguration()
     {
         return Forge::Configuration();
+    }
+
+    public static function getAddonConfiguration()
+    {
+        $settings = [];
+        foreach(self::$_loadedAddons as $key => $config) {
+            if (isset($config['Config']) && isset($config['Config']['Settings'])) {
+                $addonSettings = self::get($config['Config']['Settings'], self::path('addon') . '/' . $key . '/config/');
+                $settings = array_merge($settings, [$key => array_merge($addonSettings, $config)]);
+            } else {
+                $settings = array_merge($settings, [$key => $config]);
+            }
+        }
+
+        return $settings;
     }
 
 }

@@ -50,6 +50,8 @@ abstract class BusinessLayer
         $caller = function_exists('get_called_class') ? get_called_class() : Tools::getCaller();
         $caller = '\\Finder\\' . $caller;
 
+        $return = null;
+
         if ($id !== null) {
             $return = &Database::Find($caller)->byID($id);
         } else {
@@ -160,12 +162,12 @@ abstract class BusinessLayer
     public function persist()
     {
         if (method_exists($this, 'prePersist')) $this->prePersist();
-        $old_id = $this->getID();
+        $old_id = $this->getId();
         //Push this and related objects to database
         if ($this->validate()) {
             if (Database::Persist($this->data)) {
                 if ($old_id == 0) Forge::add($this);
-                elseif ($old_id != $this->getID()) Forge::update($this, $old_id);
+                elseif ($old_id != $this->getId()) Forge::update($this, $old_id);
                 else Forge::update($this);
 
                 if (method_exists($this, 'postPersist')) $this->postPersist();
@@ -193,7 +195,7 @@ abstract class BusinessLayer
         if (method_exists($this, 'prePersist')) $this->prePersist();
 
         $this->data->state(DataLayer::STATE_NEW);
-        $this->data->ID = null;
+        $this->data->id = null;
 
         //Push this and related objects to database
         if ($this->validate()) {
@@ -235,6 +237,14 @@ abstract class BusinessLayer
     public function getSmallSql(Persister &$persister)
     {
         return $persister->getSmallSql($this->data);
+    }
+
+    /**
+     * @return array
+     */
+    public function getErrors()
+    {
+        return $this->data->getErrors();
     }
 
 }

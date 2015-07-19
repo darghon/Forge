@@ -62,9 +62,9 @@ abstract class ObjectGenerator extends baseGenerator
         $translate_buffer = [];
         if (isset($table["Translate"])) {
             //set default ID and language fields
-            $translate_buffer[] = ["name" => "ID", "type" => "integer", "length" => "20", "default" => "null", "null" => "false"];
-            $translate_buffer[] = ["name" => $name . "ID", "type" => "integer", "length" => "20", "default" => "null", "null" => "false"];
-            $translate_buffer[] = ["name" => "Lang", "type" => "string", "length" => "2", "default" => "EN", "null" => "false"];
+            $translate_buffer[] = ["name" => "id", "type" => "integer", "length" => "20", "default" => "null", "null" => "false"];
+            $translate_buffer[] = ["name" => $name . "_id", "type" => "integer", "length" => "20", "default" => "null", "null" => "false"];
+            $translate_buffer[] = ["name" => "lang", "type" => "string", "length" => "2", "default" => "EN", "null" => "false"];
             //copy all translate values from fields
             foreach ($table["Translate"] as $trans) {
                 foreach ($fields as $key => $field) {
@@ -75,8 +75,8 @@ abstract class ObjectGenerator extends baseGenerator
                 }
             }
             //System fields for record version and deleted at timestamp
-            $translate_buffer[] = ["name" => "_recordVersion", "type" => "integer", "length" => "20", "default" => "0", "null" => "false"];
-            $translate_buffer[] = ["name" => "_deletedAt", "type" => "datetime", "length" => "10", "default" => "null", "null" => "true"];
+            $translate_buffer[] = ["name" => "_record_version", "type" => "integer", "length" => "20", "default" => "0", "null" => "false"];
+            $translate_buffer[] = ["name" => "_deleted_at", "type" => "datetime", "length" => "10", "default" => "null", "null" => "true"];
         }
         $links = [];
         if (!empty($table["Links"]) || count($translate_buffer) > 0) {
@@ -103,14 +103,14 @@ abstract class ObjectGenerator extends baseGenerator
         //create Fields
         $fields = [];
         //standard ID field
-        $fields[] = ["name" => "ID", "type" => "integer", "length" => "20", "default" => "null", "null" => "false"];
+        $fields[] = ["name" => "id", "type" => "integer", "length" => "20", "default" => "null", "null" => "false"];
         foreach ($table as $column_name => &$column) {
             $field = $this->processColumnDefinition($column_name, $column, $links);
             $fields[] = $field;
         }
         //Standard Version & Delflag field
-        $fields[] = ["name" => "_recordVersion", "type" => "integer", "length" => "20", "default" => "0", "null" => "false"];
-        $fields[] = ["name" => "_deletedAt", "type" => "datetime", "length" => "20", "default" => "null", "null" => "true"];
+        $fields[] = ["name" => "_record_version", "type" => "integer", "length" => "20", "default" => "0", "null" => "false"];
+        $fields[] = ["name" => "_deleted_at", "type" => "datetime", "length" => "20", "default" => "null", "null" => "true"];
 
         return $fields;
     }
@@ -165,7 +165,7 @@ abstract class ObjectGenerator extends baseGenerator
             }
         }
 
-        $field["name"] = $column_name;
+        $field["name"] = Tools::camelcasetostr($column_name);
 
         return $field;
     }
@@ -184,7 +184,7 @@ abstract class ObjectGenerator extends baseGenerator
                 break;
             default: //passed type needs to be reverted to the ForeignKey
                 $links[$field_name] = [
-                    'Local'  => $field_name . 'ID',
+                    'Local'  => $field_name . '_id',
                     'Target' => $type
                 ];
                 $field_name .= 'ID';

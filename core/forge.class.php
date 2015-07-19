@@ -80,7 +80,8 @@ class Forge
      */
     public static function & getObject($class, $id)
     {
-        return self::Memory()->retrieve($class, $id);
+        $return = self::Memory()->retrieve($class, $id);
+        return $return;
     }
 
     /**
@@ -371,6 +372,7 @@ class Forge
 
         if (substr($namespace, 0, 1) != '\\') $namespace = '\\' . $namespace;
         if (substr($namespace, -1) != '\\') $namespace .= '\\';
+
 
         if (!isset($namespaces[$namespace])) throw new \Exception('Requested class is part of an unknown namespace. Please complete namespaces.yml configuration to include: ' . $namespace);
 

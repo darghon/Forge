@@ -57,7 +57,7 @@ class Project extends \Forge\baseGenerator
             \Forge\Config::path("lib"),
             \Forge\Config::path("objects") . '/business/base',
             \Forge\Config::path("objects") . '/data/base',
-            \Forge\Config::path("objects") . '/finders/base',
+            \Forge\Config::path("objects") . '/finder/base',
             \Forge\Config::path("public") . '/css',
             \Forge\Config::path("public") . '/js',
             \Forge\Config::path("public") . '/images',

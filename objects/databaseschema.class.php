@@ -64,7 +64,7 @@ class DatabaseSchema
             if (!isset($table_definition['Behaviors'])) $table_definition['Behaviors'] = [];
                 //check the columns definitions, if type is a collection of other objects, link tables may be added as well
             $this->_validateBehaviors($table_definition['Behaviors'], $table_name, $table_definition);
-            if (isset($table_definition['Columns'])) $this->_validateColumns($table_definition['Columns'], $table_name, $table_definition);
+            if (isset($table_definition['Columns'])) $this->_validateColumns($table_definition['Columns'], $table_name);
             if (isset($table_definition['Translation']) && !$translationAdded){
                 $translationAdded = true;
                 $this->_addTranslationTable();
@@ -86,8 +86,8 @@ class DatabaseSchema
         $columns = $table_definition['Columns'];
         $table_definition['Columns']['id'] = ['Type' => 'Integer', 'Length' => '10', 'Null' => false];
         foreach($columns as $key => $column) $table_definition['Columns'][$key] = $column;
-        $table_definition['Columns']['_recordVersion'] = ['Type' => 'Integer', 'Length' => '10', 'Null' => false, 'Default' => 0];
-        $table_definition['Columns']['_deletedAt'] = ['Type' => 'Datetime', 'Length' => '20'];
+        $table_definition['Columns']['_record_version'] = ['Type' => 'Integer', 'Length' => '10', 'Null' => false, 'Default' => 0];
+        $table_definition['Columns']['_deleted_at'] = ['Type' => 'Datetime', 'Length' => '20'];
 
         $this->_working_schema[$table_name] = $table_definition;
 
@@ -124,7 +124,7 @@ class DatabaseSchema
                         $this->_working_schema[$table_name]['Columns'][Tools::camelcasetostr($field_name).'_id'] = 'integer';
                         unset($this->_working_schema[$table_name]['Columns'][$field_name]);
                         $this->_addLink($table_name, Tools::strtocamelcase($field_name, true), Tools::camelcasetostr($field_name).'_id', $type);
-                        $this->_addLink($type, $table_name.'s', 'id', $table_name.'[]');
+                        //$this->_addLink($type, $table_name.'s', 'id', $table_name.'[]');
                     }
                 }
             }
@@ -151,9 +151,9 @@ class DatabaseSchema
         //remove field from current table
         unset($this->_working_schema[$table_name]['Columns'][$field_name]);
 
-        //add links
-        $this->_addLink($table_name, Tools::strtocamelcase($field_name, true), 'id', $type, $new_table_name);
-        $this->_addLink(substr($type, 0, -2), $table_name . 's', 'id', $table_name . '[]', $new_table_name);
+        //add links Todo: fix detection of links
+        //$this->_addLink($table_name, Tools::strtocamelcase($field_name, true), 'id', $type, $new_table_name);
+        //$this->_addLink(substr($type, 0, -2), $table_name . 's', 'id', $table_name . '[]', $new_table_name);
     }
 
     /**

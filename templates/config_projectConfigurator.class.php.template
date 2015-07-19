@@ -1,13 +1,13 @@
 <?php
 $forgeRoot = realpath(dirname(__FILE__)."/../ext/forge");
-if(!class_exists('ForgeConfigurator')) require($forgeRoot . "/Forge/forgeConfigurator.class.php");
+if(!class_exists('ForgeConfigurator')) require($forgeRoot . "/core/forgeConfigurator.class.php");
 //Todo: Load debug functions as soon as possible.
 
 /**
  * Project configurator is the global boot class of the framework.
  * It initiates all the needed includes and deploys forge in the requested environment 
  */
-class ProjectConfigurator extends Forgee\ForgeConfigurator{
+class ProjectConfigurator extends Forge\ForgeConfigurator{
 	
 	/**
 	 * Initiate the project in the specified envirement.
@@ -19,10 +19,10 @@ class ProjectConfigurator extends Forgee\ForgeConfigurator{
 		self::configure($environment);
 		
 		//edit loader information here.
-		//Config::loadHelper('helper');
+		//\Forge\Config::loadHelper('helper');
 		
 		//include addons
-		//Config::loadAddon('admin');
+		//\Forge\Config::loadAddon('admin');
 		
 		//continue with global run process
 		parent::deploy();

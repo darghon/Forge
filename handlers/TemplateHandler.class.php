@@ -127,7 +127,7 @@ class TemplateHandler
      */
     public function writeFile($filename, $overwrite = false)
     {
-        if(!file_exists(dirname($filename))) mkdir(dirname($filename), 0664, true);
+        if(!file_exists(dirname($filename))) mkdir(dirname($filename), 0775, true);
         if (is_null($this->_generatedContent)) throw new \Exception($this->__('Unable to generate file, no generated content found.'));
         if (preg_match_all('|{.*}|U', $filename, $tokens)) {
             $tokens = array_unique($tokens[0]); //replace each type of token just once, no need to repeat the process

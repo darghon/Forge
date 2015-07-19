@@ -78,7 +78,6 @@ abstract class baseGenerator implements IGenerator
         foreach ($tokens[0] as $token) {
             $string = str_replace($token, $this->_getTokenValue(str_replace('/', '_', substr($token, 1, -1)), $token_map), $string);
         }
-        echo $string;
 
         return $string;
     }
@@ -156,7 +155,7 @@ abstract class baseGenerator implements IGenerator
             $file = explode('_', $template);
             if ($type === null || $this->_validateFileName($file, $types)) {
                 if ($type !== null) array_splice($file, 0, 1);
-                $resultList[$template] = preg_replace('|.template$|','',implode('/', $file));
+                $resultList[$template] = preg_replace('|({.*)/(.*})|', '$1_$2',preg_replace('|.template$|','',implode('/', $file)));
             }
         }
 

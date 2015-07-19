@@ -190,7 +190,7 @@ class Session
      * This can be namespaced by dividing the name by /
      *
      * @param String $var_name
-     * @param Object $value
+     * @param mixed $value
      */
     public static function set($var_name, $value = null)
     {

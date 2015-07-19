@@ -16,6 +16,7 @@ class ConfigurationHandler implements IStage
     protected $app = null;
     protected $mod = null;
     protected $act = null;
+    protected $_settings = [];
 
     public function __construct()
     {
@@ -43,6 +44,7 @@ class ConfigurationHandler implements IStage
             $settings = Config::get("settings");
             $app_config = Config::get("view", $appLocation . "/config/");
             $mod_config = Config::get("view", $appLocation . "/modules/" . $this->mod . "/config/");
+            $addon_config = Config::getAddonConfiguration();
 
             // Load all settings where they may be registered.
             if (isset($settings['global']) || array_key_exists('global', $settings)) $this->parseConfig($settings['global']);
@@ -50,6 +52,8 @@ class ConfigurationHandler implements IStage
             if (isset($app_config[$this->mod]) || array_key_exists($this->mod, $app_config)) $this->parseConfig($app_config[$this->mod]);
             if (isset($mod_config['global']) || array_key_exists('global', $mod_config)) $this->parseConfig($mod_config['global']);
             if (isset($mod_config[$this->act]) || array_key_exists($this->act, $mod_config)) $this->parseConfig($mod_config[$this->act]);
+
+            $this->setSettings(array_merge($addon_config, $settings, $app_config, $mod_config));
 
             unset($settings, $app_config, $mod_config);
 
@@ -262,6 +266,43 @@ class ConfigurationHandler implements IStage
     public function addVariables($key, $value)
     {
         $this->variables[$key] = $value;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSettings()
+    {
+        return $this->_settings;
+    }
+
+    /**
+     * @param array $_settings
+     *
+     * @return $this
+     */
+    public function setSettings($_settings)
+    {
+        $this->_settings = $_settings;
+
+        return $this;
+    }
+
+    /**
+     * @param      $key
+     * @param null $default
+     *
+     * @return array|string|null
+     */
+    public function getSetting($key, $default = null)
+    {
+        $keyList = explode('/',$key);
+        $settings = &$this->_settings;
+        foreach($keyList as $entry) {
+            if (isset($settings[$entry])) $settings = &$settings[$entry];
+            else return $default;
+        }
+        return $settings;
     }
 
     public function __destroy()
