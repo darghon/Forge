@@ -30,7 +30,7 @@ class RequestHandler implements IStage
     {
         $this->method = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') ? 'AJAX' : $_SERVER["REQUEST_METHOD"];
         $this->user_ip = $_SERVER['REMOTE_ADDR'];
-        $this->user_agent = $_SERVER['HTTP_USER_AGENT'];
+        $this->user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'no-user-agent';
         $this->referrer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null;
         $this->session_id = isset($_REQUEST['phpsessid']) ? $_REQUEST['phpsessid'] : (isset($_COOKIE['PHPSESSID']) ? $_COOKIE['PHPSESSID'] : null);
         if (isset($_COOKIE) && (isset($_COOKIE['language']) || array_key_exists('language', $_COOKIE))) Session::language($_COOKIE['language']);
