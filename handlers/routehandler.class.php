@@ -178,7 +178,7 @@ class RouteHandler implements IStage
     public function url($for, $param = [])
     {
         //First check what type of url is passed
-        if (substr($for, 0, 7) == "http://" || $for == 'javascript:;') { //valid link
+        if (substr($for, 0, 1) == "#" || substr($for, 0, 7) == "http://" || $for == 'javascript:;') { //valid link
             return $for;
         }
 
