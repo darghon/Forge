@@ -30,13 +30,14 @@ Next up you can make your database structure.
 This again is made by Yaml files in the <projectroot>/config/database folder
 
 This folder contains an example yaml file to guide you through the structure of creating your tables and relations.
+Keep in mind that the framework will add primary keys, version numbers, delete flags and foreign keys where needed.
 
 Once you are done with the configuration you can tell the framework to generate the objects and the database with the following commands:
 
     php forge build objects
     php forge build database <environment>
     
-The framework will create 6 fields for each database table. These files are split up into 3 layers, with each a base class and a editable class.
+The framework will create 6 files for each database table. These files are split up into 3 layers, with each a base class and a editable class.
 Re-building the objects will overwrite all changes to the base files if they exists, but will keep the normal classes as-is.
 
 The layers consist of a data layer in the \Data\ namespace. These files contain the basic data validation of the table records.
